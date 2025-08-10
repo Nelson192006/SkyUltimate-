@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SkyUltimate | Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #E53935, #F5F5F5);
+      color: #333;
+    }
+
+    /* Splash Screen */
+    #splash {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: #E53935;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 2em;
+      z-index: 9999;
+      animation: fadeOut 2s ease-in-out forwards;
+      animation-delay: 2.5s;
+    }
+
+    @keyframes fadeOut {
+      to { opacity: 0; visibility: hidden; }
+    }
+
+    .logo {
+      font-size: 2.5em;
+      font-weight: bold;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .tagline {
+      font-size: 1em;
+      margin-top: 10px;
+    }
+
+    /* Header & Menu */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      background: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .menu-icon {
+      font-size: 1.5em;
+      cursor: pointer;
+    }
+
+    nav {
+      display: none;
+      flex-direction: column;
+      background: #fff;
+      position: absolute;
+      top: 70px;
+      right: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    nav a {
+      padding: 15px;
+      text-decoration: none;
+      color: #E53935;
+      font-weight: bold;
+      border-bottom: 1px solid #eee;
+    }
+
+    nav a:hover {
+      background: #fce4ec;
+    }
+
+    /* Main Content */
+    .main {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .main h1 {
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+
+    .get-started {
+      padding: 12px 24px;
+      background: #E53935;
+      color: white;
+      border: none;
+      border-radius: 30px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .get-started:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    section {
+      padding: 40px 20px;
+      background: white;
+      margin: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    section h2 {
+      color: #E53935;
+      margin-bottom: 10px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.9em;
+      color: #777;
+    }
+
+    @media (max-width: 600px) {
+      nav {
+        width: 80%;
+        right: 10%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Splash Screen -->
+  <div id="splash">
+    <div class="logo">SkyUltimate 🚚</div>
+    <div class="tagline">Fast. Reliable. Nationwide.</div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">SkyUltimate</div>
+    <div class="menu-icon" onclick="toggleMenu()">☰</div>
+    <nav id="menu">
+      <a href="login.html">Login</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="#about">About Us</a>
+      <a href="#contact">Contact Us</a>
+    </nav>
+  </header>
+
+  <!-- Main Section -->
+  <div class="main">
+    <h1>Welcome to SkyUltimate</h1>
+    <button class="get-started" onclick="window.location.href='login.html'">Get Started</button>
+  </div>
+
+  <!-- About Us -->
+  <section id="about">
+    <h2>Who We Are</h2>
+    <p>SkyUltimate Delivery Services is a fast, reliable, and customer-focused logistics platform designed to simplify delivery across Nigeria and beyond.</p>
+    <ul>
+      <li>🚀 Fast delivery</li>
+      <li>📍 Real-time tracking</li>
+      <li>🔒 Secure and insured packages</li>
+      <li>😊 Friendly support</li>
+    </ul>
+  </section>
+
+  <!-- Contact Us -->
+  <section id="contact">
+    <h2>Get in Touch</h2>
+    <p>📱 WhatsApp: 09128884830</p>
+    <p>📧 Email: nelsongodspower24@gmail.com</p>
+    <p>📍 Instagram: @SkyUltimate</p>
+    <p>📍 Facebook: @SkyUltimate</p>
+    <p>📍 Twitter: @SkyUltimate</p>
+  </section>
+
+  <footer>
+    &copy; 2025 SkyUltimate. All rights reserved.
+  </footer>
+
+  <script>
+    function toggleMenu() {
+      const menu = document.getElementById("menu");
+      menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+    }
+  </script>
+</body>
+</html>
