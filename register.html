@@ -2,21 +2,119 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Register - SkyUltimate</title>
-  <link rel="stylesheet" href="assets/css/style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkyUltimate Delivery Services - Register</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="script.js"></script>
 </head>
 <body>
-  <div class="form-container">
-    <h2>Create Your Account</h2>
-    <form>
-      <input type="text" placeholder="Full Name" required />
-      <input type="email" placeholder="Email Address" required />
-      <input type="password" placeholder="Password" required />
-      <input type="password" placeholder="Confirm Password" required />
-      <button type="submit">Register</button>
-    </form>
-    <p>Already have an account? <a href="dashboard.html">Login</a></p>
+  <!-- Splash Screen -->
+  <div id="splash-screen">
+    <div class="logo-animation">
+      <img src="logo.png" alt="SkyUltimate Logo" />
+      <h1>SkyUltimate Delivery Services</h1>
+      <p>Taking Delivery to New Heights</p>
+    </div>
   </div>
+
+  <!-- Login/Register Container -->
+  <div id="auth-container" class="hidden">
+    <div class="tabs">
+      <button class="tab active" data-role="customer">Customer</button>
+      <button class="tab" data-role="agent">Agent</button>
+      <button class="tab" data-role="superadmin" id="superadmin-tab">Super Admin</button>
+    </div>
+
+    <!-- Form Section -->
+    <form id="auth-form">
+      <div id="form-fields"></div>
+      <a href="#" id="forgot-password">Forgot Password?</a>
+      <button type="submit">Login</button>
+      <a href="#" id="create-account">Create an Account</a>
+    </form>
+  </div>
+
+  <script>
+    // Splash screen logic
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        document.getElementById("splash-screen").style.display = "none";
+        document.getElementById("auth-container").classList.remove("hidden");
+      }, 3000); // 3-second splash
+    });
+
+    const apiBase = "https://inspiring-cache-v3wsk9.csb.app/";
+    const formFields = document.getElementById("form-fields");
+    const tabs = document.querySelectorAll(".tab");
+    const superAdminTab = document.getElementById("superadmin-tab");
+
+    let superAdminRegistered = false;
+
+    function renderForm(role) {
+      formFields.innerHTML = "";
+
+      if (role === "customer") {
+        formFields.innerHTML = `
+          <input type="text" placeholder="Full Name" required />
+          <input type="email" placeholder="Email Address" required />
+          <input type="password" placeholder="Password" required />
+          <input type="tel" placeholder="Mobile Number" required />
+        `;
+      } else if (role === "agent") {
+        formFields.innerHTML = `
+          <input type="text" placeholder="Full Name" required />
+          <input type="email" placeholder="Email Address" required />
+          <input type="tel" placeholder="Phone Number" required />
+          <input type="text" placeholder="Address" required />
+          <input type="file" accept="image/*" required />
+          <input type="text" placeholder="Bank Name" required />
+          <input type="text" placeholder="Account Holder Name" required />
+          <input type="text" placeholder="Account Number" required />
+          <input type="text" placeholder="Routing Number" required />
+        `;
+      } else if (role === "superadmin") {
+        if (superAdminRegistered) {
+          superAdminTab.style.display = "none";
+          renderForm("customer");
+          return;
+        }
+        formFields.innerHTML = `
+          <input type="email" placeholder="Super Admin Email" required />
+          <input type="password" placeholder="Create Password" required />
+        `;
+      }
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        tabs.forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        renderForm(tab.dataset.role);
+      });
+    });
+
+    document.getElementById("auth-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const role = document.querySelector(".tab.active").dataset.role;
+      const data = new FormData(e.target);
+      const payload = Object.fromEntries(data.entries());
+
+      try {
+        const res = await fetch(`${apiBase}${role}/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        alert(`Success: ${result.message}`);
+        if (role === "superadmin") {
+          superAdminRegistered = true;
+          superAdminTab.style.display = "none";
+        }
+      } catch (err) {
+        alert("Error during registration.");
+      }
+    });
+  </script>
 </body>
-</html>
+  </html>
