@@ -1,122 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="styles.css" />
-<script defer src="script.js"></script>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SkyUltimate Delivery Services - Register</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkyUltimate Registration</title>
   <link rel="stylesheet" href="styles.css" />
   <script defer src="script.js"></script>
 </head>
 <body>
-  <!-- Splash Screen -->
-  <div id="splash-screen">
-    <div class="logo-animation">
-      <img src="logo.png" alt="SkyUltimate Logo" />
-      <h1>SkyUltimate Delivery Services</h1>
-      <p>Taking Delivery to New Heights</p>
-    </div>
-  </div>
+  <header>
+    <div class="logo">SkyUltimate Logo</div>
+  </header>
 
-  <!-- Login/Register Container -->
-  <div id="auth-container" class="hidden">
-    <div class="tabs">
-      <button class="tab active" data-role="customer">Customer</button>
-      <button class="tab" data-role="agent">Agent</button>
-      <button class="tab" data-role="superadmin" id="superadmin-tab">Super Admin</button>
-    </div>
+  <main>
+    <section class="intro">
+      <h1>Welcome to SkyUltimate</h1>
+      <p>Your logistics, simplified.</p>
+      <a href="login.html" class="get-started">Get Started</a>
+    </section>
 
-    <!-- Form Section -->
-    <form id="auth-form">
-      <div id="form-fields"></div>
-      <a href="#" id="forgot-password">Forgot Password?</a>
-      <button type="submit">Login</button>
-      <a href="#" id="create-account">Create an Account</a>
-    </form>
-  </div>
+    <section class="register-form">
+      <h2>Create an Account</h2>
+      <form id="registrationForm">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" name="name" required />
 
-  <script>
-    // Splash screen logic
-    window.addEventListener("load", () => {
-      setTimeout(() => {
-        document.getElementById("splash-screen").style.display = "none";
-        document.getElementById("auth-container").classList.remove("hidden");
-      }, 3000); // 3-second splash
-    });
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" required />
 
-    const apiBase = "https://inspiring-cache-v3wsk9.csb.app/";
-    const formFields = document.getElementById("form-fields");
-    const tabs = document.querySelectorAll(".tab");
-    const superAdminTab = document.getElementById("superadmin-tab");
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required />
 
-    let superAdminRegistered = false;
+        <label for="role">Select Role</label>
+        <select id="role" name="role" required>
+          <option value="">--Choose--</option>
+          <option value="customer">Customer</option>
+          <option value="agent">Agent</option>
+          <option value="admin">Super Admin</option>
+        </select>
 
-    function renderForm(role) {
-      formFields.innerHTML = "";
+        <button type="submit">Register</button>
+      </form>
 
-      if (role === "customer") {
-        formFields.innerHTML = `
-          <input type="text" placeholder="Full Name" required />
-          <input type="email" placeholder="Email Address" required />
-          <input type="password" placeholder="Password" required />
-          <input type="tel" placeholder="Mobile Number" required />
-        `;
-      } else if (role === "agent") {
-        formFields.innerHTML = `
-          <input type="text" placeholder="Full Name" required />
-          <input type="email" placeholder="Email Address" required />
-          <input type="tel" placeholder="Phone Number" required />
-          <input type="text" placeholder="Address" required />
-          <input type="file" accept="image/*" required />
-          <input type="text" placeholder="Bank Name" required />
-          <input type="text" placeholder="Account Holder Name" required />
-          <input type="text" placeholder="Account Number" required />
-          <input type="text" placeholder="Routing Number" required />
-        `;
-      } else if (role === "superadmin") {
-        if (superAdminRegistered) {
-          superAdminTab.style.display = "none";
-          renderForm("customer");
-          return;
-        }
-        formFields.innerHTML = `
-          <input type="email" placeholder="Super Admin Email" required />
-          <input type="password" placeholder="Create Password" required />
-        `;
-      }
-    }
+      <p>Already have an account? <a href="login.html">Login here</a></p>
+      <p><a href="forgot-password.html">Forgot Password?</a></p>
+    </section>
+  </main>
 
-    tabs.forEach(tab => {
-      tab.addEventListener("click", () => {
-        tabs.forEach(t => t.classList.remove("active"));
-        tab.classList.add("active");
-        renderForm(tab.dataset.role);
-      });
-    });
-
-    document.getElementById("auth-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const role = document.querySelector(".tab.active").dataset.role;
-      const data = new FormData(e.target);
-      const payload = Object.fromEntries(data.entries());
-
-      try {
-        const res = await fetch(`${apiBase}${role}/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        const result = await res.json();
-        alert(`Success: ${result.message}`);
-        if (role === "superadmin") {
-          superAdminRegistered = true;
-          superAdminTab.style.display = "none";
-        }
-      } catch (err) {
-        alert("Error during registration.");
-      }
-    });
-  </script>
+  <footer>
+    <p>&copy; 2025 SkyUltimate. All rights reserved.</p>
+  </footer>
 </body>
-  </html>
+</html>
