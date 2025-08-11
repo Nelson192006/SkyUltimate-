@@ -1,35 +1,63 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("registrationForm");
+// Splash screen logic
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('splash-screen').style.display = 'none';
+    document.getElementById('main-content').classList.remove('hidden');
+  }, 2000);
+});
 
-  form.addEventListener("submit", (e) => {
+// Tab switching logic
+const tabs = document.querySelectorAll('.tab');
+const loginForm = document.getElementById('login-form');
+const registrationForms = document.getElementById('registration-forms');
+const createAccountLink = document.getElementById('create-account-link');
+
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+
+    const role = tab.dataset.role;
+
+    // Hide all registration forms
+    document.querySelectorAll('.register-form').forEach(form => form.classList.add('hidden'));
+
+    // Show the correct form
+    if (role === 'customer') {
+      document.getElementById('customer-register').classList.remove('hidden');
+    } else if (role === 'agent') {
+      document.getElementById('agent-register').classList.remove('hidden');
+    } else if (role === 'superadmin') {
+      document.getElementById('superadmin-register').classList.remove('hidden');
+    }
+  });
+});
+
+// Show registration section
+createAccountLink.addEventListener('click', () => {
+  loginForm.classList.add('hidden');
+  registrationForms.classList.remove('hidden');
+});
+
+// API integration for all forms
+document.querySelectorAll('form').forEach(form => {
+  form.addEventListener('submit', async e => {
     e.preventDefault();
 
-    const name = form.name.value.trim();
-    const email = form.email.value.trim();
-    const password = form.password.value.trim();
-    const role = form.role.value;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
 
-    if (!name || !email || !password || !role) {
-      alert("Please fill in all fields.");
-      return;
+    try {
+      const response = await fetch('https://inspiring-cache-v3wsk9.csb.app/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+      alert('✅ Success: ' + result.message);
+    } catch (error) {
+      alert('❌ Error: ' + error.message);
     }
-
-    if (!validateEmail(email)) {
-      alert("Please enter a valid email address.");
-      return;
-    }
-
-    if (password.length < 6) {
-      alert("Password must be at least 6 characters.");
-      return;
-    }
-
-    alert(`Registration successful for ${name} as ${role}!`);
-    form.reset();
   });
-
-  function validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-  }
 });
