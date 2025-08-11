@@ -2,53 +2,129 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SkyUltimate Registration</title>
   <link rel="stylesheet" href="styles.css" />
   <script defer src="script.js"></script>
 </head>
 <body>
-  <header>
-    <div class="logo">SkyUltimate Logo</div>
-  </header>
+  <!-- Splash Screen -->
+  <div id="splash-screen">
+    <div class="logo-animation">
+      <img src="logo.png" alt="SkyUltimate Logo" />
+      <h1>SkyUltimate DELIVERY SERVICES</h1>
+      <p>Taking Delivery to New Heights</p>
+    </div>
+  </div>
 
-  <main>
-    <section class="intro">
-      <h1>Welcome to SkyUltimate</h1>
-      <p>Your logistics, simplified.</p>
-      <a href="login.html" class="get-started">Get Started</a>
-    </section>
+  <!-- Main Container -->
+  <div id="main-content" class="hidden">
+    <div class="login-container">
+      <div class="tabs">
+        <button class="tab active" data-role="customer">Customer</button>
+        <button class="tab" data-role="agent">Agent</button>
+        <button class="tab" data-role="superadmin" id="superadmin-tab">Super Admin</button>
+      </div>
 
-    <section class="register-form">
-      <h2>Create an Account</h2>
-      <form id="registrationForm">
-        <label for="name">Full Name</label>
-        <input type="text" id="name" name="name" required />
-
-        <label for="email">Email Address</label>
-        <input type="email" id="email" name="email" required />
-
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required />
-
-        <label for="role">Select Role</label>
-        <select id="role" name="role" required>
-          <option value="">--Choose--</option>
-          <option value="customer">Customer</option>
-          <option value="agent">Agent</option>
-          <option value="admin">Super Admin</option>
-        </select>
-
-        <button type="submit">Register</button>
+      <!-- Login Form -->
+      <form id="login-form">
+        <input type="text" placeholder="Email/Username" required />
+        <input type="password" placeholder="Password" required />
+        <a href="#" class="forgot-password">Forgot Password?</a>
+        <button type="submit" class="login-btn">Login</button>
+        <a href="#" id="create-account-link">Create an Account</a>
       </form>
 
-      <p>Already have an account? <a href="login.html">Login here</a></p>
-      <p><a href="forgot-password.html">Forgot Password?</a></p>
-    </section>
-  </main>
+      <!-- Registration Forms -->
+      <div id="registration-forms" class="hidden">
+        <!-- Customer Registration -->
+        <form id="customer-register" class="register-form">
+          <input type="text" placeholder="Full Name" required />
+          <input type="email" placeholder="Email Address" required />
+          <input type="password" placeholder="Create Password" required />
+          <input type="tel" placeholder="Mobile Number" required />
+          <button type="submit">Register as Customer</button>
+        </form>
 
-  <footer>
-    <p>&copy; 2025 SkyUltimate. All rights reserved.</p>
-  </footer>
+        <!-- Agent Registration -->
+        <form id="agent-register" class="register-form hidden">
+          <input type="text" placeholder="Full Name" required />
+          <input type="email" placeholder="Email Address" required />
+          <input type="tel" placeholder="Phone Number" required />
+          <input type="text" placeholder="Address" required />
+          <input type="file" accept=".jpg,.png,.pdf" required />
+          <input type="text" placeholder="Bank Name" required />
+          <input type="text" placeholder="Account Holder Name" required />
+          <input type="text" placeholder="Account Number" required />
+          <input type="text" placeholder="Routing Number" required />
+          <button type="submit">Register as Agent</button>
+        </form>
+
+        <!-- Super Admin Registration (One-Time) -->
+        <form id="superadmin-register" class="register-form hidden">
+          <input type="text" placeholder="Admin Username" required />
+          <input type="password" placeholder="Secure Password" required />
+          <button type="submit">Register Super Admin</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Splash screen logic
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('splash-screen').style.display = 'none';
+        document.getElementById('main-content').classList.remove('hidden');
+      }, 2000);
+    });
+
+    // Tab switching logic
+    const tabs = document.querySelectorAll('.tab');
+    const loginForm = document.getElementById('login-form');
+    const registrationForms = document.getElementById('registration-forms');
+    const createAccountLink = document.getElementById('create-account-link');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        const role = tab.dataset.role;
+        document.querySelectorAll('.register-form').forEach(form => form.classList.add('hidden'));
+        if (role === 'customer') {
+          document.getElementById('customer-register').classList.remove('hidden');
+        } else if (role === 'agent') {
+          document.getElementById('agent-register').classList.remove('hidden');
+        } else if (role === 'superadmin') {
+          document.getElementById('superadmin-register').classList.remove('hidden');
+        }
+      });
+    });
+
+    createAccountLink.addEventListener('click', () => {
+      loginForm.classList.add('hidden');
+      registrationForms.classList.remove('hidden');
+    });
+
+    // API integration
+    document.querySelectorAll('form').forEach(form => {
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const data = Object.fromEntries(new FormData(form).entries());
+        try {
+          const res = await fetch('https://inspiring-cache-v3wsk9.csb.app/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          const result = await res.json();
+          alert('Success: ' + result.message);
+        } catch (err) {
+          alert('Error: ' + err.message);
+        }
+      });
+    });
+  </script>
 </body>
-</html>
+            </html>
