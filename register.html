@@ -1,1 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SkyUltimate - Register</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #d72626; /* Matching your image red */
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    .container {
+        background: #ffffff; /* White card background */
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0px 0px 15px rgba(0,0,0,0.2);
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+    }
+    .logo {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .logo img {
+        width: 80px;
+        margin-bottom: 10px;
+    }
+    .logo h1 {
+        margin: 0;
+        color: white;
+    }
+    h2 {
+        margin-bottom: 20px;
+        color: #d72626;
+    }
+    input, select, button {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+    button {
+        background-color: #d72626;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #b71c1c;
+    }
+    .message {
+        font-size: 14px;
+        color: green;
+        margin-top: 10px;
+    }
+</style>
+</head>
+<body>
 
+<div class="container">
+    <div class="logo">
+        <img src="logo.png" alt="SkyUltimate Logo" />
+    </div>
+    <h2>Create Account</h2>
+    <form id="registerForm">
+        <input type="text" id="name" placeholder="Full Name" required />
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="text" id="username" placeholder="Username" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <select id="role" required>
+            <option value="">Select Role</option>
+            <option value="Customer">Customer</option>
+            <option value="Agent">Agent</option>
+            <option value="Super Admin" id="superAdminOption">Super Admin</option>
+        </select>
+        <button type="submit">Register</button>
+    </form>
+    <div class="message" id="message"></div>
+</div>
+
+<script>
+// Check if Super Admin already exists
+document.addEventListener("DOMContentLoaded", () => {
+    fetch("https://your-api.com/check-superadmin") // Replace with your API endpoint
+        .then(res => res.json())
+        .then(data => {
+            if (data.exists) {
+                document.getElementById("superAdminOption").style.display = "none";
+            }
+        })
+        .catch(err => console.error("Error checking super admin:", err));
+});
+
+// Handle registration form submit
+document.getElementById("registerForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const userData = {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value,
+        role: document.getElementById("role").value
+    };
+
+    fetch("https://your-api.com/register", { // Replace with your API endpoint
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData)
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("message").innerText = data.message || "Registration successful!";
+        if (userData.role === "Super Admin") {
+            document.getElementById("superAdminOption").style.display = "none";
+        }
+    })
+    .catch(err => {
+        document.getElementById("message").innerText = "Error: " + err.message;
+    });
+});
+</script>
+
+</body>
+  </html>
