@@ -3,15 +3,243 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SkyUltimate</title>
-  <link rel="stylesheet" href="assets/css/style.css" />
+  <title>SkyUltimate Portal</title>
+  <style>
+    /* Splash Screen */
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+    }
+    #splash {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      background: #f4f4f4;
+      z-index: 1000;
+      font-size: 1.5em;
+      color: #333;
+    }
+    /* Form Container */
+    .container {
+      display: none;
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .tabs {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+    }
+    .tab {
+      cursor: pointer;
+      padding: 10px;
+      flex: 1;
+      text-align: center;
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active {
+      font-weight: bold;
+      border-bottom: 2px solid #007bff;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-size: 0.9em;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background: #007bff;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .hidden {
+      display: none;
+    }
+    .message {
+      margin-top: 10px;
+      font-size: 0.9em;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <img src="assets/images/logo.png" alt="SkyUltimate Logo" class="logo" />
-    <h1>Welcome to SkyUltimate</h1>
-    <p>Your logistics, simplified.</p>
-    <a href="register.html" class="btn">Get Started</a>
-  </header>
+
+  <!-- Splash Screen -->
+  <div id="splash">
+    🚀 Loading...
+  </div>
+
+  <!-- Main Content -->
+  <div class="container" id="mainContainer">
+    <div class="tabs">
+      <div class="tab active" id="registerTab">Register</div>
+      <div class="tab" id="loginTab">Login</div>
+    </div>
+
+    <!-- Register Form -->
+    <form id="registerForm">
+      <label>Full Name</label>
+      <input type="text" id="regName" required />
+
+      <label>Email</label>
+      <input type="email" id="regEmail" required />
+
+      <label>Password</label>
+      <input type="password" id="regPassword" required />
+
+      <label>Role</label>
+      <select id="regRole" required>
+        <option value="customer">Customer</option>
+        <option value="agent">Agent</option>
+        <option value="superadmin">Super Admin</option>
+      </select>
+
+      <div id="agentField" class="hidden">
+        <label>Agent Code</label>
+        <input type="text" id="regAgentCode" />
+      </div>
+
+      <div id="superAdminField" class="hidden">
+        <label>Super Admin Secret</label>
+        <input type="text" id="regSuperSecret" />
+      </div>
+
+      <button type="submit">Register</button>
+      <div class="message" id="registerMsg"></div>
+    </form>
+
+    <!-- Login Form -->
+    <form id="loginForm" class="hidden">
+      <label>Email</label>
+      <input type="email" id="loginEmail" required />
+
+      <label>Password</label>
+      <input type="password" id="loginPassword" required />
+
+      <button type="submit">Login</button>
+      <div class="message" id="loginMsg"></div>
+    </form>
+  </div>
+
+  <script>
+    // Splash Screen
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        document.getElementById("splash").style.display = "none";
+        document.getElementById("mainContainer").style.display = "block";
+      }, 1500);
+    });
+
+    // Tabs Switching
+    const registerTab = document.getElementById("registerTab");
+    const loginTab = document.getElementById("loginTab");
+    const registerForm = document.getElementById("registerForm");
+    const loginForm = document.getElementById("loginForm");
+
+    registerTab.addEventListener("click", () => {
+      registerTab.classList.add("active");
+      loginTab.classList.remove("active");
+      registerForm.classList.remove("hidden");
+      loginForm.classList.add("hidden");
+    });
+
+    loginTab.addEventListener("click", () => {
+      loginTab.classList.add("active");
+      registerTab.classList.remove("active");
+      loginForm.classList.remove("hidden");
+      registerForm.classList.add("hidden");
+    });
+
+    // Role-based Fields
+    const roleSelect = document.getElementById("regRole");
+    const agentField = document.getElementById("agentField");
+    const superAdminField = document.getElementById("superAdminField");
+
+    roleSelect.addEventListener("change", () => {
+      agentField.classList.toggle("hidden", roleSelect.value !== "agent");
+      superAdminField.classList.toggle("hidden", roleSelect.value !== "superadmin");
+    });
+
+    // API Base URL
+    const API_BASE = "https://inspiring-cache-v3wsk9.csb.app";
+
+    // Register
+    registerForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("regName").value.trim();
+      const email = document.getElementById("regEmail").value.trim();
+      const password = document.getElementById("regPassword").value.trim();
+      const role = roleSelect.value;
+      const agentCode = document.getElementById("regAgentCode").value.trim();
+      const superSecret = document.getElementById("regSuperSecret").value.trim();
+
+      if (role === "superadmin" && superSecret !== "SUPER123") {
+        document.getElementById("registerMsg").textContent = "❌ Invalid Super Admin Secret";
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password, role, agentCode })
+        });
+        const data = await res.json();
+        document.getElementById("registerMsg").textContent = data.message || "✅ Registered successfully";
+      } catch (err) {
+        document.getElementById("registerMsg").textContent = "❌ Registration failed";
+      }
+    });
+
+    // Login
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value.trim();
+
+      try {
+        const res = await fetch(`${API_BASE}/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById("loginMsg").textContent = "✅ Login successful";
+          localStorage.setItem("user", JSON.stringify(data.user));
+          // Redirect based on role
+          if (data.user.role === "superadmin") {
+            window.location.href = "superadmin.html";
+          } else if (data.user.role === "agent") {
+            window.location.href = "agent.html";
+          } else {
+            window.location.href = "customer.html";
+          }
+        } else {
+          document.getElementById("loginMsg").textContent = "❌ " + (data.message || "Login failed");
+        }
+      } catch (err) {
+        document.getElementById("loginMsg").textContent = "❌ Login failed";
+      }
+    });
+  </script>
 </body>
-</html>
+                    </html>
