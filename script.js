@@ -1,63 +1,119 @@
-// Splash screen logic
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    document.getElementById('splash-screen').style.display = 'none';
-    document.getElementById('main-content').classList.remove('hidden');
-  }, 2000);
-});
+const API_URL = "https://inspiring-cache-v3wsk9.csb.app/";
+let selectedRole = "customer";
 
-// Tab switching logic
-const tabs = document.querySelectorAll('.tab');
-const loginForm = document.getElementById('login-form');
-const registrationForms = document.getElementById('registration-forms');
-const createAccountLink = document.getElementById('create-account-link');
+// Splash screen delay
+setTimeout(() => {
+  document.getElementById("initialLoader").style.display = "none";
+  document.getElementById("mainContainer").style.display = "block";
+}, 1500);
 
-tabs.forEach(tab => {
-  tab.addEventListener('click', () => {
-    tabs.forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-
-    const role = tab.dataset.role;
-
-    // Hide all registration forms
-    document.querySelectorAll('.register-form').forEach(form => form.classList.add('hidden'));
-
-    // Show the correct form
-    if (role === 'customer') {
-      document.getElementById('customer-register').classList.remove('hidden');
-    } else if (role === 'agent') {
-      document.getElementById('agent-register').classList.remove('hidden');
-    } else if (role === 'superadmin') {
-      document.getElementById('superadmin-register').classList.remove('hidden');
-    }
+// Role switching
+document.querySelectorAll("#roleTabs button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#roleTabs button").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    selectedRole = btn.dataset.role;
+    document.getElementById("agentExtra").style.display = (selectedRole === "agent") ? "block" : "none";
   });
 });
 
-// Show registration section
-createAccountLink.addEventListener('click', () => {
-  loginForm.classList.add('hidden');
-  registrationForms.classList.remove('hidden');
+// Toggle Login/Register
+document.getElementById("toggleLogin").addEventListener("click", () => {
+  const regForm = document.getElementById("registerForm");
+  const logForm = document.getElementById("loginForm");
+  const toggle = document.getElementById("toggleLogin");
+  
+  if (regForm.style.display !== "none") {
+    regForm.style.display = "none";
+    logForm.style.display = "block";
+    toggle.innerText = "Don't have an account? Register";
+  } else {
+    regForm.style.display = "block";
+    logForm.style.display = "none";
+    toggle.innerText = "Already have an account? Login";
+  }
 });
 
-// API integration for all forms
-document.querySelectorAll('form').forEach(form => {
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
+// Password strength
+document.getElementById("password").addEventListener("input", e => {
+  const val = e.target.value;
+  const strength = document.getElementById("passwordStrength");
+  if (val.length < 6) {
+    strength.innerText = "Weak";
+    strength.style.color = "red";
+  } else if (val.match(/[A-Z]/) && val.match(/[0-9]/)) {
+    strength.innerText = "Strong";
+    strength.style.color = "green";
+  } else {
+    strength.innerText = "Medium";
+    strength.style.color = "orange";
+  }
+});
 
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
+// Registration submit
+document.getElementById("registerForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  
+  const payload = {
+    role: selectedRole,
+    fullName: document.getElementById("fullName").value,
+    email: document.getElementById("email").value,
+    password: document.getElementById("password").value,
+    phone: document.getElementById("phone").value,
+  };
 
-    try {
-      const response = await fetch('https://inspiring-cache-v3wsk9.csb.app/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
+  if (selectedRole === "agent") {
+    payload.address = document.getElementById("address").value;
+    payload.bankName = document.getElementById("bankName").value;
+    payload.accountName = document.getElementById("accountName").value;
+    payload.accountNumber = document.getElementById("accountNumber").value;
+    payload.routingNumber = document.getElementById("routingNumber").value;
+  }
 
-      const result = await response.json();
-      alert('✅ Success: ' + result.message);
-    } catch (error) {
-      alert('❌ Error: ' + error.message);
+  try {
+    const res = await fetch(`${API_URL}register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    showMessage(data.message || "Registered successfully", "success");
+
+    // Remove super admin tab after first registration
+    if (selectedRole === "superadmin") {
+      document.getElementById("superAdminTab").remove();
     }
-  });
+  } catch (err) {
+    showMessage("Registration failed", "error");
+  }
 });
+
+// Login submit
+document.getElementById("loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const payload = {
+    email: document.getElementById("loginEmail").value,
+    password: document.getElementById("loginPassword").value
+  };
+
+  try {
+    const res = await fetch(`${API_URL}login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    showMessage(data.message || "Login successful", "success");
+  } catch (err) {
+    showMessage("Login failed", "error");
+  }
+});
+
+// Popup message function
+function showMessage(msg, type) {
+  const div = document.createElement("div");
+  div.className = `msg ${type}`;
+  div.innerText = msg;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 3000);
+                               }
