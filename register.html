@@ -3,128 +3,65 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SkyUltimate Registration</title>
-  <link rel="stylesheet" href="styles.css" />
-  <script defer src="script.js"></script>
+  <title>Multi-Role Registration & Login</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
   <!-- Splash Screen -->
-  <div id="splash-screen">
-    <div class="logo-animation">
-      <img src="logo.png" alt="SkyUltimate Logo" />
-      <h1>SkyUltimate DELIVERY SERVICES</h1>
-      <p>Taking Delivery to New Heights</p>
-    </div>
-  </div>
+  <div id="initialLoader">🚀 Loading...</div>
 
   <!-- Main Container -->
-  <div id="main-content" class="hidden">
-    <div class="login-container">
-      <div class="tabs">
-        <button class="tab active" data-role="customer">Customer</button>
-        <button class="tab" data-role="agent">Agent</button>
-        <button class="tab" data-role="superadmin" id="superadmin-tab">Super Admin</button>
-      </div>
+  <div id="mainContainer">
+    <!-- Role Tabs -->
+    <div id="roleTabs">
+      <button class="active" data-role="customer">Customer</button>
+      <button data-role="agent">Agent</button>
+      <button id="superAdminTab" data-role="superadmin">Super Admin</button>
+    </div>
 
-      <!-- Login Form -->
-      <form id="login-form">
-        <input type="text" placeholder="Email/Username" required />
-        <input type="password" placeholder="Password" required />
-        <a href="#" class="forgot-password">Forgot Password?</a>
-        <button type="submit" class="login-btn">Login</button>
-        <a href="#" id="create-account-link">Create an Account</a>
+    <!-- Auth Forms -->
+    <div id="authForms">
+      <!-- Registration Form -->
+      <form id="registerForm">
+        <h2 id="formTitle">Register</h2>
+        <input type="text" id="fullName" placeholder="Full Name" required />
+        <div class="error-msg" id="err-fullName"></div>
+
+        <input type="email" id="email" placeholder="Email Address" required />
+        <div class="error-msg" id="err-email"></div>
+
+        <input type="password" id="password" placeholder="Password" required />
+        <div id="passwordStrength"></div>
+        <div class="error-msg" id="err-password"></div>
+
+        <input type="tel" id="phone" placeholder="Phone Number" required />
+        <div class="error-msg" id="err-phone"></div>
+
+        <!-- Agent-only fields -->
+        <div id="agentExtra" style="display: none;">
+          <input type="text" id="address" placeholder="Address" />
+          <input type="text" id="bankName" placeholder="Bank Name" />
+          <input type="text" id="accountName" placeholder="Account Holder Name" />
+          <input type="text" id="accountNumber" placeholder="Account Number" />
+          <input type="text" id="routingNumber" placeholder="Routing Number" />
+        </div>
+
+        <button type="submit">Register</button>
       </form>
 
-      <!-- Registration Forms -->
-      <div id="registration-forms" class="hidden">
-        <!-- Customer Registration -->
-        <form id="customer-register" class="register-form">
-          <input type="text" placeholder="Full Name" required />
-          <input type="email" placeholder="Email Address" required />
-          <input type="password" placeholder="Create Password" required />
-          <input type="tel" placeholder="Mobile Number" required />
-          <button type="submit">Register as Customer</button>
-        </form>
+      <!-- Login Form -->
+      <form id="loginForm" style="display: none;">
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" placeholder="Email Address" required />
+        <input type="password" id="loginPassword" placeholder="Password" required />
+        <button type="submit">Login</button>
+      </form>
 
-        <!-- Agent Registration -->
-        <form id="agent-register" class="register-form hidden">
-          <input type="text" placeholder="Full Name" required />
-          <input type="email" placeholder="Email Address" required />
-          <input type="tel" placeholder="Phone Number" required />
-          <input type="text" placeholder="Address" required />
-          <input type="file" accept=".jpg,.png,.pdf" required />
-          <input type="text" placeholder="Bank Name" required />
-          <input type="text" placeholder="Account Holder Name" required />
-          <input type="text" placeholder="Account Number" required />
-          <input type="text" placeholder="Routing Number" required />
-          <button type="submit">Register as Agent</button>
-        </form>
-
-        <!-- Super Admin Registration (One-Time) -->
-        <form id="superadmin-register" class="register-form hidden">
-          <input type="text" placeholder="Admin Username" required />
-          <input type="password" placeholder="Secure Password" required />
-          <button type="submit">Register Super Admin</button>
-        </form>
-      </div>
+      <div id="toggleLogin">Already have an account? Login</div>
     </div>
   </div>
 
-  <script>
-    // Splash screen logic
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        document.getElementById('splash-screen').style.display = 'none';
-        document.getElementById('main-content').classList.remove('hidden');
-      }, 2000);
-    });
-
-    // Tab switching logic
-    const tabs = document.querySelectorAll('.tab');
-    const loginForm = document.getElementById('login-form');
-    const registrationForms = document.getElementById('registration-forms');
-    const createAccountLink = document.getElementById('create-account-link');
-
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-
-        const role = tab.dataset.role;
-        document.querySelectorAll('.register-form').forEach(form => form.classList.add('hidden'));
-        if (role === 'customer') {
-          document.getElementById('customer-register').classList.remove('hidden');
-        } else if (role === 'agent') {
-          document.getElementById('agent-register').classList.remove('hidden');
-        } else if (role === 'superadmin') {
-          document.getElementById('superadmin-register').classList.remove('hidden');
-        }
-      });
-    });
-
-    createAccountLink.addEventListener('click', () => {
-      loginForm.classList.add('hidden');
-      registrationForms.classList.remove('hidden');
-    });
-
-    // API integration
-    document.querySelectorAll('form').forEach(form => {
-      form.addEventListener('submit', async e => {
-        e.preventDefault();
-        const data = Object.fromEntries(new FormData(form).entries());
-        try {
-          const res = await fetch('https://inspiring-cache-v3wsk9.csb.app/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-          });
-          const result = await res.json();
-          alert('Success: ' + result.message);
-        } catch (err) {
-          alert('Error: ' + err.message);
-        }
-      });
-    });
-  </script>
+  <script src="script.js"></script>
 </body>
-            </html>
+</html>
