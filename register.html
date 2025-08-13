@@ -1,109 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkyUltimate Delivery - Register</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-        }
-
-        /* Splash Screen */
-        #splash-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #d40000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            z-index: 9999;
-        }
-        #splash-screen img {
-            width: 180px;
-            height: 180px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        /* Form Styling */
-        .register-container {
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h2 {
-            text-align: center;
-            color: #d40000;
-        }
-        input, select, button {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            background-color: #d40000;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #a30000;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkyUltimate — Register</title>
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background: #fff;
+    }
+    /* Splash Screen */
+    #splashScreen {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: red;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+    #splashScreen img {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: contain;
+        background-color: white;
+        padding: 15px;
+    }
+    /* Form container */
+    .container {
+        display: none;
+        padding: 20px;
+        max-width: 400px;
+        margin: 80px auto;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+        text-align: center;
+        color: red;
+    }
+    label {
+        font-weight: bold;
+        display: block;
+        margin-top: 10px;
+    }
+    input, select, button {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    button {
+        background: red;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+    }
+    button:hover {
+        background: darkred;
+    }
+    .msg {
+        text-align: center;
+        margin-top: 10px;
+        font-size: 0.9em;
+    }
+</style>
 </head>
 <body>
 
-    <!-- Splash Screen -->
-    <div id="splash-screen">
-        <img src="images/logo.png" alt="SkyUltimate Logo">
-    </div>
+<!-- Splash Screen -->
+<div id="splashScreen">
+    <img src="logo.png" alt="SkyUltimate Logo">
+</div>
 
-    <div class="register-container">
-        <h2>Register</h2>
-        <form id="registerForm">
-            <input type="text" id="firstName" placeholder="First Name" required>
-            <input type="text" id="lastName" placeholder="Last Name" required>
-            <input type="email" id="email" placeholder="Email" required>
-            <input type="password" id="password" placeholder="Password" required>
-            <select id="role" required>
-                <option value="">Select Role</option>
-                <option value="Customer">Customer</option>
-                <option value="Agent">Agent</option>
-                <!-- Admin option appears only if Super Admin enables it -->
-            </select>
-            <button type="submit">Register</button>
-        </form>
-    </div>
+<!-- Registration Form -->
+<div class="container" id="registerContainer">
+    <h1>Register</h1>
+    <form id="registerForm">
+        <label for="fullname">Full Name</label>
+        <input type="text" id="fullname" required>
 
-    <script>
-        // Splash Screen Logic
-        document.addEventListener("DOMContentLoaded", function() {
-            setTimeout(() => {
-                document.getElementById('splash-screen').style.display = 'none';
-            }, 2000);
+        <label for="email">Email</label>
+        <input type="email" id="email" required>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" required>
+
+        <label for="role">Role</label>
+        <select id="role" required>
+            <option value="Customer">Customer</option>
+            <option value="Agent">Agent</option>
+            <!-- Admin option will be dynamically added if Super Admin toggle is active -->
+        </select>
+
+        <button type="submit">Register</button>
+        <div class="msg" id="registerMsg"></div>
+    </form>
+</div>
+
+<script>
+    const API_URL = "YOUR_API_ENDPOINT_HERE"; // Replace with your actual API
+
+    // Show splash screen for reloads
+    window.addEventListener("load", () => {
+        document.getElementById("splashScreen").style.display = "flex";
+        setTimeout(() => {
+            document.getElementById("splashScreen").style.display = "none";
+            document.getElementById("registerContainer").style.display = "block";
+        }, 2000);
+    });
+
+    // Fetch role toggle from API (for Admin visibility)
+    fetch(API_URL + "/role-toggle")
+        .then(res => res.json())
+        .then(data => {
+            if (data.adminRegistrationEnabled) {
+                const roleSelect = document.getElementById("role");
+                const adminOption = document.createElement("option");
+                adminOption.value = "Admin";
+                adminOption.textContent = "Admin";
+                roleSelect.appendChild(adminOption);
+            }
+        })
+        .catch(err => console.error("Role toggle fetch error:", err));
+
+    // Register user
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const fullname = document.getElementById("fullname").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const role = document.getElementById("role").value;
+
+        const res = await fetch(API_URL + "/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fullname, email, password, role })
         });
 
-        // Registration Form Logic
-        document.getElementById("registerForm").addEventListener("submit", function(e) {
-            e.preventDefault();
-            
-            const firstName = document.getElementById("firstName").value.trim();
-            localStorage.setItem("customerName", firstName);
+        const result = await res.json();
+        document.getElementById("registerMsg").textContent = result.message || "Registration complete";
+    });
+</script>
 
-            alert("Registration successful!");
-            window.location.href = "home.html"; // Redirect to homepage
-        });
-    </script>
 </body>
 </html>
