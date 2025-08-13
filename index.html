@@ -1,1 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SkyUltimate — Home</title>
+<meta name="theme-color" content="#d72638" />
+<style>
+  :root{
+    --brand-red:#d72638;
+    --cream:#fbf6ef;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:#fff;color:#333}
 
+  /* Splash */
+  #splash{
+    position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:linear-gradient(180deg,var(--brand-red),#b71c1c);color:#fff;text-align:center;z-index:9999
+  }
+  #splash img{width:110px;height:110px;border-radius:50%;object-fit:cover;margin-bottom:12px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+  #splash h1{margin:6px 0 4px;font-size:28px;letter-spacing:.3px}
+  #splash p{margin:0;opacity:.95}
+  #splash .loading{margin-top:14px;font-size:13px;opacity:.9}
+
+  /* Header */
+  header{background:var(--brand-red);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:14px 16px}
+  .hamburger{font-size:26px;cursor:pointer;line-height:1}
+  header h1{margin:0;font-size:20px}
+
+  /* Sidebar */
+  #overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:998}
+  #sidebar{
+    position:fixed;inset:0 auto 0 0;width:270px;background:#fff;box-shadow:2px 0 20px rgba(0,0,0,.18);
+    transform:translateX(-100%);transition:transform .28s ease;z-index:1000;padding:16px 14px
+  }
+  #sidebar.open{transform:none}
+  #sidebar h2{margin:4px 0 10px;color:var(--brand-red);font-size:22px}
+  #sidebar a{display:block;padding:10px 6px;color:#222;text-decoration:none;border-bottom:1px solid #f1f1f1}
+  #sidebar a:hover{background:#fafafa}
+  #sidebar a.disabled{color:#999;pointer-events:none}
+  #sidebar small{display:block;margin-top:8px;color:#666}
+
+  /* Main */
+  main{padding:18px}
+  section{margin:0 0 26px}
+  section h2{color:var(--brand-red);margin:0 0 8px}
+  .hero{
+    background:linear-gradient(135deg,#fff5ee,#fff);border:1px solid #f3e7e2;border-radius:14px;padding:14px 16px;margin-bottom:18px
+  }
+
+  /* Footer contact (visible when menu collapsed) */
+  footer{padding:16px;background:#f7f7f7;text-align:center;font-size:14px;border-top:1px solid #eee}
+  footer span[contenteditable]{outline:2px dashed transparent}
+  footer span[contenteditable]:focus{outline-color:#ffd6cc;background:#fff9f7}
+
+  @media(min-width:900px){
+    main{max-width:900px;margin:0 auto}
+  }
+</style>
+<noscript>
+  <style>#splash{display:none}</style>
+</noscript>
+</head>
+<body>
+
+<!-- Splash -->
+<div id="splash" role="status" aria-live="polite">
+  <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/main/logo.png" alt="SkyUltimate Logo" onerror="this.style.display='none'">
+  <h1>SkyUltimate</h1>
+  <p>Taking Delivery to New Heights</p>
+  <div class="loading">Loading…</div>
+</div>
+
+<!-- Overlay & Sidebar -->
+<div id="overlay" aria-hidden="true"></div>
+<nav id="sidebar" aria-label="Main">
+  <h2>Menu</h2>
+  <a href="#about">About Us</a>
+  <a href="#mission">Our Mission</a>
+  <a href="#vision">Our Vision</a>
+  <a href="#founder">Founder</a>
+  <a href="#faq">Support & FAQ</a>
+  <a class="disabled" title="Available when the app is on Play Store">Rate App (coming soon)</a>
+  <a href="#contact">Contact</a>
+  <small>Tap outside or press Esc to close</small>
+</nav>
+
+<!-- Header -->
+<header>
+  <span class="hamburger" id="hamburger" aria-label="Open menu" role="button">&#9776;</span>
+  <h1>SkyUltimate</h1>
+</header>
+
+<!-- Main Content -->
+<main>
+  <div class="hero">
+    <strong>Welcome!</strong> Learn more about SkyUltimate below or open the menu ☰ for quick navigation.
+  </div>
+
+  <section id="about">
+    <h2>About Us</h2>
+    <p>SkyUltimate is your trusted partner for fast, secure, and reliable deliveries—connecting people and communities with care.</p>
+  </section>
+
+  <section id="mission">
+    <h2>Our Mission</h2>
+    <p>To provide the most efficient and trustworthy on-demand delivery service by empowering agents and delighting customers with seamless technology.</p>
+  </section>
+
+  <section id="vision">
+    <h2>Our Vision</h2>
+    <p>To create a world where distance is no barrier—enabling local commerce and connecting communities one delivery at a time.</p>
+  </section>
+
+  <section id="founder">
+    <h2>Founder</h2>
+    <p>Name: <span contenteditable="true">[Editable Founder Name]</span></p>
+    <p>Founded: <span contenteditable="true">[Editable Year]</span></p>
+  </section>
+
+  <section id="faq">
+    <h2>Support & FAQ</h2>
+    <p><strong>How do I track my delivery?</strong><br>From your dashboard after login.</p>
+    <p><strong>Need help?</strong> See contact info below.</p>
+  </section>
+</main>
+
+<!-- Footer (contact when menu is collapsed) -->
+<footer id="contact">
+  📞 <span contenteditable="true">09128884830</span> &nbsp;|&nbsp;
+  WhatsApp: <span contenteditable="true">09128884830</span><br>
+  📷 Instagram: <span contenteditable="true">@skyultimate</span> &nbsp;•&nbsp;
+  📘 Facebook: <span contenteditable="true">SkyUltimate</span>
+</footer>
+
+<script>
+  // Splash auto-hide (2.2s)
+  window.addEventListener('DOMContentLoaded', function(){
+    setTimeout(function(){
+      const s=document.getElementById('splash');
+      if(s) s.style.display='none';
+    }, 2200);
+  });
+
+  // Sidebar controls
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  const hamburger = document.getElementById('hamburger');
+
+  function openMenu(){
+    sidebar.classList.add('open');
+    overlay.style.display='block';
+  }
+  function closeMenu(){
+    sidebar.classList.remove('open');
+    overlay.style.display='none';
+  }
+
+  hamburger.addEventListener('click', openMenu);
+  overlay.addEventListener('click', closeMenu);
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeMenu(); });
+</script>
+
+</body>
+  </html>
