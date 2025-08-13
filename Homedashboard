@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SkyUltimate — Home</title>
+<meta name="color-scheme" content="light">
+<style>
+  :root{
+    --brand-red:#d72638;
+    --brand-red-dark:#b71c1c;
+    --text:#222;
+    --muted:#727272;
+    --bg:#fff8ef;
+    --card:#ffffff;
+    --shadow:0 8px 30px rgba(0,0,0,.12);
+    --radius:16px;
+  }
+
+  /* Page background */
+  html,body{height:100%; margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; background:
+    linear-gradient(135deg,#fef3ea 0%,#fff8ef 40%,#fff3e6 100%);}
+  a{color:inherit; text-decoration:none}
+  button{font:inherit}
+
+  /* ---------- Splash (always on first paint / reload) ---------- */
+  #splash{
+    position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:linear-gradient(180deg,var(--brand-red),var(--brand-red-dark)); color:#fff; z-index:9999; overflow:hidden;
+  }
+  #splash .logo{
+    width:min(280px,70vw); aspect-ratio:1/1; border-radius:50%;
+    background:#fff0; /* logo itself is round so we just animate it in */
+    opacity:0; transform:translateY(24px) scale(.96);
+    filter:drop-shadow(0 8px 18px rgba(0,0,0,.25));
+    animation:logoIn 1.2s cubic-bezier(.2,.9,.25,1) .05s forwards;
+  }
+  #splash .tag{
+    margin-top:16px; font-weight:700; letter-spacing:.3px; opacity:0;
+    animation:fadeUp .8s ease .45s forwards;
+  }
+  @keyframes logoIn{to{opacity:1; transform:translateY(0) scale(1)}}
+  @keyframes fadeUp{to{opacity:1; transform:none}}
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:1000;
+    background:var(--brand-red);
+    color:#fff;
+    display:flex; align-items:center; gap:12px; padding:10px 14px;
+    box-shadow:0 8px 24px rgba(0,0,0,.16);
+  }
+  .hamburger{
+    width:38px; height:38px; border-radius:12px; display:grid; place-items:center; cursor:pointer;
+    border:1px solid rgba(255,255,255,.25); background:transparent; color:#fff;
+  }
+  .hamburger:active{transform:scale(.98)}
+  .brand{
+    display:flex; align-items:center; gap:10px;
+  }
+  .brand img{ height:36px; width:auto; display:block; }
+  .title-wrap{display:flex; flex-direction:column; line-height:1.1}
+  .app-name{font-weight:800; font-size:16px; letter-spacing:.2px}
+  .slogan{font-size:12px; opacity:.95}
+  .spacer{flex:1}
+  .welcome{font-weight:700; font-size:14px; white-space:nowrap}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar-backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,.28); backdrop-filter:saturate(120%) blur(1px);
+    opacity:0; visibility:hidden; transition:opacity .2s ease, visibility .2s ease; z-index:998;
+  }
+  .sidebar{
+    position:fixed; top:0; left:0; height:100%; width:min(84vw,340px);
+    transform:translateX(-105%);
+    background:#fff; box-shadow: 8px 0 28px rgba(0,0,0,.18); z-index:999;
+    transition:transform .28s cubic-bezier(.2,.9,.25,1);
+    display:flex; flex-direction:column;
+  }
+  .sidebar.open{ transform:none; }
+  .sidebar-header{
+    background:var(--brand-red); color:#fff; padding:18px 16px; display:flex; gap:12px; align-items:center;
+  }
+  .sidebar-header img{ height:40px; }
+  .sidebar-title{ font-weight:800; font-size:18px; }
+  .sidebar-sub{ font-size:12px; opacity:.95 }
+  .nav{
+    padding:10px 8px;
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .nav a, .nav button{
+    display:flex; align-items:center; gap:10px;
+    padding:12px 12px; border-radius:12px; border:1px solid #eee; background:#fff;
+    cursor:pointer;
+  }
+  .nav a:hover, .nav button:hover{ background:#fff7f7; border-color:#f4d2d6 }
+  .nav .disabled{ opacity:.55; cursor:not-allowed }
+
+  /* ---------- Main content cards ---------- */
+  .container{ max-width:1100px; margin:18px auto; padding:0 14px; }
+  .hero{
+    background:linear-gradient(180deg,#fff,#ffe9e9);
+    border:1px solid #ffe1e1;
+    border-radius:20px; padding:18px; display:grid; gap:12px; align-items:center;
+    grid-template-columns: 72px 1fr;
+    box-shadow:var(--shadow);
+  }
+  .hero img{ width:72px; height:72px; object-fit:contain; }
+  .hero h1{ margin:0; font-size:22px }
+  .hero p{ margin:0; color:#444 }
+
+  .grid{
+    margin-top:16px;
+    display:grid; gap:14px;
+    grid-template-columns: repeat(12, 1fr);
+  }
+  .card{
+    background:var(--card); border-radius:18px; padding:16px; box-shadow:var(--shadow); border:1px solid #f4eaea;
+  }
+  .card h3{ margin:0 0 8px 0; font-size:18px }
+  .muted{ color:var(--muted); font-size:14px }
+  .list{ display:flex; flex-direction:column; gap:8px; }
+  .kv{ display:flex; gap:8px; align-items:flex-start; }
+  .kv strong{ min-width:110px }
+
+  /* FAQ accordion */
+  .faq-item{ border:1px solid #f1e6e6; border-radius:12px; overflow:hidden; }
+  .faq-q{
+    width:100%; text-align:left; background:#fff; padding:12px 12px; border:none; cursor:pointer; font-weight:700;
+  }
+  .faq-a{ display:none; padding:0 12px 12px 12px; color:#444; }
+  .faq-item.open .faq-a{ display:block; }
+
+  /* Contact strip visible even with sidebar closed */
+  .contact-strip{
+    margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;
+  }
+  .chip{
+    display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border-radius:999px;
+    border:1px solid #eee; background:#fff; box-shadow:0 6px 16px rgba(0,0,0,.06);
+  }
+
+  /* Grid placement */
+  .span-6{ grid-column: span 6 }
+  .span-4{ grid-column: span 4 }
+  .span-8{ grid-column: span 8 }
+  .span-12{ grid-column: span 12 }
+  @media (max-width:900px){ .span-8,.span-6,.span-4{ grid-column: span 12 } }
+
+  /* Hide backdrop when closed */
+  .sidebar-backdrop.show{ opacity:1; visibility:visible; }
+
+  /* Utility icons (simple) */
+  .ico{font-style:normal}
+</style>
+</head>
+<body>
+
+<!-- Splash (always shows on reload) -->
+<div id="splash" aria-hidden="true">
+  <img class="logo" alt="SkyUltimate Logo" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/main/logo.png">
+  <div class="tag">Taking Delivery To New Heights</div>
+</div>
+
+<!-- Topbar -->
+<header class="topbar">
+  <button id="btnMenu" class="hamburger" aria-label="Open menu" title="Menu">
+    <!-- simple hamburger -->
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 6h18v2H3V6Zm0 5h18v2H3v-2Zm0 5h18v2H3v-2Z"/></svg>
+  </button>
+  <div class="brand">
+    <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/main/logo.png" alt="SkyUltimate">
+    <div class="title-wrap">
+      <div class="app-name">SkyUltimate</div>
+      <div class="slogan">Taking Delivery To New Heights</div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <div id="welcome" class="welcome">Welcome</div>
+</header>
+
+<!-- Sidebar + Backdrop -->
+<div id="backdrop" class="sidebar-backdrop" tabindex="-1"></div>
+<aside id="sidebar" class="sidebar" aria-label="Navigation">
+  <div class="sidebar-header">
+    <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/main/logo.png" alt="SkyUltimate" />
+    <div>
+      <div class="sidebar-title">SkyUltimate</div>
+      <div class="sidebar-sub">Fast. Secure. Reliable.</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="#" id="nav-home">🏠 Home</a>
+    <a href="#about">ℹ️ About</a>
+    <a href="#services">🚚 Services</a>
+    <a href="#faq">❓ FAQ</a>
+    <a href="#contact">☎️ Contact</a>
+    <button class="disabled" title="Available after Play Store launch">⭐ Rate the App</button>
+    <hr style="border:none; height:1px; background:#f0e6e6; margin:6px 10px;">
+    <a href="#" id="linkInstagram">📸 Instagram</a>
+    <a href="#" id="linkFacebook">📘 Facebook</a>
+    <a href="#" id="linkWhatsApp">💬 WhatsApp</a>
+  </nav>
+</aside>
+
+<!-- Main content -->
+<main class="container">
+  <!-- Hero -->
+  <section class="hero" id="about">
+    <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/main/logo.png" alt="SkyUltimate">
+    <div>
+      <h1>Taking Delivery To New Heights</h1>
+      <p id="heroLead">Ultra-fast pickups and deliveries with real-time care.</p>
+    </div>
+  </section>
+
+  <!-- Quick contact strip (always visible when sidebar is closed) -->
+  <div class="contact-strip" id="contact">
+    <a id="chipPhone" class="chip" href="tel:09128884830" title="Call us">
+      📞 <strong>09128884830</strong>
+    </a>
+    <a id="chipWA" class="chip" href="https://wa.me/2349128884830" target="_blank" rel="noopener" title="Chat on WhatsApp">
+      💬 WhatsApp
+    </a>
+    <a id="chipIG" class="chip" href="#" target="_blank" rel="noopener" title="Instagram">
+      📸 Instagram
+    </a>
+    <a id="chipFB" class="chip" href="#" target="_blank" rel="noopener" title="Facebook">
+      📘 Facebook
+    </a>
+  </div>
+
+  <!-- Info grid -->
+  <section class="grid" id="services">
+    <div class="card span-6">
+      <h3>Our Mission</h3>
+      <p id="mission" class="muted">Deliver peace of mind with every parcel—speed, safety, and delight.</p>
+    </div>
+    <div class="card span-6">
+      <h3>Our Vision</h3>
+      <p id="vision" class="muted">Be the most trusted last-mile partner across Africa and beyond.</p>
+    </div>
+
+    <div class="card span-8">
+      <h3>Why Choose SkyUltimate</h3>
+      <ul class="list muted" style="margin:0; padding-left:18px;">
+        <li>Swift pickups and on-time drop-offs.</li>
+        <li>Agents verified with ID and bank details.</li>
+        <li>Friendly support—real people, real help.</li>
+      </ul>
+    </div>
+
+    <div class="card span-4">
+      <h3>Founder</h3>
+      <div class="kv muted"><strong>Name</strong><span id="founderName">—</span></div>
+      <div class="kv muted"><strong>Since</strong><span id="founderYear">—</span></div>
+    </div>
+
+    <div class="card span-12" id="faq">
+      <h3>FAQ</h3>
+      <div class="faq-item">
+        <button class="faq-q">How fast is delivery?</button>
+        <div class="faq-a">Most deliveries complete same-day in supported cities.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">How do I contact support?</button>
+        <div class="faq-a">Use the WhatsApp/phone chips above or the Contact link in the menu.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Do you support large items?</button>
+        <div class="faq-a">Yes—subject to size/weight. Tell us the item on booking.</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ========= CONFIG ========= */
+const LOGO_URL = "https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/main/logo.png";
+
+/* Set this to your single API base (same endpoint for all config).
+   The page will GET `${API_BASE}/config` to pull all editable info. */
+const API_BASE = "https://your-backend.example.com"; // <-- UPDATE THIS
+
+/* Expected /config JSON (plain text OK; just return JSON):
+{
+  "slogan": "Taking Delivery To New Heights",
+  "mission": " ... ",
+  "vision": " ... ",
+  "founderName": "Your Name",
+  "founderYear": "2024",
+  "phone": "09128884830",
+  "whatsapp": "2349128884830",
+  "instagram": "https://instagram.com/yourhandle",
+  "facebook": "https://facebook.com/yourpage",
+  "heroLead": "Ultra-fast pickups and deliveries..."
+} */
+
+/* ========= SPLASH (always show on load) ========= */
+const splash = document.getElementById('splash');
+function hideSplashAfter(ms){
+  setTimeout(()=>{ splash.style.display='none'; }, ms);
+}
+// Keep it visible long enough for the logo anim; you can tweak:
+hideSplashAfter(1400);
+
+/* ========= TOPBAR WELCOME =========
+   Try to greet by first name if present (e.g., saved during auth elsewhere) */
+(function setWelcome(){
+  const welcome = document.getElementById('welcome');
+  try{
+    const raw = localStorage.getItem('sky_current_user');
+    let name = 'Welcome';
+    if(raw){
+      const u = JSON.parse(raw);
+      if(u && u.name){
+        const first = String(u.name).trim().split(/\s+/)[0];
+        name = `Welcome, ${first}`;
+      }
+    }
+    welcome.textContent = name;
+  }catch(e){
+    welcome.textContent = 'Welcome';
+  }
+})();
+
+/* ========= SIDEBAR TOGGLE / DISMISS ========= */
+const sidebar = document.getElementById('sidebar');
+const backdrop = document.getElementById('backdrop');
+const btnMenu = document.getElementById('btnMenu');
+
+function openSidebar(){
+  sidebar.classList.add('open');
+  backdrop.classList.add('show');
+}
+function closeSidebar(){
+  sidebar.classList.remove('open');
+  backdrop.classList.remove('show');
+}
+
+btnMenu.addEventListener('click', openSidebar);
+backdrop.addEventListener('click', closeSidebar);
+document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeSidebar(); });
+
+/* ========= FAQ ACCORDION ========= */
+document.querySelectorAll('.faq-q').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const item = btn.closest('.faq-item');
+    item.classList.toggle('open');
+  });
+});
+
+/* ========= LINKS / CHIPS (defaults + API override) ========= */
+const elMission = document.getElementById('mission');
+const elVision = document.getElementById('vision');
+const elFounderName = document.getElementById('founderName');
+const elFounderYear = document.getElementById('founderYear');
+const elHeroLead = document.getElementById('heroLead');
+const elSloganTop = document.querySelector('.slogan');
+
+const linkInstagram = document.getElementById('linkInstagram');
+const linkFacebook  = document.getElementById('linkFacebook');
+const linkWhatsApp  = document.getElementById('linkWhatsApp');
+
+const chipIG = document.getElementById('chipIG');
+const chipFB = document.getElementById('chipFB');
+const chipWA = document.getElementById('chipWA');
+const chipPhone = document.getElementById('chipPhone');
+
+/* Defaults (in case API not reachable) */
+let cfg = {
+  slogan: "Taking Delivery To New Heights",
+  mission: "Deliver peace of mind with every parcel—speed, safety, and delight.",
+  vision: "Be the most trusted last-mile partner across Africa and beyond.",
+  founderName: "—",
+  founderYear: "—",
+  phone: "09128884830",
+  whatsapp: "2349128884830",
+  instagram: "",
+  facebook: "",
+  heroLead: "Ultra-fast pickups and deliveries with real-time care."
+};
+
+/* Apply config to DOM */
+function applyConfig(){
+  elMission.textContent = cfg.mission || elMission.textContent;
+  elVision.textContent  = cfg.vision  || elVision.textContent;
+  elFounderName.textContent = cfg.founderName || "—";
+  elFounderYear.textContent = cfg.founderYear || "—";
+  elHeroLead.textContent = cfg.heroLead || elHeroLead.textContent;
+
+  if(cfg.slogan){ elSloganTop.textContent = cfg.slogan; }
+
+  /* Phone + WhatsApp chips */
+  if(cfg.phone){
+    chipPhone.href = `tel:${cfg.phone}`;
+    chipPhone.querySelector('strong').textContent = cfg.phone;
+  }
+  if(cfg.whatsapp){
+    // Ensure it’s digits only with country code (e.g., 234...)
+    const wa = String(cfg.whatsapp).replace(/[^\d]/g,'');
+    chipWA.href = `https://wa.me/${wa}`;
+    linkWhatsApp.href = chipWA.href;
+  }
+
+  /* Socials */
+  if(cfg.instagram){
+    linkInstagram.href = cfg.instagram; chipIG.href = cfg.instagram;
+  }
+  if(cfg.facebook){
+    linkFacebook.href = cfg.facebook; chipFB.href = cfg.facebook;
+  }
+}
+
+/* Fetch config from one endpoint */
+async function fetchConfig(){
+  try{
+    const res = await fetch(`${API_BASE}/config`, { cache:'no-store' });
+    if(!res.ok) throw new Error('Bad response');
+    const data = await res.json();
+    cfg = { ...cfg, ...(data||{}) };
+    applyConfig();
+  }catch(err){
+    // If the API isn't ready yet, silently keep defaults
+    applyConfig();
+    // console.warn('Config fetch failed:', err);
+  }
+}
+fetchConfig();
+
+/* ========= DISABLE “Rate the App” ========= */
+document.querySelectorAll('.nav .disabled').forEach(btn=>{
+  btn.addEventListener('click', (e)=>{
+    e.preventDefault();
+    // Optionally show a gentle toast/alert:
+    alert('App rating will be available after Play Store launch. Stay tuned!');
+  });
+});
+
+/* ========= Basic in-page nav behavior ========= */
+document.getElementById('nav-home').addEventListener('click', (e)=>{
+  e.preventDefault();
+  window.scrollTo({ top:0, behavior:'smooth' });
+  closeSidebar();
+});
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click', (e)=>{
+    const id = a.getAttribute('href').slice(1);
+    if(!id) return;
+    const tgt = document.getElementById(id);
+    if(tgt){
+      e.preventDefault();
+      tgt.scrollIntoView({ behavior:'smooth', block:'start' });
+      closeSidebar();
+    }
+  });
+});
+</script>
+</body>
+</html>
