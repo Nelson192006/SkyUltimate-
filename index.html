@@ -1,1 +1,126 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register - SkyUltimate Delivery</title>
+<style>
+    body, html {
+        margin: 0; padding: 0; font-family: Arial, sans-serif;
+        background: #f5f5f5; height: 100%; overflow-x: hidden;
+    }
+    /* Splash screen */
+    #splash {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #d40000; color: white;
+        display: flex; justify-content: center; align-items: center;
+        flex-direction: column; z-index: 1000;
+    }
+    #splash img { width: 120px; height: auto; margin-bottom: 15px; border-radius: 50%; background: white; padding: 10px; }
+    #register-container {
+        display: none; max-width: 400px; margin: 50px auto; background: white;
+        padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 { text-align: center; color: #d40000; }
+    input, select, button {
+        width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px;
+        border: 1px solid #ccc; font-size: 14px;
+    }
+    button {
+        background: #d40000; color: white; border: none; cursor: pointer;
+    }
+    button:hover { background: #b00000; }
+</style>
+</head>
+<body>
+
+<!-- Splash screen -->
+<div id="splash">
+    <img src="logo.png" alt="SkyUltimate Logo">
+    <h1>SkyUltimate Delivery</h1>
+</div>
+
+<!-- Registration form -->
+<div id="register-container">
+    <h2>Register</h2>
+    <form id="registerForm">
+        <input type="text" id="firstName" placeholder="First Name" required>
+        <input type="text" id="lastName" placeholder="Last Name" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <select id="role" required></select>
+        <button type="submit">Register</button>
+    </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Splash screen logic
+    setTimeout(() => {
+        document.getElementById("splash").style.display = "none";
+        document.getElementById("register-container").style.display = "block";
+    }, 3000);
+
+    const roleDropdown = document.getElementById("role");
+    const API_BASE = "https://your-api-endpoint.com"; // <-- Your API base URL
+    let deletedAdmins = [];
+
+    // Load deleted admins & super admin toggle
+    fetch(`${API_BASE}/superadmin/settings`)
+        .then(res => res.json())
+        .then(data => {
+            // Default roles
+            roleDropdown.innerHTML = `
+                <option value="Customer">Customer</option>
+                <option value="Agent">Agent</option>
+            `;
+            // Add admin if toggle is enabled
+            if (data.adminRegistrationEnabled) {
+                roleDropdown.innerHTML += `<option value="Admin">Admin</option>`;
+            }
+        });
+
+    fetch(`${API_BASE}/admins/deleted`)
+        .then(res => res.json())
+        .then(data => deletedAdmins = data);
+
+    // Handle registration
+    document.getElementById("registerForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const email = document.getElementById("email").value.trim().toLowerCase();
+        if (deletedAdmins.includes(email)) {
+            alert("This admin account has been deleted and cannot register again.");
+            return;
+        }
+
+        const payload = {
+            firstName: document.getElementById("firstName").value.trim(),
+            lastName: document.getElementById("lastName").value.trim(),
+            email,
+            password: document.getElementById("password").value.trim(),
+            role: document.getElementById("role").value
+        };
+
+        fetch(`${API_BASE}/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("Registration successful!");
+                window.location.href = "login.html";
+            } else {
+                alert(data.message || "Registration failed.");
+            }
+        })
+        .catch(err => alert("Error: " + err.message));
+    });
+});
+</script>
+
+</body>
+</html>
