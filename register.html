@@ -1,205 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SkyUltimate — Register / Login</title>
-<style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkyUltimate — Register</title>
+  <style>
     body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background-color: #f5f5f5;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
     }
-    /* Splash screen */
+
+    /* Splash Screen */
     #splash {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background-color: red;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
+      position: fixed;
+      inset: 0;
+      background: red;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 9999;
+      animation: fadeOut 1s ease forwards;
+      animation-delay: 2s;
     }
     #splash img {
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      margin-bottom: 15px;
     }
+    #splash h1 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+
+    /* Registration Container */
     .container {
-        max-width: 400px;
-        margin: 80px auto;
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+      max-width: 500px;
+      margin: 100px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
-    h1 {
-        text-align: center;
-        margin-bottom: 10px;
-        color: #333;
+    h2 {
+      text-align: center;
+      color: #333;
     }
-    p {
-        text-align: center;
-        font-size: 14px;
-        color: #777;
+    .roles {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 15px;
     }
-    select, input, button {
-        width: 100%;
-        padding: 10px;
-        margin: 6px 0;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        font-size: 14px;
+    .roles button {
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      background: #ddd;
+      border-radius: 4px;
     }
-    button {
-        background-color: red;
-        color: white;
-        border: none;
-        cursor: pointer;
+    .roles button.active {
+      background: red;
+      color: white;
     }
-    button:hover {
-        background-color: darkred;
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
     }
-    .toggle-link {
-        text-align: center;
-        margin-top: 15px;
-        cursor: pointer;
-        color: red;
-        text-decoration: underline;
+    button.submit-btn {
+      width: 100%;
+      padding: 10px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
-</style>
+    button.submit-btn:hover {
+      background: darkred;
+    }
+    .contact-info {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .contact-info a {
+      color: red;
+      text-decoration: none;
+    }
+  </style>
 </head>
 <body>
+  <!-- Splash -->
+  <div id="splash">
+    <img src="logo.png" alt="SkyUltimate Logo" />
+    <h1>Taking Delivery to New Heights</h1>
+  </div>
 
-<!-- Splash -->
-<div id="splash">
-    <img src="logo.png" alt="SkyUltimate Logo">
-</div>
-
-<div class="container">
-    <h1>SkyUltimate</h1>
-    <p>Taking Delivery to New Heights.</p>
-
-    <!-- Registration Form -->
-    <form id="form-register" autocomplete="off" onsubmit="return false;">
-        <select id="roleSelect" required>
-            <option value="">Select Role</option>
-            <option value="Customer">Customer</option>
-            <option value="Agent">Agent</option>
-            <!-- Admin will be inserted here dynamically if Super Admin toggle is true -->
-        </select>
-        <input type="text" id="fullname" placeholder="Full Name" required>
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <button id="registerBtn">Register</button>
-        <div class="small" id="registerMsg"></div>
+  <!-- Registration -->
+  <div class="container">
+    <h2>Register</h2>
+    <div class="roles">
+      <button type="button" data-role="customer" class="active">Customer</button>
+      <button type="button" data-role="agent">Agent</button>
+      <button type="button" data-role="admin" id="adminRole" style="display:none;">Admin</button>
+    </div>
+    <form id="registerForm">
+      <input type="text" id="name" placeholder="Full Name" required />
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit" class="submit-btn">Register</button>
     </form>
+    <div class="contact-info">
+      <p>📞 <a href="tel:09128884830">09128884830</a></p>
+      <p>📱 <a href="https://wa.me/2349128884830">WhatsApp</a></p>
+      <p>📷 Instagram: <a href="#">@YourHandle</a></p>
+      <p>📘 Facebook: <a href="#">Your Page</a></p>
+    </div>
+  </div>
 
-    <!-- Login Form -->
-    <form id="form-login" style="display:none;" autocomplete="off" onsubmit="return false;">
-        <input type="email" id="loginEmail" placeholder="Email" required>
-        <input type="password" id="loginPassword" placeholder="Password" required>
-        <button id="loginBtn">Login</button>
-        <div class="small" id="loginMsg"></div>
-    </form>
-
-    <div class="toggle-link" id="toggleForm">Already have an account? Login</div>
-</div>
-
-<script>
-    const splash = document.getElementById("splash");
+  <script>
+    // Splash reload logic
     window.addEventListener("load", () => {
-        splash.style.opacity = 1;
-        setTimeout(() => {
-            splash.style.opacity = 0;
-            splash.style.transition = "opacity 0.5s";
-            setTimeout(() => splash.style.display = "none", 500);
-        }, 2000);
+      document.getElementById("splash").style.display = "flex";
     });
 
-    const toggleFormLink = document.getElementById("toggleForm");
-    const registerForm = document.getElementById("form-register");
-    const loginForm = document.getElementById("form-login");
-
-    toggleFormLink.addEventListener("click", () => {
-        if (registerForm.style.display !== "none") {
-            registerForm.style.display = "none";
-            loginForm.style.display = "block";
-            toggleFormLink.textContent = "Don't have an account? Register";
-        } else {
-            registerForm.style.display = "block";
-            loginForm.style.display = "none";
-            toggleFormLink.textContent = "Already have an account? Login";
-        }
+    // Role Selection
+    let selectedRole = "customer";
+    document.querySelectorAll(".roles button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".roles button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedRole = btn.getAttribute("data-role");
+      });
     });
 
-    // Fetch role toggle from API
-    fetch("https://your-api-endpoint.com/get-role-toggle")
-    .then(res => res.json())
-    .then(data => {
-        if (data && data.adminRoleEnabled) {
-            const roleSelect = document.getElementById("roleSelect");
-            const opt = document.createElement("option");
-            opt.value = "Admin";
-            opt.textContent = "Admin";
-            roleSelect.appendChild(opt);
+    // Show Admin role if super admin allows (simulate API check)
+    fetch("https://your-api-url.com/check-admin-access")
+      .then(res => res.json())
+      .then(data => {
+        if (data.canAddAdmin) {
+          document.getElementById("adminRole").style.display = "inline-block";
         }
-    })
-    .catch(err => console.error("Error fetching role toggle:", err));
+      });
 
-    // Handle Registration
-    document.getElementById("registerBtn").addEventListener("click", () => {
-        const role = document.getElementById("roleSelect").value;
-        const fullname = document.getElementById("fullname").value;
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+    // Registration form submit
+    document.getElementById("registerForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value,
+        role: selectedRole
+      };
 
-        if (!role || !fullname || !email || !password) {
-            document.getElementById("registerMsg").textContent = "All fields are required.";
-            return;
-        }
-
-        fetch("https://your-api-endpoint.com/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ role, fullname, email, password })
-        })
+      fetch("https://your-api-url.com/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
         .then(res => res.json())
         .then(data => {
-            document.getElementById("registerMsg").textContent = data.message || "Registered successfully!";
+          alert(data.message || "Registration successful!");
         })
         .catch(err => {
-            console.error("Registration error:", err);
-            document.getElementById("registerMsg").textContent = "An error occurred.";
+          console.error(err);
+          alert("Error registering. Please try again.");
         });
     });
-
-    // Handle Login
-    document.getElementById("loginBtn").addEventListener("click", () => {
-        const email = document.getElementById("loginEmail").value;
-        const password = document.getElementById("loginPassword").value;
-
-        if (!email || !password) {
-            document.getElementById("loginMsg").textContent = "All fields are required.";
-            return;
-        }
-
-        fetch("https://your-api-endpoint.com/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password })
-        })
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById("loginMsg").textContent = data.message || "Login successful!";
-        })
-        .catch(err => {
-            console.error("Login error:", err);
-            document.getElementById("loginMsg").textContent = "An error occurred.";
-        });
-    });
-</script>
-
+  </script>
 </body>
     </html>
