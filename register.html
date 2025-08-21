@@ -1,205 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SkyUltimate — Register / Login</title>
-<style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background-color: #f5f5f5;
-    }
-    /* Splash screen */
-    #splash {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background-color: red;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-    }
-    #splash img {
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-    }
-    .container {
-        max-width: 400px;
-        margin: 80px auto;
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-    }
-    h1 {
-        text-align: center;
-        margin-bottom: 10px;
-        color: #333;
-    }
-    p {
-        text-align: center;
-        font-size: 14px;
-        color: #777;
-    }
-    select, input, button {
-        width: 100%;
-        padding: 10px;
-        margin: 6px 0;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        font-size: 14px;
-    }
-    button {
-        background-color: red;
-        color: white;
-        border: none;
-        cursor: pointer;
-    }
-    button:hover {
-        background-color: darkred;
-    }
-    .toggle-link {
-        text-align: center;
-        margin-top: 15px;
-        cursor: pointer;
-        color: red;
-        text-decoration: underline;
-    }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkyUltimate | Register & Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="w-full max-w-4xl bg-white shadow-lg rounded-2xl overflow-hidden flex">
+    
+    <!-- Left Side: Registration -->
+    <div class="w-1/2 p-8">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Register</h2>
+      <form id="registerForm" class="space-y-4">
+        <!-- Full Name -->
+        <div>
+          <label class="block text-gray-600">Full Name</label>
+          <input type="text" name="fullName" required
+            class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"/>
+        </div>
 
-<!-- Splash -->
-<div id="splash">
-    <img src="logo.png" alt="SkyUltimate Logo">
-</div>
+        <!-- Email -->
+        <div>
+          <label class="block text-gray-600">Email</label>
+          <input type="email" name="email" required
+            class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"/>
+        </div>
 
-<div class="container">
-    <h1>SkyUltimate</h1>
-    <p>Taking Delivery to New Heights.</p>
+        <!-- Password -->
+        <div>
+          <label class="block text-gray-600">Password</label>
+          <input type="password" name="password" required minlength="6"
+            class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"/>
+        </div>
 
-    <!-- Registration Form -->
-    <form id="form-register" autocomplete="off" onsubmit="return false;">
-        <select id="roleSelect" required>
-            <option value="">Select Role</option>
-            <option value="Customer">Customer</option>
-            <option value="Agent">Agent</option>
-            <!-- Admin will be inserted here dynamically if Super Admin toggle is true -->
-        </select>
-        <input type="text" id="fullname" placeholder="Full Name" required>
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <button id="registerBtn">Register</button>
-        <div class="small" id="registerMsg"></div>
-    </form>
+        <!-- Confirm Password -->
+        <div>
+          <label class="block text-gray-600">Confirm Password</label>
+          <input type="password" name="confirmPassword" required minlength="6"
+            class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"/>
+        </div>
 
-    <!-- Login Form -->
-    <form id="form-login" style="display:none;" autocomplete="off" onsubmit="return false;">
-        <input type="email" id="loginEmail" placeholder="Email" required>
-        <input type="password" id="loginPassword" placeholder="Password" required>
-        <button id="loginBtn">Login</button>
-        <div class="small" id="loginMsg"></div>
-    </form>
+        <!-- Role Selection -->
+        <div>
+          <label class="block text-gray-600">Role</label>
+          <select name="role" id="roleSelect"
+            class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200">
+            <option value="customer">Customer</option>
+            <option value="agent">Agent</option>
+            <option value="admin">Admin</option>
+            <option value="superadmin">Super Admin</option>
+          </select>
+        </div>
 
-    <div class="toggle-link" id="toggleForm">Already have an account? Login</div>
-</div>
+        <!-- Agent-only fields -->
+        <div id="agentFields" class="hidden space-y-4">
+          <div>
+            <label class="block text-gray-600">Bank Name</label>
+            <input type="text" name="bankName"
+              class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"/>
+          </div>
+          <div>
+            <label class="block text-gray-600">Account Number</label>
+            <input type="text" name="accountNumber" pattern="\\d{10,}"
+              class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"/>
+          </div>
+          <div>
+            <label class="block text-gray-600">Phone Number</label>
+            <input type="tel" name="phone"
+              class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"/>
+          </div>
+          <div>
+            <label class="block text-gray-600">Address</label>
+            <input type="text" name="address"
+              class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"/>
+          </div>
+        </div>
 
-<script>
-    const splash = document.getElementById("splash");
-    window.addEventListener("load", () => {
-        splash.style.opacity = 1;
-        setTimeout(() => {
-            splash.style.opacity = 0;
-            splash.style.transition = "opacity 0.5s";
-            setTimeout(() => splash.style.display = "none", 500);
-        }, 2000);
+        <!-- Feedback Message -->
+        <p id="registerMessage" class="text-center text-sm"></p>
+
+        <!-- Submit Button -->
+        <button type="submit"
+          class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center">
+          <span id="registerBtnText">Register</span>
+          <svg id="registerLoader" class="animate-spin h-5 w-5 ml-2 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="white" stroke-width="4"></circle>
+            <path class="opacity-75" fill="white" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+        </button>
+      </form>
+    </div>
+
+    <!-- Right Side: Login -->
+    <div class="w-1/2 p-8 bg-gray-50 border-l">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Login</h2>
+      <form id="loginForm" class="space-y-4">
+        <!-- Email -->
+        <div>
+          <label class="block text-gray-600">Email</label>
+          <input type="email" name="email" required
+            class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-green-200"/>
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label class="block text-gray-600">Password</label>
+          <input type="password" name="password" required
+            class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-green-200"/>
+        </div>
+
+        <!-- Remember Me -->
+        <div class="flex items-center">
+          <input type="checkbox" id="rememberMe" class="mr-2"/>
+          <label for="rememberMe" class="text-gray-600">Remember me</label>
+        </div>
+
+        <!-- Feedback -->
+        <p id="loginMessage" class="text-center text-sm"></p>
+
+        <!-- Login Button -->
+        <button type="submit"
+          class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 flex items-center justify-center">
+          <span id="loginBtnText">Login</span>
+          <svg id="loginLoader" class="animate-spin h-5 w-5 ml-2 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="white" stroke-width="4"></circle>
+            <path class="opacity-75" fill="white" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const backendURL = "https://33vhk4-50000.csb.app"; // your backend
+
+    // Toggle Agent fields
+    document.getElementById("roleSelect").addEventListener("change", (e) => {
+      document.getElementById("agentFields").classList.toggle("hidden", e.target.value !== "agent");
     });
 
-    const toggleFormLink = document.getElementById("toggleForm");
-    const registerForm = document.getElementById("form-register");
-    const loginForm = document.getElementById("form-login");
+    // Register form
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById("registerMessage");
+      msg.textContent = "";
+      const btnText = document.getElementById("registerBtnText");
+      const loader = document.getElementById("registerLoader");
 
-    toggleFormLink.addEventListener("click", () => {
-        if (registerForm.style.display !== "none") {
-            registerForm.style.display = "none";
-            loginForm.style.display = "block";
-            toggleFormLink.textContent = "Don't have an account? Register";
+      // Show loader
+      btnText.textContent = "Registering...";
+      loader.classList.remove("hidden");
+
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
+
+      if (data.password !== data.confirmPassword) {
+        msg.textContent = "❌ Passwords do not match!";
+        msg.className = "text-red-600 text-center";
+        loader.classList.add("hidden");
+        btnText.textContent = "Register";
+        return;
+      }
+
+      try {
+        const res = await fetch(`${backendURL}/api/users/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        const result = await res.json();
+        if (res.ok) {
+          msg.textContent = "✅ Registration successful! Please login.";
+          msg.className = "text-green-600 text-center";
+          e.target.reset();
         } else {
-            registerForm.style.display = "block";
-            loginForm.style.display = "none";
-            toggleFormLink.textContent = "Already have an account? Login";
+          msg.textContent = "❌ " + (result.message || "Registration failed");
+          msg.className = "text-red-600 text-center";
         }
+      } catch (err) {
+        msg.textContent = "❌ Network error.";
+        msg.className = "text-red-600 text-center";
+      }
+
+      // Hide loader
+      loader.classList.add("hidden");
+      btnText.textContent = "Register";
     });
 
-    // Fetch role toggle from API
-    fetch("https://your-api-endpoint.com/get-role-toggle")
-    .then(res => res.json())
-    .then(data => {
-        if (data && data.adminRoleEnabled) {
-            const roleSelect = document.getElementById("roleSelect");
-            const opt = document.createElement("option");
-            opt.value = "Admin";
-            opt.textContent = "Admin";
-            roleSelect.appendChild(opt);
-        }
-    })
-    .catch(err => console.error("Error fetching role toggle:", err));
+    // Login form
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById("loginMessage");
+      msg.textContent = "";
+      const btnText = document.getElementById("loginBtnText");
+      const loader = document.getElementById("loginLoader");
 
-    // Handle Registration
-    document.getElementById("registerBtn").addEventListener("click", () => {
-        const role = document.getElementById("roleSelect").value;
-        const fullname = document.getElementById("fullname").value;
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+      btnText.textContent = "Logging in...";
+      loader.classList.remove("hidden");
 
-        if (!role || !fullname || !email || !password) {
-            document.getElementById("registerMsg").textContent = "All fields are required.";
-            return;
-        }
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
 
-        fetch("https://your-api-endpoint.com/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ role, fullname, email, password })
-        })
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById("registerMsg").textContent = data.message || "Registered successfully!";
-        })
-        .catch(err => {
-            console.error("Registration error:", err);
-            document.getElementById("registerMsg").textContent = "An error occurred.";
+      try {
+        const res = await fetch(`${backendURL}/api/users/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
         });
-    });
+        const result = await res.json();
 
-    // Handle Login
-    document.getElementById("loginBtn").addEventListener("click", () => {
-        const email = document.getElementById("loginEmail").value;
-        const password = document.getElementById("loginPassword").value;
-
-        if (!email || !password) {
-            document.getElementById("loginMsg").textContent = "All fields are required.";
-            return;
+        if (res.ok) {
+          msg.textContent = "✅ Login successful!";
+          msg.className = "text-green-600 text-center";
+          if (document.getElementById("rememberMe").checked) {
+            localStorage.setItem("rememberedEmail", data.email);
+          }
+        } else {
+          msg.textContent = "❌ " + (result.message || "Login failed");
+          msg.className = "text-red-600 text-center";
         }
+      } catch (err) {
+        msg.textContent = "❌ Network error.";
+        msg.className = "text-red-600 text-center";
+      }
 
-        fetch("https://your-api-endpoint.com/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password })
-        })
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById("loginMsg").textContent = data.message || "Login successful!";
-        })
-        .catch(err => {
-            console.error("Login error:", err);
-            document.getElementById("loginMsg").textContent = "An error occurred.";
-        });
+      loader.classList.add("hidden");
+      btnText.textContent = "Login";
     });
-</script>
 
+    // Auto-fill remembered email
+    window.onload = () => {
+      const rememberedEmail = localStorage.getItem("rememberedEmail");
+      if (rememberedEmail) {
+        document.querySelector("#loginForm input[name='email']").value = rememberedEmail;
+        document.getElementById("rememberMe").checked = true;
+      }
+    };
+  </script>
 </body>
-          </html>
+</html>
