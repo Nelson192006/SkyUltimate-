@@ -3,152 +3,159 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SkyUltimate Registration</title>
+  <title>SkyUltimate | Register & Login</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
-  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
-    <h2 id="formTitle" class="text-2xl font-bold text-center mb-6">Create Account</h2>
 
-    <!-- Signup Form -->
-    <form id="signupForm" class="space-y-4">
-      <input type="text" id="fullName" placeholder="Full Name" class="w-full p-3 border rounded-lg" required />
-      <input type="email" id="email" placeholder="Email" class="w-full p-3 border rounded-lg" required />
-      <input type="password" id="password" placeholder="Password" class="w-full p-3 border rounded-lg" required />
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+    <h2 id="form-title" class="text-2xl font-bold text-center mb-6">Sign Up</h2>
 
-      <!-- Role Dropdown -->
-      <select id="role" class="w-full p-3 border rounded-lg" required>
-        <option value="">Select Role</option>
-        <option value="Customer">Customer</option>
-        <option value="Agent">Agent</option>
-        <option value="SuperAdmin">Super Admin</option>
-      </select>
+    <!-- Signup/Login form -->
+    <form id="auth-form" class="space-y-4">
+      <div id="name-field">
+        <label class="block text-gray-700">Full Name</label>
+        <input type="text" id="fullName" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300" placeholder="Enter full name" />
+      </div>
 
-      <button type="submit" class="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600">
-        Sign Up
-      </button>
+      <div>
+        <label class="block text-gray-700">Email</label>
+        <input type="email" id="email" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300" placeholder="Enter email" required />
+      </div>
 
-      <p class="text-sm mt-4 text-center text-gray-700">
-        Already have an account?
-        <a href="#" onclick="toggleLogin()" class="text-blue-500 underline">Login here</a>
-      </p>
+      <div>
+        <label class="block text-gray-700">Password</label>
+        <div class="relative">
+          <input type="password" id="password" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300" placeholder="Enter password" required />
+          <button type="button" id="togglePassword" class="absolute inset-y-0 right-3 flex items-center text-sm text-blue-500">Show</button>
+        </div>
+      </div>
+
+      <div id="role-field">
+        <label class="block text-gray-700">Role</label>
+        <select id="role" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300">
+          <option value="customer">Customer</option>
+          <option value="agent">Agent</option>
+          <option value="admin">Admin</option>
+          <option value="superadmin">Super Admin</option>
+        </select>
+      </div>
+
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Submit</button>
     </form>
 
-    <!-- Login Form (hidden by default) -->
-    <form id="loginForm" class="space-y-4 hidden">
-      <input type="email" id="loginEmail" placeholder="Email" class="w-full p-3 border rounded-lg" required />
-      <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 border rounded-lg" required />
-
-      <button type="submit" class="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600">
-        Login
-      </button>
-
-      <p class="text-sm mt-4 text-center text-gray-700">
-        Don’t have an account?
-        <a href="#" onclick="toggleSignup()" class="text-blue-500 underline">Sign up here</a>
-      </p>
-    </form>
+    <p class="text-sm text-center text-gray-600 mt-4">
+      <span id="toggle-text">Already have an account?</span>
+      <a href="#" id="toggle-link" class="text-blue-600 hover:underline">Login here</a>
+    </p>
   </div>
 
   <script>
-    const API_BASE = "https://33vhk4-50000.csb.app/api/users"; // 🔗 Your backend API
+    const form = document.getElementById("auth-form");
+    const formTitle = document.getElementById("form-title");
+    const nameField = document.getElementById("name-field");
+    const roleField = document.getElementById("role-field");
+    const toggleLink = document.getElementById("toggle-link");
+    const toggleText = document.getElementById("toggle-text");
+    const passwordInput = document.getElementById("password");
+    const togglePassword = document.getElementById("togglePassword");
 
-    // 🔹 Toggle forms
-    function toggleLogin() {
-      document.getElementById("signupForm").classList.add("hidden");
-      document.getElementById("loginForm").classList.remove("hidden");
-      document.getElementById("formTitle").innerText = "Login";
-    }
+    let isLogin = false;
 
-    function toggleSignup() {
-      document.getElementById("loginForm").classList.add("hidden");
-      document.getElementById("signupForm").classList.remove("hidden");
-      document.getElementById("formTitle").innerText = "Create Account";
-    }
-
-    // 🔹 Save auth session
-    function saveAuthData(token, role) {
-      localStorage.setItem(
-        "authData",
-        JSON.stringify({
-          token,
-          role,
-          lastLogin: Date.now(),
-        })
-      );
-    }
-
-    // 🔹 Check session on page load
-    document.addEventListener("DOMContentLoaded", () => {
-      const authData = JSON.parse(localStorage.getItem("authData"));
-
-      if (authData) {
-        const { token, role, lastLogin } = authData;
-        const now = Date.now();
-
-        let maxSession;
-        if (role === "Agent") {
-          maxSession = 24 * 60 * 60 * 1000; // 1 day
-        } else {
-          maxSession = 6 * 60 * 60 * 1000; // 6 hours
-        }
-
-        if (now - lastLogin < maxSession) {
-          // ✅ Still valid session → redirect
-          window.location.href = "/dashboard.html";
-          return;
-        } else {
-          // ❌ Expired
-          localStorage.removeItem("authData");
-        }
+    // Toggle password visibility
+    togglePassword.addEventListener("click", () => {
+      if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        togglePassword.textContent = "Hide";
+      } else {
+        passwordInput.type = "password";
+        togglePassword.textContent = "Show";
       }
     });
 
-    // 🔹 Signup form handler
-    document.getElementById("signupForm").addEventListener("submit", async (e) => {
+    // Toggle between signup and login
+    toggleLink.addEventListener("click", (e) => {
       e.preventDefault();
-      const fullName = document.getElementById("fullName").value;
+      isLogin = !isLogin;
+      if (isLogin) {
+        formTitle.textContent = "Login";
+        nameField.style.display = "none";
+        roleField.style.display = "none";
+        toggleText.textContent = "Don't have an account?";
+        toggleLink.textContent = "Sign up here";
+      } else {
+        formTitle.textContent = "Sign Up";
+        nameField.style.display = "block";
+        roleField.style.display = "block";
+        toggleText.textContent = "Already have an account?";
+        toggleLink.textContent = "Login here";
+      }
+    });
+
+    // API base URL (your Codesandbox backend)
+    const API_BASE = "https://33vhk4-50000.csb.app/api/users";
+
+    // Handle form submit
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fullName = document.getElementById("fullName")?.value;
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
-      const role = document.getElementById("role").value;
+      const role = document.getElementById("role")?.value;
 
       try {
-        const res = await fetch(`${API_BASE}/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fullName, email, password, role }),
-        });
+        let response;
+        if (isLogin) {
+          response = await fetch(`${API_BASE}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+        } else {
+          response = await fetch(`${API_BASE}/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fullName, email, password, role }),
+          });
+        }
 
-        if (!res.ok) throw new Error("Signup failed");
-        const data = await res.json();
-        saveAuthData(data.token, role);
-        window.location.href = "/dashboard.html";
-      } catch (err) {
-        alert(err.message);
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.message || "Something went wrong");
+
+        // Store token + session expiry based on role
+        const expiry = getExpiryTime(data.role);
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("expiry", expiry);
+        localStorage.setItem("role", data.role);
+
+        alert(isLogin ? "Login successful!" : "Registration successful!");
+
+        // Redirect (for now, homepage.html or dashboard.html)
+        window.location.href = "homepage.html";
+
+      } catch (error) {
+        alert(error.message);
       }
     });
 
-    // 🔹 Login form handler
-    document.getElementById("loginForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("loginEmail").value;
-      const password = document.getElementById("loginPassword").value;
+    // Session expiry helper
+    function getExpiryTime(role) {
+      const now = new Date().getTime();
+      if (role === "agent") return now + 24 * 60 * 60 * 1000; // 1 day
+      return now + 6 * 60 * 60 * 1000; // 6 hours
+    }
 
-      try {
-        const res = await fetch(`${API_BASE}/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
+    // Auto redirect if session still valid
+    window.onload = () => {
+      const token = localStorage.getItem("token");
+      const expiry = localStorage.getItem("expiry");
+      const now = new Date().getTime();
 
-        if (!res.ok) throw new Error("Login failed");
-        const data = await res.json();
-        saveAuthData(data.token, data.role);
-        window.location.href = "/dashboard.html";
-      } catch (err) {
-        alert(err.message);
+      if (token && expiry && now < expiry) {
+        window.location.href = "homepage.html";
       }
-    });
+    };
   </script>
 </body>
 </html>
