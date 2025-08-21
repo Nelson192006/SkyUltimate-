@@ -1,1 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkyUltimate Registration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+    <h2 id="formTitle" class="text-2xl font-bold text-center mb-6">Create Account</h2>
 
+    <!-- Signup Form -->
+    <form id="signupForm" class="space-y-4">
+      <input type="text" id="fullName" placeholder="Full Name" class="w-full p-3 border rounded-lg" required />
+      <input type="email" id="email" placeholder="Email" class="w-full p-3 border rounded-lg" required />
+      <input type="password" id="password" placeholder="Password" class="w-full p-3 border rounded-lg" required />
+
+      <!-- Role Dropdown -->
+      <select id="role" class="w-full p-3 border rounded-lg" required>
+        <option value="">Select Role</option>
+        <option value="Customer">Customer</option>
+        <option value="Agent">Agent</option>
+        <option value="SuperAdmin">Super Admin</option>
+      </select>
+
+      <button type="submit" class="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600">
+        Sign Up
+      </button>
+
+      <p class="text-sm mt-4 text-center text-gray-700">
+        Already have an account?
+        <a href="#" onclick="toggleLogin()" class="text-blue-500 underline">Login here</a>
+      </p>
+    </form>
+
+    <!-- Login Form (hidden by default) -->
+    <form id="loginForm" class="space-y-4 hidden">
+      <input type="email" id="loginEmail" placeholder="Email" class="w-full p-3 border rounded-lg" required />
+      <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 border rounded-lg" required />
+
+      <button type="submit" class="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600">
+        Login
+      </button>
+
+      <p class="text-sm mt-4 text-center text-gray-700">
+        Don’t have an account?
+        <a href="#" onclick="toggleSignup()" class="text-blue-500 underline">Sign up here</a>
+      </p>
+    </form>
+  </div>
+
+  <script>
+    const API_BASE = "https://33vhk4-50000.csb.app/api/users"; // 🔗 Your backend API
+
+    // 🔹 Toggle forms
+    function toggleLogin() {
+      document.getElementById("signupForm").classList.add("hidden");
+      document.getElementById("loginForm").classList.remove("hidden");
+      document.getElementById("formTitle").innerText = "Login";
+    }
+
+    function toggleSignup() {
+      document.getElementById("loginForm").classList.add("hidden");
+      document.getElementById("signupForm").classList.remove("hidden");
+      document.getElementById("formTitle").innerText = "Create Account";
+    }
+
+    // 🔹 Save auth session
+    function saveAuthData(token, role) {
+      localStorage.setItem(
+        "authData",
+        JSON.stringify({
+          token,
+          role,
+          lastLogin: Date.now(),
+        })
+      );
+    }
+
+    // 🔹 Check session on page load
+    document.addEventListener("DOMContentLoaded", () => {
+      const authData = JSON.parse(localStorage.getItem("authData"));
+
+      if (authData) {
+        const { token, role, lastLogin } = authData;
+        const now = Date.now();
+
+        let maxSession;
+        if (role === "Agent") {
+          maxSession = 24 * 60 * 60 * 1000; // 1 day
+        } else {
+          maxSession = 6 * 60 * 60 * 1000; // 6 hours
+        }
+
+        if (now - lastLogin < maxSession) {
+          // ✅ Still valid session → redirect
+          window.location.href = "/dashboard.html";
+          return;
+        } else {
+          // ❌ Expired
+          localStorage.removeItem("authData");
+        }
+      }
+    });
+
+    // 🔹 Signup form handler
+    document.getElementById("signupForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fullName = document.getElementById("fullName").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const role = document.getElementById("role").value;
+
+      try {
+        const res = await fetch(`${API_BASE}/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fullName, email, password, role }),
+        });
+
+        if (!res.ok) throw new Error("Signup failed");
+        const data = await res.json();
+        saveAuthData(data.token, role);
+        window.location.href = "/dashboard.html";
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    // 🔹 Login form handler
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+
+      try {
+        const res = await fetch(`${API_BASE}/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        if (!res.ok) throw new Error("Login failed");
+        const data = await res.json();
+        saveAuthData(data.token, data.role);
+        window.location.href = "/dashboard.html";
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  </script>
+</body>
+</html>
