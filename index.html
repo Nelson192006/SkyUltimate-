@@ -1,169 +1,308 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>SkyUltimate Delivery - Home</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #b30000;
-      margin: 0;
-      padding: 0;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      flex-direction: column;
-    }
-    .container {
-      background: white;
-      color: black;
-      padding: 20px;
-      border-radius: 15px;
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
-    }
-    .logo {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      margin: 0 auto 20px;
-      background: #b30000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 18px;
-      color: white;
-    }
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #b30000;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      margin-top: 10px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    button:hover {
-      background: #990000;
-    }
-    .link {
-      margin-top: 10px;
-      display: block;
-      font-size: 14px;
-      color: #b30000;
-      cursor: pointer;
-    }
-    .error {
-      color: red;
-      margin-top: 5px;
-      font-size: 14px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SkyUltimate – Sign In / Register</title>
+<style>
+  :root{ --red:#C00000; --white:#fff; --soft:#f7f7f9; --ink:#222; --muted:#6b7280; }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--soft);color:var(--ink);}
+
+  /* Splash */
+  #splash{
+    position:fixed; inset:0; background:var(--red); display:flex; align-items:center; justify-content:center;
+    z-index:9999; opacity:0; animation:fadeIn .5s ease forwards, fadeOut .6s ease 2.6s forwards;
+  }
+  .logo{
+    width:120px;height:120px;border-radius:50%;background:var(--white);
+    box-shadow:0 0 0 6px rgba(255,255,255,.35), 0 20px 60px rgba(0,0,0,.25);
+    display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--red);font-size:26px;
+  }
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes fadeOut{to{opacity:0;visibility:hidden}}
+
+  header{padding:22px 16px;background:var(--red);color:var(--white);text-align:center;font-weight:800;position:sticky;top:0}
+  .wrap{max-width:920px;margin:28px auto;padding:0 16px;}
+  .brand{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:18px}
+  .brand .round{width:84px;height:84px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--red);}
+  .card{background:#fff;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.08);padding:18px;}
+  .tabs{display:flex;gap:8px;margin-bottom:14px;}
+  .tabs button{flex:1;padding:12px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;font-weight:800;cursor:pointer}
+  .tabs button.active{background:var(--red);border-color:var(--red);color:#fff}
+  .row{display:grid;gap:12px;margin:10px 0;}
+  label{font-size:.9rem;color:#374151;font-weight:700}
+  input, select{
+    width:100%;padding:12px 14px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;font-size:15px;
+  }
+  .field{display:grid;gap:6px}
+  .inline{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .btn{background:var(--red);color:#fff;border:none;padding:12px 16px;border-radius:12px;cursor:pointer;font-weight:800}
+  .btn.secondary{background:#eef2ff;color:#1f2937}
+  .muted{color:var(--muted);font-size:.92rem}
+  .error{color:#b91c1c;font-weight:700}
+  .success{color:#047857;font-weight:700}
+  .hint{font-size:.82rem;color:#6b7280}
+  .eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#6b7280}
+  .rel{position:relative}
+  footer{margin:26px 0;text-align:center;color:#6b7280}
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="logo">Sky</div>
-    <h2>Welcome to SkyUltimate</h2>
+<div id="splash"><div class="logo">SU</div></div>
 
-    <!-- Role Selection -->
-    <select id="role">
-      <option value="customer">Customer</option>
-      <option value="agent">Agent</option>
-      <option value="admin">Admin</option>
-      <option value="superadmin">Super Admin</option>
-    </select>
+<header>SkyUltimate – Access</header>
+<div class="wrap">
+  <div class="brand">
+    <div class="round">SU</div>
+    <div class="muted">Welcome to SkyUltimate Delivery Service</div>
+  </div>
 
-    <!-- Login -->
-    <input type="email" id="loginEmail" placeholder="Email" required>
-    <input type="password" id="loginPassword" placeholder="Password" required>
-    <button onclick="login()">Login</button>
-    <span class="link" onclick="toggleRegister()">Don't have an account? Register</span>
-    <p class="error" id="loginError"></p>
+  <div class="card">
+    <div class="tabs">
+      <button id="tabLogin" class="active">Login</button>
+      <button id="tabRegister">Register</button>
+    </div>
 
-    <!-- Register -->
-    <div id="registerSection" style="display:none;">
-      <input type="text" id="registerName" placeholder="Full Name">
-      <input type="email" id="registerEmail" placeholder="Email">
-      <input type="password" id="registerPassword" placeholder="Password">
-      <button onclick="register()">Register</button>
-      <span class="link" onclick="toggleRegister()">Already have an account? Login</span>
-      <p class="error" id="registerError"></p>
+    <!-- LOGIN -->
+    <div id="loginView">
+      <div class="row">
+        <div class="field">
+          <label>Role</label>
+          <select id="loginRole">
+            <option value="">Select your role</option>
+            <option value="customer">Customer</option>
+            <option value="agent">Agent</option>
+            <option value="admin">Admin</option>
+            <option value="superadmin">Super-admin</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input id="loginEmail" type="email" placeholder="Enter your email"/>
+        </div>
+        <div class="field rel">
+          <label>Password</label>
+          <input id="loginPassword" type="password" placeholder="Enter your password"/>
+          <span class="eye" data-toggle="#loginPassword">👁</span>
+        </div>
+      </div>
+      <div class="inline">
+        <a class="muted" href="#" id="forgot">Forgot Password?</a>
+        <button class="btn" id="loginBtn">Login</button>
+      </div>
+      <div id="loginMsg" class="muted" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="registerView" style="display:none;">
+      <div class="row">
+        <div class="field">
+          <label>Role</label>
+          <select id="regRole">
+            <!-- Will be dynamically controlled by backend flags -->
+          </select>
+          <div class="hint">Super-admin will only appear if there are no users in DB. Admin appears only if enabled by Super Admin.</div>
+        </div>
+        <div class="field">
+          <label>Full Name</label>
+          <input id="regName" type="text" placeholder="Full name"/>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input id="regEmail" type="email" placeholder="Email address"/>
+        </div>
+        <div class="field rel">
+          <label>Password</label>
+          <input id="regPassword" type="password" placeholder="Create a password"/>
+          <span class="eye" data-toggle="#regPassword">👁</span>
+        </div>
+
+        <!-- Agent extras -->
+        <div id="agentMore" style="display:none;">
+          <div class="field">
+            <label>Phone Number</label>
+            <input id="regPhone" type="tel" placeholder="+234 801 234 5678"/>
+          </div>
+          <div class="field">
+            <label>Delivery Vehicle</label>
+            <select id="regVehicle">
+              <option value="">Select</option>
+              <option>Motorcycle</option><option>Car</option><option>Van</option><option>Bicycle</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Bank Name</label>
+            <input id="regBankName" type="text" placeholder="Bank name"/>
+          </div>
+          <div class="field">
+            <label>Account Number</label>
+            <input id="regAccountNumber" type="text" placeholder="1234567890"/>
+          </div>
+          <div class="field">
+            <label>Account Holder Name</label>
+            <input id="regAccountName" type="text" placeholder="Account holder"/>
+          </div>
+        </div>
+      </div>
+      <div class="inline">
+        <span></span>
+        <button class="btn" id="registerBtn">Create Account</button>
+      </div>
+      <div id="regMsg" class="muted" style="margin-top:8px;"></div>
     </div>
   </div>
 
-  <script>
-    const API_BASE = "https://33vhk4-50000.csb.app"; 
+  <footer>© <span id="yr"></span> SkyUltimate Delivery Service</footer>
+</div>
 
-    function toggleRegister() {
-      const reg = document.getElementById("registerSection");
-      reg.style.display = reg.style.display === "none" ? "block" : "none";
-    }
+<script>
+const API = "https://33vhk4-50000.csb.app";
 
-    async function login() {
-      const role = document.getElementById("role").value;
-      const email = document.getElementById("loginEmail").value;
-      const password = document.getElementById("loginPassword").value;
-      const errorBox = document.getElementById("loginError");
-      errorBox.textContent = "";
+// ===== UI helpers =====
+const $ = sel => document.querySelector(sel);
+const msg = (el, text, kind="") => { el.textContent=text; el.className=kind?kind:"muted"; };
+document.querySelectorAll(".eye").forEach(t=>{
+  t.addEventListener("click", ()=> {
+    const input = document.querySelector(t.dataset.toggle);
+    input.type = input.type === "password" ? "text" : "password";
+  });
+});
+$("#yr").textContent = new Date().getFullYear();
 
-      try {
-        const res = await fetch(`${API_BASE}/auth/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, role })
-        });
-        const data = await res.json();
+// Splash ends after animation; but we also remove node just in case
+setTimeout(()=>{ const s=$("#splash"); if(s) s.remove(); }, 3200);
 
-        if (!res.ok) throw new Error(data.message || "Login failed");
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", role);
+// Auto redirect if already logged in
+(async function guard(){
+  const token = localStorage.getItem("token");
+  if(!token) return;
+  try{
+    const res = await fetch(`${API}/auth/me`, { headers: { Authorization:`Bearer ${token}` }});
+    if(!res.ok) throw 0;
+    const me = await res.json();
+    routeByRole(me.role);
+  }catch{ /* stay */ }
+})();
 
-        if (role === "customer") window.location.href = "customer-dashboard.html";
-        else if (role === "agent") window.location.href = "agent-dashboard.html";
-        else if (role === "admin") window.location.href = "admin-dashboard.html";
-        else if (role === "superadmin") window.location.href = "superadmin.html";
-      } catch (err) {
-        errorBox.textContent = err.message;
-      }
-    }
+// Tabs
+$("#tabLogin").onclick = ()=>{ $("#tabLogin").classList.add("active"); $("#tabRegister").classList.remove("active"); $("#loginView").style.display="block"; $("#registerView").style.display="none"; };
+$("#tabRegister").onclick = ()=>{ $("#tabRegister").classList.add("active"); $("#tabLogin").classList.remove("active"); $("#registerView").style.display="block"; $("#loginView").style.display="none"; };
 
-    async function register() {
-      const role = document.getElementById("role").value;
-      const name = document.getElementById("registerName").value;
-      const email = document.getElementById("registerEmail").value;
-      const password = document.getElementById("registerPassword").value;
-      const errorBox = document.getElementById("registerError");
-      errorBox.textContent = "";
+// Build Register role list from backend flags
+async function loadPublicConfig(){
+  try{
+    const res = await fetch(`${API}/config/public`);
+    const conf = await res.json();
+    const allowAdmin = !!conf.allowAdminRegistration;
+    const hasAnyUser = !!conf.hasAnyUser;
+    const sel = $("#regRole");
+    sel.innerHTML = "";
+    // Base roles:
+    const base = [{v:"customer",t:"Customer"},{v:"agent",t:"Agent"}];
+    base.forEach(o=>sel.append(new Option(o.t,o.v)));
+    if(allowAdmin) sel.append(new Option("Admin","admin"));
+    if(!hasAnyUser) sel.append(new Option("Super-admin","superadmin"));
+  }catch(e){
+    // Fallback – show customer+agent
+    const sel = $("#regRole");
+    sel.innerHTML = "";
+    sel.append(new Option("Customer","customer"));
+    sel.append(new Option("Agent","agent"));
+  }
+}
+loadPublicConfig();
 
-      try {
-        const res = await fetch(`${API_BASE}/auth/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fullName: name, email, password, role })
-        });
-        const data = await res.json();
+// Conditional Agent fields
+$("#regRole").addEventListener("change", ()=>{
+  const isAgent = $("#regRole").value === "agent";
+  $("#agentMore").style.display = isAgent ? "block" : "none";
+});
 
-        if (!res.ok) throw new Error(data.message || "Registration failed");
-        alert("Registration successful, please login.");
-        toggleRegister();
-      } catch (err) {
-        errorBox.textContent = err.message;
-      }
-    }
-  </script>
+// Forgot password (simple route – if your API differs, tweak here)
+$("#forgot").addEventListener("click", async (e)=>{
+  e.preventDefault();
+  const email = prompt("Enter your email to receive a reset link:");
+  if(!email) return;
+  try{
+    const res = await fetch(`${API}/auth/forgot`, {
+      method:"POST", headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ email })
+    });
+    if(res.ok) alert("If the email exists, a reset link has been sent.");
+    else alert("Unable to send reset link right now.");
+  }catch{ alert("Network error."); }
+});
+
+// Login
+$("#loginBtn").addEventListener("click", async ()=>{
+  const role = $("#loginRole").value.trim();
+  const email = $("#loginEmail").value.trim();
+  const password = $("#loginPassword").value;
+  if(!role || !email || !password) return msg($("#loginMsg"), "Please select role and enter your credentials.", "error");
+
+  msg($("#loginMsg"), "Authenticating…");
+  try{
+    const res = await fetch(`${API}/auth/login`,{
+      method:"POST", headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ role, email, password })
+    });
+    const data = await res.json();
+    if(!res.ok) return msg($("#loginMsg"), data.message || "Invalid credentials.", "error");
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user || { email, role, fullName:data.fullName }));
+    msg($("#loginMsg"), "Success!", "success");
+    setTimeout(()=>routeByRole(data.user?.role || role), 300);
+  }catch(e){
+    msg($("#loginMsg"), "Network error. Try again.", "error");
+  }
+});
+
+// Register
+$("#registerBtn").addEventListener("click", async ()=>{
+  const role = $("#regRole").value.trim();
+  const fullName = $("#regName").value.trim();
+  const email = $("#regEmail").value.trim();
+  const password = $("#regPassword").value;
+
+  if(!role || !fullName || !email || !password) return msg($("#regMsg"), "Please complete all fields.", "error");
+
+  const payload = { role, fullName, email, password };
+  if(role==="agent"){
+    Object.assign(payload,{
+      phone: $("#regPhone").value.trim(),
+      vehicleType: $("#regVehicle").value.trim(),
+      bankName: $("#regBankName").value.trim(),
+      accountNumber: $("#regAccountNumber").value.trim(),
+      accountName: $("#regAccountName").value.trim()
+    });
+  }
+
+  msg($("#regMsg"), "Creating account…");
+  try{
+    const res = await fetch(`${API}/auth/register`, {
+      method:"POST", headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if(!res.ok) return msg($("#regMsg"), data.message || "Registration failed.", "error");
+    // Auto-login on success
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user || { email, role, fullName }));
+    msg($("#regMsg"), "Account created! Redirecting…", "success");
+    setTimeout(()=>routeByRole(data.user?.role || role), 400);
+  }catch(e){
+    msg($("#regMsg"), "Network error. Try again.", "error");
+  }
+});
+
+function routeByRole(role){
+  if(role==="customer") return location.href="home.html";          // home routes to dashboards
+  if(role==="agent") return location.href="home.html";
+  if(role==="admin") return location.href="home.html";
+  if(role==="superadmin") return location.href="home.html";
+  location.href="home.html";
+}
+</script>
 </body>
-</html>
+  </html>
