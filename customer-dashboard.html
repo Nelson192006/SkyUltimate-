@@ -1,206 +1,283 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SkyUltimate Delivery - Customer Dashboard</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f8f9fa;
-      color: #333;
-    }
-    header {
-      background: #d32f2f;
-      color: white;
-      padding: 15px;
-      text-align: center;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 1.5rem;
-    }
-    nav {
-      display: flex;
-      justify-content: space-around;
-      background: #b71c1c;
-      padding: 10px;
-    }
-    nav button {
-      background: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-weight: bold;
-      color: #b71c1c;
-    }
-    nav button:hover {
-      background: #f1f1f1;
-    }
-    main {
-      padding: 20px;
-    }
-    .card {
-      background: white;
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-    }
-    .card h2 {
-      margin-top: 0;
-    }
-    .logout {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #d32f2f;
-      color: white;
-      border: none;
-      padding: 12px 18px;
-      border-radius: 25px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .logout:hover {
-      background: #b71c1c;
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SkyUltimate – Customer Dashboard</title>
+<style>
+  :root{ --red:#C00000; --muted:#6b7280; --soft:#f8fafc; }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--soft);color:#111827;}
+  header{background:var(--red);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+  .brand{font-weight:900}
+  .pill{background:#fff1;border:1px solid #ffffff33;color:#fff;border-radius:10px;padding:8px 10px;cursor:pointer}
+  .wrap{max-width:1000px;margin:22px auto;padding:0 16px}
+  .grid{display:grid;gap:16px}
+  @media(min-width:960px){ .grid{grid-template-columns:1.1fr .9fr} }
+  .card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+  label{font-size:.9rem;font-weight:700}
+  input, select, textarea{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:12px}
+  .row{display:grid;gap:10px}
+  .btn{background:var(--red);color:#fff;border:none;border-radius:10px;padding:12px 14px;cursor:pointer;font-weight:800}
+  .btn.ghost{background:#eef2ff;color:#111827}
+  .muted{color:var(--muted)}
+  .list{display:grid;gap:12px}
+  .job{border:1px solid #eee;border-radius:12px;padding:12px;background:#fff}
+  .map{width:100%;height:280px;border:0;border-radius:12px;background:#f3f4f6}
+  .tag{display:inline-block;background:#ffe6e6;color:var(--red);padding:4px 10px;border-radius:999px;font-weight:700;font-size:.8rem;}
+  .hr{height:1px;background:#eee;margin:10px 0}
+  .hidden{display:none!important}
+</style>
 </head>
 <body>
-  <header>
-    <h1>Customer Dashboard</h1>
-  </header>
+<header>
+  <div class="brand">Customer Dashboard</div>
+  <div>
+    <button class="pill" onclick="openMenu()">☰</button>
+    <button class="pill" onclick="logout()">⎋</button>
+  </div>
+</header>
 
-  <nav>
-    <button onclick="showSection('active')">Active Delivery</button>
-    <button onclick="showSection('new')">Request Delivery</button>
-    <button onclick="showSection('history')">History</button>
-    <button onclick="showSection('profile')">Profile</button>
-  </nav>
+<div class="wrap">
+  <div class="grid">
+    <!-- Left: Order or Live -->
+    <section id="leftCol" class="card">
+      <h2 id="title">Place a New Order</h2>
+      <div id="placeOrder">
+        <div class="row">
+          <div>
+            <label>What are you sending?</label>
+            <select id="itemType">
+              <option>Food</option><option>Documents</option><option>Clothing</option><option>Electronics</option><option>Other Packages</option>
+            </select>
+          </div>
+          <div>
+            <label>Brief Description</label>
+            <input id="itemDesc" placeholder="e.g. 1 large pizza box"/>
+          </div>
+          <div>
+            <label>Estimated Weight</label>
+            <select id="weight">
+              <option>Under 1kg</option><option>1-5kg</option><option>5-10kg</option><option>10kg+</option>
+            </select>
+          </div>
+          <div>
+            <label>Pickup Address</label>
+            <input id="pickup" placeholder="Type pickup address"/>
+          </div>
+          <div>
+            <label>Delivery Address</label>
+            <input id="dropoff" placeholder="Type delivery address"/>
+          </div>
+        </div>
+        <div class="hr"></div>
+        <div class="row">
+          <div><b>Estimated Price:</b> <span id="estPrice" class="tag">$0.00</span></div>
+          <button class="btn" id="quoteBtn" disabled>Calculate Final Price</button>
+        </div>
+      </div>
 
-  <main>
-    <!-- Active Delivery -->
-    <section id="active" class="card">
-      <h2>Active Delivery</h2>
-      <div id="activeDelivery">Loading...</div>
+      <!-- Modal-ish: Payment Instructions -->
+      <div id="confirmPay" class="hidden">
+        <h3>Final Price & Payment Instructions</h3>
+        <div class="row">
+          <div><b>Total:</b> <span id="finalTotal" class="tag">$0.00</span></div>
+          <div class="muted">This price is final and includes all fees.</div>
+        </div>
+        <div class="hr"></div>
+        <div id="bankDetails" class="row"></div>
+        <div class="hr"></div>
+        <div class="muted">Transfer to the account above. Your order becomes visible to agents after admin confirms payment.</div>
+        <div class="hr"></div>
+        <button class="btn" id="goToOrders">See My Orders</button>
+      </div>
+
+      <!-- Live Tracking -->
+      <div id="live" class="hidden">
+        <div class="row">
+          <div class="tag" id="liveStatus">Loading…</div>
+          <div id="agentLine" class="muted"></div>
+        </div>
+        <div class="hr"></div>
+        <iframe id="liveMap" class="map"></iframe>
+        <div class="hr"></div>
+        <div class="row">
+          <button id="confirmPickup" class="btn hidden">Confirm Item has been Picked Up</button>
+          <button id="confirmDelivered" class="btn hidden">Confirm Order Delivered</button>
+        </div>
+      </div>
     </section>
 
-    <!-- Request New Delivery -->
-    <section id="new" class="card" style="display:none;">
-      <h2>Request New Delivery</h2>
-      <form id="deliveryForm">
-        <input type="text" id="pickup" placeholder="Pickup Location" required style="display:block;width:100%;margin-bottom:10px;padding:10px;border-radius:8px;border:1px solid #ccc"/>
-        <input type="text" id="dropoff" placeholder="Dropoff Location" required style="display:block;width:100%;margin-bottom:10px;padding:10px;border-radius:8px;border:1px solid #ccc"/>
-        <input type="text" id="item" placeholder="Item Description" required style="display:block;width:100%;margin-bottom:10px;padding:10px;border-radius:8px;border:1px solid #ccc"/>
-        <button type="submit" style="padding:10px 20px;border:none;border-radius:20px;background:#d32f2f;color:white;font-weight:bold;cursor:pointer;">Submit Request</button>
-      </form>
-      <div id="newDeliveryMsg"></div>
-    </section>
+    <!-- Right: Orders -->
+    <aside class="card">
+      <h2>My Orders</h2>
+      <div id="orders" class="list">Loading…</div>
+    </aside>
+  </div>
+</div>
 
-    <!-- History -->
-    <section id="history" class="card" style="display:none;">
-      <h2>Delivery History</h2>
-      <div id="historyList">Loading...</div>
-    </section>
+<script>
+const API = "https://33vhk4-50000.csb.app";
+// ===== Auth guard =====
+const token = localStorage.getItem("token");
+if(!token) location.href="index.html";
 
-    <!-- Profile -->
-    <section id="profile" class="card" style="display:none;">
-      <h2>My Profile</h2>
-      <div id="profileDetails">Loading...</div>
-    </section>
-  </main>
+// ===== Helpers =====
+const $ = id => document.getElementById(id);
+const auth = ()=>({ Authorization:`Bearer ${token}`, "Content-Type":"application/json" });
+function currency(n){ n=Number(n||0); return "$"+n.toFixed(2); }
+function escapeHtml(s=""){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function logout(){ localStorage.clear(); location.href="index.html"; }
+function openMenu(){ alert("Use Home drawer for About/Mission/FAQ. This page focuses on orders."); }
 
-  <button class="logout" onclick="logout()">Logout</button>
-
-  <script>
-    const API_URL = "https://33vhk4-50000.csb.app";
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      window.location.href = "index.html";
+// ===== Load profile, ensure role =====
+(async function init(){
+  try{
+    const meRes = await fetch(`${API}/auth/me`,{ headers:{ Authorization:`Bearer ${token}` }});
+    if(!meRes.ok) throw 0;
+    const me = await meRes.json();
+    if(me.role!=="customer"){ // route away
+      if(me.role==="agent") return location.href="agent-dashboard.html";
+      if(me.role==="admin") return location.href="admin-dashboard.html";
+      if(me.role==="superadmin") return location.href="superadmin.html";
+      return location.href="index.html";
     }
+    bindPlaceOrderUI();
+    await loadOrders();
+  }catch{ logout(); }
+})();
 
-    // Default: load active deliveries
-    document.addEventListener("DOMContentLoaded", () => {
-      loadActiveDelivery();
-      loadProfile();
-      loadHistory();
+// ===== Place order flow =====
+function bindPlaceOrderUI(){
+  const required = ["itemType","itemDesc","weight","pickup","dropoff"].map(id=>$(id));
+  required.forEach(el=> el.addEventListener("input", ()=>{
+    const ok = required.every(f=>f.value && f.value.trim().length>0);
+    $("quoteBtn").disabled = !ok;
+    // a tiny client-side estimate (optional); final comes from API
+    const base = 8, w = $("weight").value.includes("10")? 5: $("weight").value.includes("5-10")? 4: $("weight").value.includes("1-5")? 2: 1;
+    $("estPrice").textContent = currency(base + w);
+  }));
+  $("quoteBtn").addEventListener("click", getFinalPrice);
+}
+
+let pendingOrderCache = null;
+async function getFinalPrice(){
+  const payload = {
+    itemType: $("itemType").value,
+    description: $("itemDesc").value,
+    weight: $("weight").value,
+    pickup: $("pickup").value,
+    dropoff: $("dropoff").value
+  };
+  // Get quote from backend; then create pending order with status "pending_payment"
+  try{
+    const q = await fetch(`${API}/orders/quote`, { method:"POST", headers: auth(), body: JSON.stringify(payload) });
+    const quote = await q.json();
+    if(!q.ok) return alert(quote.message||"Unable to get quote");
+
+    const create = await fetch(`${API}/orders`, { method:"POST", headers: auth(), body: JSON.stringify({ ...payload, quotedTotal: quote.total, status:"pending_payment" }) });
+    const order = await create.json();
+    if(!create.ok) return alert(order.message||"Unable to create order");
+
+    pendingOrderCache = order;
+    // Load bank details from settings
+    const sres = await fetch(`${API}/settings/payment`, { headers: { Authorization:`Bearer ${token}` }});
+    const settings = await sres.json();
+    $("finalTotal").textContent = currency(order.total || quote.total);
+    $("bankDetails").innerHTML = `
+      <div><b>Bank Name:</b> ${escapeHtml(settings.bankName||"—")}</div>
+      <div><b>Account Name:</b> ${escapeHtml(settings.accountName||"—")}</div>
+      <div><b>Account Number:</b> ${escapeHtml(settings.accountNumber||"—")}</div>
+    `;
+    // Toggle modal-ish view
+    $("placeOrder").classList.add("hidden");
+    $("confirmPay").classList.remove("hidden");
+  }catch(e){
+    alert("Network error.");
+  }
+}
+
+$("goToOrders").addEventListener("click", ()=>{
+  $("confirmPay").classList.add("hidden");
+  $("placeOrder").classList.remove("hidden");
+  loadOrders();
+});
+
+// ===== Orders list + live tracking switch =====
+async function loadOrders(){
+  try{
+    const res = await fetch(`${API}/orders/my`, { headers:{ Authorization:`Bearer ${token}` }});
+    const wrap = $("orders");
+    if(!res.ok){ wrap.textContent = "Failed to load."; return; }
+    const list = await res.json();
+    wrap.innerHTML = "";
+    if(!list || !list.length){ wrap.textContent = "No orders yet."; return; }
+
+    let active = null;
+    list.forEach(o=>{
+      const d = document.createElement("div");
+      d.className = "job";
+      d.innerHTML = `
+        <div class="row" style="justify-content:space-between;display:flex;">
+          <div class="tag">${escapeHtml(o.status)}</div>
+          <div><b class="muted">#${o.id || o._id || ""}</b></div>
+        </div>
+        <div><b>From:</b> <span>${escapeHtml(o.pickup)}</span></div>
+        <div><b>To:</b> <span>${escapeHtml(o.dropoff)}</span></div>
+        <div><b>Item:</b> <span>${escapeHtml(o.itemType)} – ${escapeHtml(o.description||"")}</span></div>
+        <div class="hr"></div>
+        <div><b>Total:</b> ${currency(o.total || o.quotedTotal || 0)}</div>
+      `;
+      wrap.appendChild(d);
+      if(["payment_confirmed","agent_assigned","enroute_pickup","enroute_delivery"].includes((o.status||"").toLowerCase())) active = o;
     });
 
-    function showSection(section) {
-      document.querySelectorAll("main section").forEach(s => s.style.display = "none");
-      document.getElementById(section).style.display = "block";
-    }
+    if(active){ showLive(active); } else { hideLive(); }
+  }catch(e){
+    $("orders").textContent = "Error loading orders.";
+  }
+}
 
-    async function loadActiveDelivery() {
-      try {
-        const res = await fetch(`${API_URL}/deliveries/active`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        document.getElementById("activeDelivery").innerText =
-          data && data.length ? JSON.stringify(data, null, 2) : "No active deliveries.";
-      } catch (err) {
-        document.getElementById("activeDelivery").innerText = "Error loading deliveries.";
-      }
-    }
+function hideLive(){
+  $("live").classList.add("hidden");
+  $("title").textContent = "Place a New Order";
+}
+function showLive(order){
+  $("title").textContent = "Live Tracking";
+  $("live").classList.remove("hidden");
+  $("placeOrder").classList.add("hidden");
+  $("confirmPay").classList.add("hidden");
 
-    document.getElementById("deliveryForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const pickup = document.getElementById("pickup").value;
-      const dropoff = document.getElementById("dropoff").value;
-      const item = document.getElementById("item").value;
+  $("liveStatus").textContent = order.status;
+  const agent = order.agent || {};
+  $("agentLine").textContent = agent.firstName ? `Agent ${agent.firstName} is handling your delivery.` : "Waiting for agent...";
+  $("liveMap").src = `https://maps.google.com/maps?q=${encodeURIComponent(order.pickup)}&z=12&output=embed`;
 
-      try {
-        const res = await fetch(`${API_URL}/deliveries`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ pickup, dropoff, item })
-        });
-        const data = await res.json();
-        document.getElementById("newDeliveryMsg").innerText = "Delivery request submitted!";
-        loadActiveDelivery();
-      } catch (err) {
-        document.getElementById("newDeliveryMsg").innerText = "Error submitting delivery.";
-      }
-    });
+  // Buttons logic
+  const picked = ["picked_up","enroute_delivery"].includes(order.status.toLowerCase());
+  const canPick = ["agent_assigned","enroute_pickup"].includes(order.status.toLowerCase());
+  $("confirmPickup").classList.toggle("hidden", !canPick);
+  $("confirmDelivered").classList.toggle("hidden", !picked);
 
-    async function loadHistory() {
-      try {
-        const res = await fetch(`${API_URL}/deliveries/history`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        document.getElementById("historyList").innerText =
-          data && data.length ? JSON.stringify(data, null, 2) : "No past deliveries.";
-      } catch (err) {
-        document.getElementById("historyList").innerText = "Error loading history.";
-      }
-    }
+  $("confirmPickup").onclick = ()=> confirmPickup(order.id || order._id);
+  $("confirmDelivered").onclick = ()=> confirmDelivered(order.id || order._id);
+}
 
-    async function loadProfile() {
-      try {
-        const res = await fetch(`${API_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const user = await res.json();
-        document.getElementById("profileDetails").innerText = 
-          `Name: ${user.fullName}\nEmail: ${user.email}\nRole: ${user.role}`;
-      } catch (err) {
-        document.getElementById("profileDetails").innerText = "Error loading profile.";
-      }
-    }
-
-    function logout() {
-      localStorage.removeItem("token");
-      window.location.href = "index.html";
-    }
-  </script>
+async function confirmPickup(id){
+  try{
+    const res = await fetch(`${API}/orders/${id}/confirm-pickup`, { method:"POST", headers: auth() });
+    if(!res.ok) return alert("Unable to confirm pickup.");
+    await loadOrders();
+  }catch{ alert("Network error."); }
+}
+async function confirmDelivered(id){
+  try{
+    const res = await fetch(`${API}/orders/${id}/confirm-delivered`, { method:"POST", headers: auth() });
+    if(!res.ok) return alert("Unable to confirm delivery.");
+    alert("Delivery complete! Thank you for using SkyUltimate.");
+    await loadOrders();
+  }catch{ alert("Network error."); }
+}
+</script>
 </body>
 </html>
