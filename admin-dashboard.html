@@ -1,109 +1,235 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SkyUltimate | Admin Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkyUltimate Admin Dashboard</title>
   <style>
-    body { font-family: Arial, sans-serif; margin:0; background:#f9f9f9; }
-    header { background:#c00; color:white; padding:1rem; text-align:center; }
-    nav { background:#fff; padding:1rem; display:flex; justify-content:space-between; align-items:center; }
-    nav button { background:#c00; color:#fff; border:none; padding:0.5rem 1rem; border-radius:20px; cursor:pointer; }
-    .container { padding:1.5rem; }
-    .card { background:#fff; padding:1rem; margin-bottom:1rem; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
-    .card h2 { margin-top:0; color:#c00; }
-    label { display:block; margin:0.5rem 0 0.2rem; }
-    input, select { width:100%; padding:0.5rem; margin-bottom:0.5rem; border:1px solid #ccc; border-radius:5px; }
-    button.action { background:#c00; color:#fff; width:100%; margin-top:0.5rem; border:none; padding:0.7rem; border-radius:20px; cursor:pointer; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #e60000;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .container {
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #e60000;
+      margin-bottom: 10px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    button {
+      background: #e60000;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #cc0000;
+    }
+    .delivery-list {
+      list-style: none;
+      padding: 0;
+    }
+    .delivery-item {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .status-pending {
+      color: orange;
+      font-weight: bold;
+    }
+    .status-completed {
+      color: green;
+      font-weight: bold;
+    }
+    .logout {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .logout button {
+      background: #444;
+    }
   </style>
 </head>
 <body>
-  <header><h1>Admin Dashboard</h1></header>
-  <nav>
-    <span id="adminName">Loading...</span>
-    <button onclick="logout()">Logout</button>
-  </nav>
+  <header>SkyUltimate Admin Dashboard</header>
   <div class="container">
+    
     <div class="card">
-      <h2>Set Delivery Prices</h2>
+      <h2>Manage Price Range</h2>
       <form id="priceForm">
-        <label>Base Price</label>
+        <label>Base Price (₦):</label>
         <input type="number" id="basePrice" required>
-        <label>Per KM Price</label>
+        <label>Per KM Price (₦):</label>
         <input type="number" id="perKmPrice" required>
-        <button type="submit" class="action">Update Prices</button>
+        <button type="submit">Update Prices</button>
       </form>
     </div>
+
+    <div class="card">
+      <h2>Deliveries</h2>
+      <ul class="delivery-list" id="deliveryList"></ul>
+    </div>
+
+    <div class="card">
+      <h2>Agent Payouts</h2>
+      <ul class="delivery-list" id="payoutList"></ul>
+    </div>
+
     <div class="card">
       <h2>Manage Agents</h2>
-      <button class="action" onclick="listAgents()">View Agents</button>
-      <ul id="agentList"></ul>
+      <form id="agentForm">
+        <label>Agent Email:</label>
+        <input type="email" id="agentEmail" required>
+        <select id="agentAction">
+          <option value="approve">Approve</option>
+          <option value="disable">Disable</option>
+        </select>
+        <button type="submit">Update Agent</button>
+      </form>
     </div>
-    <div class="card">
-      <h2>Reports</h2>
-      <button class="action" onclick="fetchReports()">Generate Report</button>
-      <pre id="reportOutput"></pre>
+
+    <div class="logout">
+      <button onclick="logout()">Logout</button>
     </div>
+
   </div>
+
   <script>
-    const API = "https://33vhk4-50000.csb.app";
+    const API_BASE = "https://33vhk4-50000.csb.app";
     const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
 
-    if (!token) window.location.href = "index.html";
-
-    async function authCheck() {
-      const res = await fetch(`${API}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.role !== "admin") window.location.href = "index.html";
-        document.getElementById("adminName").textContent = "Welcome, " + data.fullName;
-      } else {
-        logout();
-      }
-    }
-    authCheck();
-
-    function logout() {
-      localStorage.removeItem("token");
+    if (!token || role !== "admin") {
       window.location.href = "index.html";
     }
 
-    document.getElementById("priceForm").addEventListener("submit", async (e)=>{
+    // Manage Prices
+    document.getElementById("priceForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const basePrice = document.getElementById("basePrice").value;
       const perKmPrice = document.getElementById("perKmPrice").value;
-      const res = await fetch(`${API}/admin/prices`, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json", Authorization:`Bearer ${token}` },
-        body: JSON.stringify({ basePrice, perKmPrice })
-      });
-      alert(res.ok ? "Prices updated" : "Failed to update");
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/update-prices`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ basePrice, perKmPrice })
+        });
+        const data = await res.json();
+        alert(data.message || "Prices updated successfully");
+      } catch (err) {
+        alert("Error updating prices");
+      }
     });
 
-    async function listAgents(){
-      const res = await fetch(`${API}/admin/agents`, {
-        headers:{ Authorization:`Bearer ${token}` }
-      });
-      if(res.ok){
-        const data = await res.json();
-        const list = document.getElementById("agentList");
-        list.innerHTML="";
-        data.forEach(agent=>{
-          const li=document.createElement("li");
-          li.textContent = `${agent.fullName} (${agent.email})`;
+    // Fetch Deliveries
+    async function loadDeliveries() {
+      try {
+        const res = await fetch(`${API_BASE}/admin/deliveries`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        const deliveries = await res.json();
+        const list = document.getElementById("deliveryList");
+        list.innerHTML = "";
+        deliveries.forEach(del => {
+          const li = document.createElement("li");
+          li.className = "delivery-item";
+          li.innerHTML = `
+            <strong>ID:</strong> ${del._id} <br>
+            <strong>Customer:</strong> ${del.customerName} <br>
+            <strong>Status:</strong> <span class="status-${del.status}">${del.status}</span>
+          `;
           list.appendChild(li);
         });
+      } catch (err) {
+        console.error("Error loading deliveries", err);
       }
     }
 
-    async function fetchReports(){
-      const res = await fetch(`${API}/admin/reports`, {
-        headers:{ Authorization:`Bearer ${token}` }
-      });
-      document.getElementById("reportOutput").textContent = res.ok ? JSON.stringify(await res.json(),null,2) : "Failed to load report";
+    // Fetch Agent Payouts
+    async function loadPayouts() {
+      try {
+        const res = await fetch(`${API_BASE}/admin/payouts`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        const payouts = await res.json();
+        const list = document.getElementById("payoutList");
+        list.innerHTML = "";
+        payouts.forEach(p => {
+          const li = document.createElement("li");
+          li.className = "delivery-item";
+          li.innerHTML = `
+            <strong>Agent:</strong> ${p.agentName} <br>
+            <strong>Amount:</strong> ₦${p.amount} <br>
+            <strong>Status:</strong> ${p.status}
+          `;
+          list.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Error loading payouts", err);
+      }
     }
+
+    // Manage Agents
+    document.getElementById("agentForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("agentEmail").value;
+      const action = document.getElementById("agentAction").value;
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/agents`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ email, action })
+        });
+        const data = await res.json();
+        alert(data.message || "Agent updated successfully");
+      } catch (err) {
+        alert("Error updating agent");
+      }
+    });
+
+    // Logout
+    function logout() {
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      window.location.href = "index.html";
+    }
+
+    // Initial load
+    loadDeliveries();
+    loadPayouts();
   </script>
 </body>
   </html>
