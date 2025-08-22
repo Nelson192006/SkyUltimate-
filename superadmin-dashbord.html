@@ -1,1 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkyUltimate | Super Admin</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#f0f0f0; }
+    header { background:#c00; color:#fff; padding:1rem; text-align:center; }
+    nav { background:#fff; padding:1rem; display:flex; justify-content:space-between; align-items:center; }
+    nav button { background:#c00; color:#fff; border:none; padding:0.5rem 1rem; border-radius:20px; cursor:pointer; }
+    .container { padding:1.5rem; }
+    .card { background:#fff; padding:1rem; margin-bottom:1rem; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    .card h2 { margin-top:0; color:#c00; }
+    button.action { background:#c00; color:#fff; width:100%; margin-top:0.5rem; border:none; padding:0.7rem; border-radius:20px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <header><h1>Super Admin Panel</h1></header>
+  <nav>
+    <span id="superName">Loading...</span>
+    <button onclick="logout()">Logout</button>
+  </nav>
+  <div class="container">
+    <div class="card">
+      <h2>System Settings</h2>
+      <button class="action" onclick="resetSystem()">Reset Entire System</button>
+    </div>
+    <div class="card">
+      <h2>Manage Admins</h2>
+      <button class="action" onclick="listAdmins()">View Admins</button>
+      <ul id="adminList"></ul>
+    </div>
+    <div class="card">
+      <h2>All System Logs</h2>
+      <button class="action" onclick="getLogs()">Fetch Logs</button>
+      <pre id="logs"></pre>
+    </div>
+  </div>
+  <script>
+    const API = "https://33vhk4-50000.csb.app";
+    const token = localStorage.getItem("token");
+    if(!token) window.location.href="index.html";
 
+    async function authCheck(){
+      const res = await fetch(`${API}/auth/me`, {
+        headers:{Authorization:`Bearer ${token}`}
+      });
+      if(res.ok){
+        const data=await res.json();
+        if(data.role!=="superadmin") window.location.href="index.html";
+        document.getElementById("superName").textContent="Welcome, "+data.fullName;
+      } else logout();
+    }
+    authCheck();
+
+    function logout(){
+      localStorage.removeItem("token");
+      window.location.href="index.html";
+    }
+
+    async function resetSystem(){
+      if(confirm("Are you sure? This will wipe data!")){
+        const res = await fetch(`${API}/superadmin/reset`, {
+          method:"POST", headers:{Authorization:`Bearer ${token}`}
+        });
+        alert(res.ok?"System Reset Completed":"Failed Reset");
+      }
+    }
+
+    async function listAdmins(){
+      const res = await fetch(`${API}/superadmin/admins`, {
+        headers:{Authorization:`Bearer ${token}`}
+      });
+      if(res.ok){
+        const data=await res.json();
+        const list=document.getElementById("adminList");
+        list.innerHTML="";
+        data.forEach(admin=>{
+          const li=document.createElement("li");
+          li.textContent=`${admin.fullName} (${admin.email})`;
+          list.appendChild(li);
+        });
+      }
+    }
+
+    async function getLogs(){
+      const res=await fetch(`${API}/superadmin/logs`,{
+        headers:{Authorization:`Bearer ${token}`}
+      });
+      document.getElementById("logs").textContent=res.ok?JSON.stringify(await res.json(),null,2):"Failed to fetch logs";
+    }
+  </script>
+</body>
+</html>
