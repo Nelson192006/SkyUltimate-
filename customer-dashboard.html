@@ -1,1 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Dashboard - SkyUltimate</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      color: #333;
+    }
+    header {
+      background: red;
+      color: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    header button {
+      background: white;
+      color: red;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .container {
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      margin-top: 0;
+      color: red;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    button.submit {
+      background: red;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    .delivery-item {
+      border-bottom: 1px solid #eee;
+      padding: 10px 0;
+    }
+    .delivery-item:last-child {
+      border-bottom: none;
+    }
+    .status {
+      font-weight: bold;
+      color: green;
+    }
+    .status.pending { color: orange; }
+    .status.in-progress { color: blue; }
+    .status.delivered { color: green; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SkyUltimate - Customer</h1>
+    <button onclick="logout()">Logout</button>
+  </header>
 
+  <div class="container">
+    <div class="card">
+      <h2 id="welcome">Welcome 👋</h2>
+      <p id="activeDelivery">Checking active deliveries...</p>
+    </div>
+
+    <div class="card">
+      <h2>Request New Delivery</h2>
+      <form id="deliveryForm">
+        <input type="text" id="pickup" placeholder="Pickup Address" required>
+        <input type="text" id="dropoff" placeholder="Drop-off Address" required>
+        <textarea id="details" placeholder="Package Details"></textarea>
+        <select id="size" required>
+          <option value="">Select Package Size</option>
+          <option value="small">Small</option>
+          <option value="medium">Medium</option>
+          <option value="large">Large</option>
+        </select>
+        <button type="submit" class="submit">Submit Delivery</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Delivery History</h2>
+      <div id="historyList">Loading...</div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "https://33vhk4-50000.csb.app";
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      window.location.href = "index.html";
+    }
+
+    async function fetchProfile() {
+      try {
+        const res = await fetch(`${API_BASE}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error("Unauthorized");
+        const user = await res.json();
+        if (user.role !== "customer") {
+          // redirect based on role
+          if (user.role === "agent") window.location.href = "agent-dashboard.html";
+          else if (user.role === "admin") window.location.href = "admin-dashboard.html";
+          else if (user.role === "superadmin") window.location.href = "superadmin.html";
+        }
+        document.getElementById("welcome").innerText = `Welcome, ${user.fullName} 👋`;
+        loadActiveDelivery();
+        loadHistory();
+      } catch (err) {
+        console.error(err);
+        logout();
+      }
+    }
+
+    async function loadActiveDelivery() {
+      try {
+        const res = await fetch(`${API_BASE}/deliveries`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const deliveries = await res.json();
+        const active = deliveries.find(d => d.status !== "delivered");
+        if (active) {
+          document.getElementById("activeDelivery").innerHTML =
+            `Active Delivery: <br> From <b>${active.pickup}</b> to <b>${active.dropoff}</b> - 
+             Status: <span class="status ${active.status}">${active.status}</span>`;
+        } else {
+          document.getElementById("activeDelivery").innerText = "No active deliveries.";
+        }
+      } catch (err) {
+        document.getElementById("activeDelivery").innerText = "Error loading active delivery.";
+      }
+    }
+
+    async function loadHistory() {
+      try {
+        const res = await fetch(`${API_BASE}/deliveries/history`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const history = await res.json();
+        const list = document.getElementById("historyList");
+        list.innerHTML = "";
+        if (history.length === 0) {
+          list.innerText = "No delivery history yet.";
+          return;
+        }
+        history.forEach(d => {
+          const div = document.createElement("div");
+          div.classList.add("delivery-item");
+          div.innerHTML = `
+            <p><b>${d.pickup}</b> → <b>${d.dropoff}</b></p>
+            <p>Status: <span class="status ${d.status}">${d.status}</span></p>
+          `;
+          list.appendChild(div);
+        });
+      } catch (err) {
+        document.getElementById("historyList").innerText = "Error loading history.";
+      }
+    }
+
+    document.getElementById("deliveryForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const pickup = document.getElementById("pickup").value;
+      const dropoff = document.getElementById("dropoff").value;
+      const details = document.getElementById("details").value;
+      const size = document.getElementById("size").value;
+      try {
+        const res = await fetch(`${API_BASE}/deliveries`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ pickup, dropoff, details, size })
+        });
+        if (!res.ok) throw new Error("Failed to create delivery");
+        alert("Delivery request submitted!");
+        document.getElementById("deliveryForm").reset();
+        loadActiveDelivery();
+        loadHistory();
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    });
+
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "index.html";
+    }
+
+    fetchProfile();
+  </script>
+</body>
+</html>
