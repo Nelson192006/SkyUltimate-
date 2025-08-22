@@ -1,95 +1,470 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SkyUltimate | Super Admin</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin:0; background:#f0f0f0; }
-    header { background:#c00; color:#fff; padding:1rem; text-align:center; }
-    nav { background:#fff; padding:1rem; display:flex; justify-content:space-between; align-items:center; }
-    nav button { background:#c00; color:#fff; border:none; padding:0.5rem 1rem; border-radius:20px; cursor:pointer; }
-    .container { padding:1.5rem; }
-    .card { background:#fff; padding:1rem; margin-bottom:1rem; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
-    .card h2 { margin-top:0; color:#c00; }
-    button.action { background:#c00; color:#fff; width:100%; margin-top:0.5rem; border:none; padding:0.7rem; border-radius:20px; cursor:pointer; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SkyUltimate • Super Admin – Master Control Panel</title>
+<style>
+  :root{
+    --brand:#C00000;
+    --brand-dark:#980000;
+    --bg:#f6f7fb;
+    --card:#ffffff;
+    --ink:#1f2937;
+    --muted:#6b7280;
+    --success:#16a34a;
+    --warn:#f59e0b;
+    --error:#dc2626;
+    --border:#e5e7eb;
+    --shadow:0 8px 24px rgba(0,0,0,.08);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+    background:var(--bg);
+    color:var(--ink);
+  }
+  header{
+    background:var(--brand);
+    color:#fff;
+    padding:16px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    position:sticky;top:0;z-index:50;
+    box-shadow:var(--shadow);
+  }
+  header .title{
+    display:flex;align-items:center;gap:12px;font-weight:800;font-size:18px;letter-spacing:.3px
+  }
+  header .logo{
+    width:36px;height:36px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    color:var(--brand);font-weight:900;
+  }
+  header .badge{background:#fff1; padding:6px 10px;border-radius:999px;font-size:12px}
+  .wrap{display:grid;grid-template-columns:260px 1fr; gap:20px; padding:20px; max-width:1400px; margin:0 auto;}
+  nav{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:10px;
+    position:sticky; top:88px; height:calc(100vh - 108px); overflow:auto;
+  }
+  .tabbtn{
+    width:100%; text-align:left; border:none; background:transparent; padding:12px 12px; border-radius:10px; cursor:pointer;
+    display:flex; align-items:center; gap:10px; color:var(--ink); font-weight:600;
+  }
+  .tabbtn.active{background:#fff5f5; color:var(--brand); outline:1px solid #ffd7d7}
+  .danger{color:var(--error)}
+  .content{min-height:70vh}
+  .panel{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:16px; margin-bottom:18px;
+  }
+  .panel h2{margin:.2rem 0 1rem 0; font-size:20px}
+  .grid{display:grid; gap:14px}
+  .grid.cols-2{grid-template-columns:1fr 1fr}
+  .grid.cols-3{grid-template-columns:repeat(3,1fr)}
+  .muted{color:var(--muted); font-size:13px}
+  .kpi{display:flex; align-items:center; gap:12px; padding:12px; border:1px dashed var(--border); border-radius:12px}
+  .kpi b{font-size:22px}
+  label{font-size:13px; color:var(--muted); display:block; margin-bottom:6px}
+  input, select, textarea{
+    width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:#fff; font-size:14px;
+  }
+  textarea{min-height:100px; resize:vertical}
+  .row{display:flex; gap:10px; flex-wrap:wrap}
+  .btn{border:none; background:var(--brand); color:#fff; padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:700}
+  .btn.secondary{background:#f3f4f6; color:#111827}
+  .btn.ghost{background:transparent; color:var(--brand)}
+  .btn.warn{background:var(--warn)}
+  .btn.ok{background:var(--success)}
+  .btn.bad{background:var(--error)}
+  .btn:disabled{opacity:.6; cursor:not-allowed}
+  table{width:100%; border-collapse:separate; border-spacing:0 10px}
+  th, td{font-size:14px; text-align:left; padding:10px 12px; vertical-align:top}
+  thead th{color:#6b7280; font-weight:700}
+  tbody tr{background:#fff; border:1px solid var(--border)}
+  tbody tr td:first-child{border-radius:10px 0 0 10px}
+  tbody tr td:last-child{border-radius:0 10px 10px 0}
+  .status{padding:4px 8px; border-radius:999px; font-size:12px; font-weight:800}
+  .status.pending{background:#fff7ed; color:#c2410c}
+  .status.enroute{background:#eef2ff; color:#3730a3}
+  .status.completed{background:#ecfdf5; color:#065f46}
+  .pill{padding:6px 10px; border-radius:999px; background:#f3f4f6; font-size:12px}
+  .toolbar{display:flex; align-items:center; gap:10px; justify-content:space-between; margin-bottom:10px}
+  .right{margin-left:auto}
+  .sep{height:1px;background:var(--border); margin:12px 0}
+  .hidden{display:none !important}
+  .center{display:grid; place-items:center}
+  /* Modal */
+  .modal{position:fixed; inset:0; background:rgba(0,0,0,.48); display:none; align-items:center; justify-content:center; z-index:100}
+  .modal .box{background:#fff; border-radius:16px; width:min(780px,92vw); padding:16px; box-shadow:var(--shadow)}
+  .box h3{margin-top:0}
+  .closeX{float:right; border:none; background:transparent; font-size:22px; cursor:pointer}
+</style>
 </head>
 <body>
-  <header><h1>Super Admin Panel</h1></header>
-  <nav>
-    <span id="superName">Loading...</span>
-    <button onclick="logout()">Logout</button>
-  </nav>
-  <div class="container">
-    <div class="card">
-      <h2>System Settings</h2>
-      <button class="action" onclick="resetSystem()">Reset Entire System</button>
-    </div>
-    <div class="card">
-      <h2>Manage Admins</h2>
-      <button class="action" onclick="listAdmins()">View Admins</button>
-      <ul id="adminList"></ul>
-    </div>
-    <div class="card">
-      <h2>All System Logs</h2>
-      <button class="action" onclick="getLogs()">Fetch Logs</button>
-      <pre id="logs"></pre>
-    </div>
+<header>
+  <div class="title">
+    <div class="logo">SU</div>
+    <div>Super Admin • Master Control Panel</div>
   </div>
-  <script>
-    const API = "https://33vhk4-50000.csb.app";
-    const token = localStorage.getItem("token");
-    if(!token) window.location.href="index.html";
+  <div class="badge" id="whoami">...</div>
+</header>
 
-    async function authCheck(){
-      const res = await fetch(`${API}/auth/me`, {
-        headers:{Authorization:`Bearer ${token}`}
+<div class="wrap">
+  <nav>
+    <button class="tabbtn active" data-tab="live">📡 Live Dashboard</button>
+    <button class="tabbtn" data-tab="issues">🛠️ Issue Resolution</button>
+    <button class="tabbtn" data-tab="users">👥 User Management</button>
+    <button class="tabbtn" data-tab="payouts">💳 Financials & Payouts</button>
+    <button class="tabbtn" data-tab="settings">⚙️ Platform Settings</button>
+    <button class="tabbtn" data-tab="requests">📨 Admin Request Queue</button>
+    <div class="sep"></div>
+    <button class="tabbtn danger" id="logoutBtn">↪ Logout</button>
+  </nav>
+
+  <main class="content">
+    <!-- LIVE -->
+    <section id="live" class="panel">
+      <div class="toolbar">
+        <h2>Live Operations</h2>
+        <div class="row">
+          <button class="btn secondary" id="refreshLive">Refresh</button>
+        </div>
+      </div>
+      <div class="grid cols-3" id="kpis">
+        <div class="kpi"><span class="pill">Users</span> <b id="kpiUsers">0</b></div>
+        <div class="kpi"><span class="pill">Agents Online</span> <b id="kpiAgentsOnline">0</b></div>
+        <div class="kpi"><span class="pill">Active Deliveries</span> <b id="kpiActive">0</b></div>
+      </div>
+      <div class="sep"></div>
+      <div class="panel" style="padding:0">
+        <div class="toolbar" style="padding:12px 12px 0 12px">
+          <div class="muted">Newest first</div>
+          <div class="right row">
+            <input id="searchOrders" placeholder="Search by ID, customer, agent..."/>
+          </div>
+        </div>
+        <div style="overflow:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Order</th><th>Status</th><th>Customer</th><th>Agent</th><th>Total / Split</th><th>Updated</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="orderRows"><tr><td class="muted" colspan="7" style="text-align:center">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ISSUES -->
+    <section id="issues" class="panel hidden">
+      <div class="toolbar">
+        <h2>Issue Resolution Center</h2>
+        <button class="btn secondary" id="refreshIssues">Refresh</button>
+      </div>
+      <table>
+        <thead><tr><th>ID</th><th>From</th><th>Role</th><th>Subject</th><th>Status</th><th></th></tr></thead>
+        <tbody id="ticketRows"><tr><td class="muted" colspan="6" style="text-align:center">Loading...</td></tr></tbody>
+      </table>
+    </section>
+
+    <!-- USERS -->
+    <section id="users" class="panel hidden">
+      <div class="toolbar">
+        <h2>User Management</h2>
+        <div class="row right">
+          <span class="muted">Enable public Admin registration</span>
+          <label class="pill"><input type="checkbox" id="toggleAdminReg"/> Allow "Admin" on Register</label>
+          <button class="btn secondary" id="refreshUsers">Refresh</button>
+        </div>
+      </div>
+
+      <div class="row" style="gap:8px; margin-bottom:10px">
+        <button class="btn secondary umtab active" data-role="customers">Customers</button>
+        <button class="btn secondary umtab" data-role="agents">Agents</button>
+        <button class="btn secondary umtab" data-role="admins">Admins</button>
+      </div>
+
+      <div id="usersTableWrap" style="overflow:auto">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Created</th><th></th></tr></thead>
+          <tbody id="userRows"><tr><td class="muted" colspan="6" style="text-align:center">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PAYOUTS -->
+    <section id="payouts" class="panel hidden">
+      <div class="toolbar">
+        <h2>Financials & Payouts</h2>
+        <button class="btn secondary" id="refreshPayouts">Refresh</button>
+      </div>
+
+      <div class="grid cols-3">
+        <div class="kpi"><span class="pill">Today Revenue</span> <b id="revDay">0</b></div>
+        <div class="kpi"><span class="pill">This Week</span> <b id="revWeek">0</b></div>
+        <div class="kpi"><span class="pill">This Month</span> <b id="revMonth">0</b></div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="panel" style="padding:0">
+        <div class="toolbar" style="padding:12px">
+          <div class="muted">Pending Agent Payouts</div>
+          <div class="right row">
+            <button class="btn ok" id="processSelected">Process Selected</button>
+          </div>
+        </div>
+        <div style="overflow:auto">
+          <table>
+            <thead><tr><th><input type="checkbox" id="selectAllPayouts"/></th><th>Agent</th><th>Amount</th><th>Bank</th><th>Status</th><th></th></tr></thead>
+            <tbody id="payoutRows"><tr><td class="muted" colspan="6" style="text-align:center">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="settings" class="panel hidden">
+      <h2>Platform Settings</h2>
+      <div class="grid cols-2">
+        <div class="panel">
+          <h3>Payment Details (Shown to Customers)</h3>
+          <label>Bank Name</label><input id="bankName"/>
+          <label>Account Name</label><input id="accountName"/>
+          <label>Account Number</label><input id="accountNumber"/>
+          <div class="row">
+            <button class="btn" id="savePayment">Save Payment Details</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Commission & Pricing</h3>
+          <label>Agent Commission %</label><input id="commission" type="number" min="0" max="100" />
+          <label>Base Price (₦)</label><input id="basePrice" type="number" min="0"/>
+          <label>Per KM Price (₦)</label><input id="perKm" type="number" min="0"/>
+          <div class="row">
+            <button class="btn" id="saveCommission">Save Commission & Pricing</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REQUESTS -->
+    <section id="requests" class="panel hidden">
+      <div class="toolbar">
+        <h2>Admin Request Queue</h2>
+        <button class="btn secondary" id="refreshRequests">Refresh</button>
+      </div>
+      <table>
+        <thead><tr><th>ID</th><th>Requested By</th><th>Action</th><th>Reason</th><th>Status</th><th></th></tr></thead>
+        <tbody id="requestRows"><tr><td class="muted" colspan="6" style="text-align:center">Loading...</td></tr></tbody>
+      </table>
+    </section>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="box">
+    <button class="closeX" id="modalClose">×</button>
+    <div id="modalBody">...</div>
+  </div>
+</div>
+
+<script>
+  // ========= CONFIG & AUTH =========
+  const API_BASE = "https://33vhk4-50000.csb.app";
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+
+  if(!token || role !== "superadmin"){
+    window.location.href = "index.html";
+  }
+  document.getElementById("whoami").textContent = user ? `${user.fullName || user.email} • Super Admin` : "Super Admin";
+
+  // Basic fetch helper
+  async function apiFetch(path, options={}){
+    const res = await fetch(`${API_BASE}${path}`, {
+      headers: {
+        "Content-Type":"application/json",
+        "Authorization": `Bearer ${token}`,
+        ...(options.headers||{})
+      },
+      ...options
+    });
+    if(!res.ok){
+      let m = "Request failed";
+      try{ const j = await res.json(); m = j.message || m }catch{}
+      throw new Error(m);
+    }
+    return res.json();
+  }
+
+  // ========= TABS =========
+  const tabButtons = document.querySelectorAll(".tabbtn[data-tab]");
+  const sections = ["live","issues","users","payouts","settings","requests"].map(id=>document.getElementById(id));
+  tabButtons.forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      tabButtons.forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      const target = btn.getAttribute("data-tab");
+      sections.forEach(sec=>sec.classList.toggle("hidden", sec.id!==target));
+    });
+  });
+
+  // ========= MODAL =========
+  const modal = document.getElementById("modal");
+  const modalBody = document.getElementById("modalBody");
+  document.getElementById("modalClose").onclick = ()=> modal.style.display = "none";
+  function showModal(html){ modalBody.innerHTML = html; modal.style.display = "flex"; }
+
+  // ========= LIVE OPS =========
+  async function loadKpis(){
+    try{
+      const stats = await apiFetch(`/superadmin/stats`); // {users, agentsOnline, activeDeliveries}
+      document.getElementById("kpiUsers").textContent = stats.users ?? 0;
+      document.getElementById("kpiAgentsOnline").textContent = stats.agentsOnline ?? 0;
+      document.getElementById("kpiActive").textContent = stats.activeDeliveries ?? 0;
+    }catch(e){ console.warn(e.message) }
+  }
+
+  async function loadOrders(){
+    const tbody = document.getElementById("orderRows");
+    try{
+      let q = document.getElementById("searchOrders").value?.trim();
+      const list = await apiFetch(`/deliveries${q?`?q=${encodeURIComponent(q)}`:''}`);
+      if(!list.length){ tbody.innerHTML = `<tr><td class="muted" colspan="7" style="text-align:center">No deliveries</td></tr>`; return;}
+      tbody.innerHTML = "";
+      list.sort((a,b)=> new Date(b.updatedAt||b.createdAt) - new Date(a.updatedAt||a.createdAt));
+      list.forEach(d=>{
+        const tr = document.createElement("tr");
+        const statusClass = d.status==="completed"?"completed":(d.status==="enroute"||d.status==="on_the_way")?"enroute":"pending";
+        const total = d.total ?? d.finalPrice ?? 0;
+        const commission = d.commissionPct ?? d.commission ?? 40;
+        const agentCut = Math.round(total * (commission/100));
+        const platformCut = Math.round(total - agentCut);
+        tr.innerHTML = `
+          <td><b>#${d._id?.slice(-6)||"—"}</b><div class="muted">${d.itemType||d.description||"Parcel"}</div></td>
+          <td><span class="status ${statusClass}">${(d.status||"pending").replaceAll("_"," ")}</span></td>
+          <td>${d.customer?.firstName||d.customerName||"—"}</td>
+          <td>${d.agent?.firstName||d.agentName||"—"}</td>
+          <td>₦${total} <div class="muted">Agent: ₦${agentCut} • Platform: ₦${platformCut}</div></td>
+          <td>${new Date(d.updatedAt||d.createdAt).toLocaleString()}</td>
+          <td><button class="btn secondary" data-view="${d._id}">View</button></td>
+        `;
+        tbody.appendChild(tr);
       });
-      if(res.ok){
-        const data=await res.json();
-        if(data.role!=="superadmin") window.location.href="index.html";
-        document.getElementById("superName").textContent="Welcome, "+data.fullName;
-      } else logout();
-    }
-    authCheck();
-
-    function logout(){
-      localStorage.removeItem("token");
-      window.location.href="index.html";
-    }
-
-    async function resetSystem(){
-      if(confirm("Are you sure? This will wipe data!")){
-        const res = await fetch(`${API}/superadmin/reset`, {
-          method:"POST", headers:{Authorization:`Bearer ${token}`}
+      tbody.querySelectorAll("[data-view]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          const id = btn.getAttribute("data-view");
+          const d = await apiFetch(`/deliveries/${id}`);
+          showModal(`
+            <h3>Order #${d._id}</h3>
+            <div class="grid cols-2">
+              <div>
+                <div class="muted">Customer</div>
+                <b>${d.customer?.firstName||d.customerName||"—"}</b><br/>
+                <div class="muted">Pickup</div>${d.pickupAddress||"—"}<br/>
+                <div class="muted">Delivery</div>${d.deliveryAddress||"—"}
+              </div>
+              <div>
+                <div class="muted">Agent</div>
+                <b>${d.agent?.firstName||d.agentName||"—"}</b><br/>
+                <div class="muted">Vehicle</div>${d.agent?.vehicleType||"—"}<br/>
+                <div class="muted">Contact</div>${d.agent?.phone||"—"}
+              </div>
+            </div>
+            <div class="sep"></div>
+            <div class="grid cols-3">
+              <div class="kpi"><span class="pill">Final Price</span> <b>₦${d.finalPrice??d.total??0}</b></div>
+              <div class="kpi"><span class="pill">Agent Payout</span> <b>₦${d.agentPayout??"—"}</b></div>
+              <div class="kpi"><span class="pill">Platform Fee</span> <b>₦${d.platformFee??"—"}</b></div>
+            </div>
+          `);
         });
-        alert(res.ok?"System Reset Completed":"Failed Reset");
-      }
-    }
-
-    async function listAdmins(){
-      const res = await fetch(`${API}/superadmin/admins`, {
-        headers:{Authorization:`Bearer ${token}`}
       });
-      if(res.ok){
-        const data=await res.json();
-        const list=document.getElementById("adminList");
-        list.innerHTML="";
-        data.forEach(admin=>{
-          const li=document.createElement("li");
-          li.textContent=`${admin.fullName} (${admin.email})`;
-          list.appendChild(li);
-        });
-      }
+    }catch(e){
+      tbody.innerHTML = `<tr><td class="muted" colspan="7" style="text-align:center">${e.message}</td></tr>`;
     }
+  }
 
-    async function getLogs(){
-      const res=await fetch(`${API}/superadmin/logs`,{
-        headers:{Authorization:`Bearer ${token}`}
+  document.getElementById("refreshLive").onclick = ()=>{ loadKpis(); loadOrders(); };
+  document.getElementById("searchOrders").addEventListener("input", ()=>{ loadOrders(); });
+
+  // ========= ISSUES =========
+  async function loadIssues(){
+    const body = document.getElementById("ticketRows");
+    try{
+      const tickets = await apiFetch(`/tickets?status=open`);
+      if(!tickets.length){ body.innerHTML = `<tr><td class="muted" colspan="6" style="text-align:center">No open tickets</td></tr>`; return;}
+      body.innerHTML = "";
+      tickets.forEach(t=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>#${t._id?.slice(-6)||"—"}</td>
+          <td>${t.fromName||"—"}</td>
+          <td>${t.fromRole||"—"}</td>
+          <td>${t.subject||"—"}</td>
+          <td><span class="status pending">${t.status||"open"}</span></td>
+          <td class="right">
+            <button class="btn secondary" data-view-ticket="${t._id}">View</button>
+            <button class="btn ok" data-resolve="${t._id}">Mark Resolved</button>
+          </td>
+        `;
+        body.appendChild(tr);
       });
-      document.getElementById("logs").textContent=res.ok?JSON.stringify(await res.json(),null,2):"Failed to fetch logs";
+      body.querySelectorAll("[data-view-ticket]").forEach(btn=>{
+        btn.onclick = async ()=>{
+          const t = await apiFetch(`/tickets/${btn.getAttribute("data-view-ticket")}`);
+          showModal(`
+            <h3>Ticket #${t._id}</h3>
+            <div class="muted">${new Date(t.createdAt).toLocaleString()}</div>
+            <p><b>From:</b> ${t.fromName||"—"} (${t.fromRole||"—"})</p>
+            <p><b>Subject:</b> ${t.subject||"—"}</p>
+            <div class="sep"></div>
+            <p>${t.message||""}</p>
+          `);
+        }
+      });
+      body.querySelectorAll("[data-resolve]").forEach(btn=>{
+        btn.onclick = async ()=>{
+          if(!confirm("Mark this ticket as resolved?")) return;
+          await apiFetch(`/tickets/${btn.getAttribute("data-resolve")}/resolve`, {method:"POST"});
+          loadIssues();
+        }
+      });
+    }catch(e){
+      body.innerHTML = `<tr><td class="muted" colspan="6" style="text-align:center">${e.message}</td></tr>`;
     }
-  </script>
-</body>
-</html>
+  }
+  document.getElementById("refreshIssues").onclick = loadIssues;
+
+  // ========= USER MANAGEMENT =========
+  let currentUMRole = "customers";
+  document.querySelectorAll(".umtab").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      document.querySelectorAll(".umtab").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      currentUMRole = b.getAttribute("data-role");
+      loadUsers();
+    });
+  });
+
+  async function loadUsers(){
+    const body = document.getElementById("userRows");
+    try{
+      const roleMap = {customers:"customer", agents:"agent", admins:"admin"};
+      const list = await apiFetch(`/users?role=${roleMap[currentUMRole]}`);
+      if(!list.length){ body.innerHTML = `<tr><td class="muted" colspan="6" style="text-align:center">No users</td></tr>`; return;}
+      body.innerHTML = "";
+      list.forEach(u=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${u.fullName||"—"}</td>
+ 
