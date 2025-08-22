@@ -12,6 +12,7 @@
       height: 100%;
       background: #FF0000;
       color: white;
+      overflow-x: hidden;
     }
     /* Splash screen */
     #splash {
@@ -23,6 +24,8 @@
       align-items: center;
       justify-content: center;
       z-index: 9999;
+      animation: fadeOut 3s forwards;
+      animation-delay: 2s;
     }
     #splash img {
       width: 150px;
@@ -30,6 +33,17 @@
       border-radius: 50%;
       background: white;
       padding: 15px;
+      opacity: 0;
+      animation: fadeInOut 3s ease-in-out forwards;
+    }
+    @keyframes fadeInOut {
+      0% { opacity: 0; }
+      30% { opacity: 1; }
+      70% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    @keyframes fadeOut {
+      to { opacity: 0; visibility: hidden; }
     }
     /* Page wrapper */
     .page {
@@ -82,6 +96,42 @@
       text-decoration: underline;
     }
     .hidden { display: none; }
+
+    /* Home page */
+    #homePage h2 {
+      margin-top: 20px;
+    }
+    .home-btn {
+      margin-top: 20px;
+      width: 70%;
+      padding: 15px;
+      border-radius: 30px;
+      font-size: 18px;
+    }
+    /* Hamburger menu */
+    .hamburger {
+      position: absolute;
+      top: 20px; left: 20px;
+      cursor: pointer;
+      font-size: 30px;
+    }
+    .drawer {
+      position: fixed;
+      top: 0; left: -250px;
+      width: 250px; height: 100%;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 20px;
+      transition: left 0.3s ease;
+      z-index: 1000;
+    }
+    .drawer.open { left: 0; }
+    .drawer a {
+      display: block;
+      margin: 15px 0;
+      color: white;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
@@ -121,7 +171,7 @@
     <img src="logo.png" alt="SkyUltimate Logo" class="logo">
     <h2>Login</h2>
     <form id="loginForm">
-      <select required>
+      <select id="loginRole" required>
         <option value="">Select Role</option>
         <option value="Customer">Customer</option>
         <option value="Agent">Agent</option>
@@ -134,11 +184,30 @@
     <span class="toggle-link" onclick="showRegister()">Don’t have an account? Register here</span>
   </div>
 
+  <!-- Home Page -->
+  <div id="homePage" class="page">
+    <div class="hamburger" onclick="toggleDrawer()">☰</div>
+    <img src="logo.png" alt="SkyUltimate Logo" class="logo">
+    <h2 id="welcomeText">Welcome!</h2>
+    <button class="home-btn" onclick="goDashboard()">Go to my dashboard</button>
+
+    <!-- Navigation Drawer -->
+    <div class="drawer" id="drawer">
+      <a href="#">About Us</a>
+      <a href="#">Our Mission</a>
+      <a href="#">Our Vision</a>
+      <a href="#">Contact Info</a>
+      <a href="#">Social Media</a>
+      <a href="#" onclick="logout()">Logout</a>
+    </div>
+  </div>
+
   <script>
-    // Splash screen timeout
+    // Hide splash after animation
     setTimeout(() => {
       document.getElementById('splash').style.display = 'none';
-    }, 3000);
+      document.getElementById('registerPage').classList.add('active');
+    }, 5000);
 
     // Role dropdown listener
     document.getElementById('role').addEventListener('change', function() {
@@ -159,6 +228,52 @@
       document.getElementById('loginPage').classList.remove('active');
       document.getElementById('registerPage').classList.add('active');
     }
+
+    // Handle Register
+    document.getElementById('registerForm').addEventListener('submit', e => {
+      e.preventDefault();
+      let role = document.getElementById('role').value;
+      localStorage.setItem("role", role);
+      showHome(role);
+    });
+
+    // Handle Login
+    document.getElementById('loginForm').addEventListener('submit', e => {
+      e.preventDefault();
+      let role = document.getElementById('loginRole').value;
+      localStorage.setItem("role", role);
+      showHome(role);
+    });
+
+    // Show Home
+    function showHome(role) {
+      document.getElementById('registerPage').classList.remove('active');
+      document.getElementById('loginPage').classList.remove('active');
+      document.getElementById('homePage').classList.add('active');
+      document.getElementById("welcomeText").innerText =
+        role ? `Welcome back, ${role}!` : "Welcome!";
+    }
+
+    // Drawer toggle
+    function toggleDrawer() {
+      document.getElementById("drawer").classList.toggle("open");
+    }
+
+    // Go Dashboard by role
+    function goDashboard() {
+      const role = localStorage.getItem("role");
+      if (role === "Customer") alert("Redirecting to Customer Dashboard...");
+      else if (role === "Agent") alert("Redirecting to Agent Dashboard...");
+      else if (role === "Super-admin") alert("Redirecting to Super-admin Dashboard...");
+      else alert("No role found.");
+    }
+
+    // Logout
+    function logout() {
+      localStorage.removeItem("role");
+      document.getElementById('homePage').classList.remove('active');
+      document.getElementById('loginPage').classList.add('active');
+    }
   </script>
 </body>
-</html>
+  </html>
