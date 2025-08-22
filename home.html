@@ -1,118 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SkyUltimate Delivery Services - Home</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f6f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      text-align: center;
-    }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SkyUltimate – Home</title>
+<style>
+  :root{ --red:#C00000; --ink:#111827; --white:#fff; --soft:#f9fafb; }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--soft);color:var(--ink);}
+  /* Splash intro on first load of home too (logo fade-in/out before showing main) */
+  #intro{position:fixed; inset:0; background:var(--red); display:flex; align-items:center; justify-content:center; z-index:9999; animation:fadeOut .7s ease 1.8s forwards;}
+  .logo{width:120px;height:120px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--red);font-size:26px; animation:fadeIn .6s ease forwards;}
+  @keyframes fadeIn{from{opacity:0; transform:scale(.9)} to{opacity:1; transform:scale(1)}}
+  @keyframes fadeOut{to{opacity:0; visibility:hidden}}
+  header{background:var(--red);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:900}
+  .round{width:40px;height:40px;border-radius:50%;background:#fff;color:var(--red);display:flex;align-items:center;justify-content:center;font-weight:900}
+  .hamb{background:#fff1;border:1px solid #ffffff33;color:#fff;border-radius:10px;padding:8px 10px;cursor:pointer}
+  .wrap{max-width:980px;margin:24px auto;padding:0 16px;}
+  .hero{background:var(--red);color:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.1)}
+  .cta{background:#fff;color:var(--red);border:none;border-radius:999px;padding:14px 18px;font-weight:900;cursor:pointer;margin-top:12px}
+  .grid{display:grid;gap:16px;margin:18px 0}
+  .card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+  .muted{color:#6b7280}
+  .btn{background:var(--red);color:#fff;border:none;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:800}
+  footer{margin:28px 0;text-align:center;color:#6b7280}
 
-    .container {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      max-width: 400px;
-      width: 90%;
-    }
-
-    h1 {
-      color: #e60000;
-      margin-bottom: 15px;
-    }
-
-    p {
-      margin: 10px 0;
-      color: #444;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 15px;
-      border: none;
-      border-radius: 25px;
-      background: #e60000;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    button:hover {
-      background: #cc0000;
-    }
-  </style>
+  /* Drawer */
+  #drawer{position:fixed; inset:0 40% 0 -60%; background:rgba(0,0,0,.45); display:none;}
+  #drawer.open{display:block;}
+  .panel{position:absolute; left:0; top:0; bottom:0; width:320px; background:#111827; color:#fff; padding:16px; box-shadow: 8px 0 30px rgba(0,0,0,.3); overflow:auto;}
+  .panel h3{margin:10px 0 6px}
+  .panel .muted{color:#d1d5db}
+  .link{display:block;padding:10px 12px;border-radius:10px;color:#fff;text-decoration:none;margin:4px 0;border:1px solid #ffffff1a}
+  .link:hover{background:#ffffff12}
+  .x{background:#ffffff14;border:none;color:#fff;border-radius:8px;padding:8px 10px;cursor:pointer}
+  pre{white-space:pre-wrap;word-wrap:break-word}
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>Welcome 👋</h1>
-    <p id="userName">Loading...</p>
-    <p id="userRole"></p>
-    <button id="dashboardBtn">Go to Dashboard</button>
-    <button id="logoutBtn">Logout</button>
+<div id="intro"><div class="logo">SU</div></div>
+
+<header>
+  <div class="brand">
+    <div class="round">SU</div> SkyUltimate
+  </div>
+  <div>
+    <button class="hamb" id="menuBtn">☰</button>
+    <button class="hamb" id="logoutBtn" title="Logout">⎋</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <h1 id="welcome">Welcome to SkyUltimate!</h1>
+    <p class="muted" id="hint">Fast, reliable deliveries. Seamless for customers and agents.</p>
+    <button class="cta" id="goBtn">Go to my dashboard</button>
+  </section>
+
+  <div class="grid">
+    <div class="card">
+      <h3>How it works</h3>
+      <ol class="muted">
+        <li>Place an order (price is calculated and confirmed).</li>
+        <li>Pay to activate — admin confirms payment.</li>
+        <li>Agents accept the job (first to accept wins).</li>
+        <li>Live tracking until delivery is confirmed.</li>
+        <li>Agent payout moves to queue for processing.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>Need help?</h3>
+      <p class="muted">Use the drawer to read About Us, Mission, Vision, FAQ/Support.</p>
+    </div>
   </div>
 
-  <script>
-    const API_BASE = "https://33vhk4-50000.csb.app"; // your live backend
-    const token = localStorage.getItem("token");
+  <footer>© <span id="yr"></span> SkyUltimate Delivery Service</footer>
+</div>
 
-    if (!token) {
-      window.location.href = "index.html"; // if no token, send back to login
+<!-- Drawer -->
+<div id="drawer">
+  <aside class="panel">
+    <div class="inline" style="display:flex;justify-content:space-between;align-items:center">
+      <h3>Navigation</h3>
+      <button class="x" id="closeDrawer">✕</button>
+    </div>
+    <a class="link" href="#" data-section="about">About Us</a>
+    <a class="link" href="#" data-section="mission">Our Mission</a>
+    <a class="link" href="#" data-section="vision">Our Vision</a>
+    <a class="link" href="#" data-section="faq">FAQ & Support</a>
+
+    <div id="content" style="margin-top:10px">
+      <pre class="muted">Select a section above.</pre>
+    </div>
+  </aside>
+</div>
+
+<script>
+const API = "https://33vhk4-50000.csb.app";
+const token = localStorage.getItem("token");
+const user = JSON.parse(localStorage.getItem("user") || "null");
+
+$("#yr").textContent = new Date().getFullYear();
+
+// Auth check and personalize CTA
+(async function init(){
+  if(!token){
+    // Still show public home, but CTA sends to index
+    $("#welcome").textContent = "Welcome to SkyUltimate!";
+    $("#goBtn").onclick = ()=>location.href="index.html";
+    return;
+  }
+  try{
+    const res = await fetch(`${API}/auth/me`, { headers:{ Authorization:`Bearer ${token}` } });
+    if(!res.ok) throw 0;
+    const me = await res.json();
+    $("#welcome").textContent = `Welcome back, ${me.fullName || "there"}!`;
+    document.getElementById("hint").textContent = roleHint(me.role);
+    document.getElementById("goBtn").onclick = ()=> routeByRole(me.role);
+  }catch{
+    // invalid token – clear and go login
+    logout();
+  }
+})();
+
+function roleHint(role){
+  if(role==="customer") return "Track orders or place a new one.";
+  if(role==="agent") return "View the delivery board and start earning.";
+  if(role==="admin") return "Go to Operations Hub.";
+  if(role==="superadmin") return "Go to Master Control Panel.";
+  return "Fast, reliable deliveries. Seamless for customers and agents.";
+}
+function routeByRole(role){
+  if(role==="customer") return location.href="customer-dashboard.html";
+  if(role==="agent") return location.href="agent-dashboard.html";
+  if(role==="admin") return location.href="admin-dashboard.html";
+  if(role==="superadmin") return location.href="superadmin.html";
+  location.href="index.html";
+}
+function $(s){return document.querySelector(s);}
+function logout(){ localStorage.clear(); location.href="index.html"; }
+document.getElementById("logoutBtn").onclick = logout;
+
+// Drawer
+const drawer = $("#drawer");
+$("#menuBtn").onclick = ()=> drawer.classList.add("open");
+$("#closeDrawer").onclick = ()=> drawer.classList.remove("open");
+document.querySelectorAll(".link[data-section]").forEach(a=>{
+  a.addEventListener("click", (e)=>{
+    e.preventDefault();
+    const sec = a.dataset.section;
+    const c = $("#content");
+    if(sec==="about"){
+      c.innerHTML = `<div>
+        <h3>About Us</h3>
+        <p>Welcome to SkyUltimate Delivery Service, where we're dedicated to taking your delivery experience to new heights! Founded in 2024...</p>
+        <p>At SkyUltimate, we're more than just a delivery company; we're your trusted partner in logistics.</p>
+      </div>`;
+    }else if(sec==="mission"){
+      c.innerHTML = `<div>
+        <h3>Our Mission</h3>
+        <p>Provide a seamless, reliable, and efficient delivery experience that exceeds expectations...</p>
+      </div>`;
+    }else if(sec==="vision"){
+      c.innerHTML = `<div>
+        <h3>Our Vision</h3>
+        <p>To be the industry leader in delivery services, known for speed, reliability, and customer satisfaction.</p>
+      </div>`;
+    }else if(sec==="faq"){
+      c.innerHTML = `<div>
+        <h3>FAQ & Support</h3>
+        <p><b>How do I track my package?</b> Use your tracking number on the tracking page (or your dashboard).</p>
+        <p><b>Delivery hours?</b> 9:00 AM – 6:00 PM, Mon–Sat. For urgent cases, contact support.</p>
+        <p><b>What items can you deliver?</b> Documents, parcels, and general goods (no hazardous materials or illegal items).</p>
+        <p><b>Lost or damaged?</b> Contact support immediately; we'll investigate and resolve it.</p>
+        <p><b>Contact support?</b> Via phone, email, or live chat from your dashboard.</p>
+      </div>`;
     }
-
-    async function fetchUser() {
-      try {
-        const res = await fetch(`${API_BASE}/auth/me`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          }
-        });
-
-        if (!res.ok) throw new Error("Auth failed");
-
-        const data = await res.json();
-        document.getElementById("userName").textContent = `Hello, ${data.fullName}`;
-        document.getElementById("userRole").textContent = `Role: ${data.role}`;
-
-        document.getElementById("dashboardBtn").onclick = () => {
-          if (data.role === "customer") {
-            window.location.href = "customer-dashboard.html";
-          } else if (data.role === "agent") {
-            window.location.href = "agent-dashboard.html";
-          } else if (data.role === "admin") {
-            window.location.href = "admin-dashboard.html";
-          } else if (data.role === "superadmin") {
-            window.location.href = "superadmin.html";
-          } else {
-            alert("Unknown role, contact support.");
-          }
-        };
-
-      } catch (err) {
-        alert("Session expired, please login again.");
-        localStorage.removeItem("token");
-        window.location.href = "index.html";
-      }
-    }
-
-    document.getElementById("logoutBtn").onclick = () => {
-      localStorage.removeItem("token");
-      window.location.href = "index.html";
-    };
-
-    fetchUser();
-  </script>
+  });
+});
+</script>
 </body>
 </html>
