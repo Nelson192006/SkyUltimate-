@@ -1,209 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SkyUltimate Delivery - Register</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkyUltimate Delivery</title>
   <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      height: 100%;
+      background: #FF0000;
+      color: white;
+    }
     /* Splash screen */
     #splash {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: #FF0000;
       display: flex;
-      justify-content: center;
       align-items: center;
-      height: 100vh;
-      background: white;
-      flex-direction: column;
+      justify-content: center;
+      z-index: 9999;
     }
     #splash img {
-      width: 120px;
-      animation: fadeIn 2s ease-in-out;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: white;
+      padding: 15px;
     }
-    @keyframes fadeIn {
-      from {opacity: 0; transform: scale(0.8);}
-      to {opacity: 1; transform: scale(1);}
-    }
-
-    /* Hide form until splash ends */
-    #register-container { display: none; }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #fff;
-      color: #222;
-    }
-    .form-card {
-      max-width: 400px;
-      margin: 40px auto;
-      background: #fefefe;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    h2 {
+    /* Page wrapper */
+    .page {
+      display: none;
       text-align: center;
-      color: #c62828; /* red theme */
+      padding: 20px;
     }
-    label {
+    .page.active { display: block; }
+    .logo {
+      margin: 20px auto;
       display: block;
-      margin-top: 15px;
-      font-weight: bold;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: white;
+      padding: 10px;
+    }
+    form {
+      max-width: 350px;
+      margin: auto;
+      background: #FF0000;
     }
     input, select {
       width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 25px;
+      background: white;
+      color: black;
+      font-size: 14px;
     }
     button {
-      margin-top: 20px;
       width: 100%;
       padding: 12px;
       border: none;
-      border-radius: 8px;
-      background: #c62828;
-      color: white;
+      border-radius: 25px;
+      background: white;
+      color: #FF0000;
       font-size: 16px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #b71c1c;
-    }
-    .password-field {
-      position: relative;
-    }
-    .password-field img {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      width: 20px;
-      height: 20px;
-      transform: translateY(-50%);
-      cursor: pointer;
-    }
-    .login-link {
-      text-align: center;
-      margin-top: 15px;
-    }
-    .login-link a {
-      color: #c62828;
-      text-decoration: none;
       font-weight: bold;
+      cursor: pointer;
     }
-    .agent-extra { display: none; }
+    .toggle-link {
+      margin-top: 10px;
+      display: block;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
-
-  <!-- Splash screen -->
+  <!-- Splash -->
   <div id="splash">
-    <img src="logo.png" alt="SkyUltimate Logo"/>
-    <p style="color:#c62828;font-weight:bold;">SkyUltimate Delivery</p>
+    <img src="logo.png" alt="SkyUltimate Logo">
   </div>
 
-  <!-- Registration container -->
-  <div id="register-container">
-    <div class="form-card">
-      <h2>Create Account</h2>
-
-      <!-- Role Selection (above form) -->
-      <label for="role">Select Role</label>
+  <!-- Registration Page -->
+  <div id="registerPage" class="page active">
+    <img src="logo.png" alt="SkyUltimate Logo" class="logo">
+    <h2>Register</h2>
+    <form id="registerForm">
       <select id="role" required>
-        <option value="">-- Choose role --</option>
-        <option value="customer">Customer</option>
-        <option value="agent">Agent</option>
-        <!-- Admin option will be injected dynamically if enabled -->
+        <option value="">Select Role</option>
+        <option value="Customer">Customer</option>
+        <option value="Agent">Agent</option>
+        <option value="Super-admin">Super-admin</option>
       </select>
-
-      <!-- Registration Form -->
-      <form id="registerForm">
-        <label for="fullName">Full Name</label>
-        <input type="text" id="fullName" required>
-
-        <label for="email">Email</label>
-        <input type="email" id="email" required>
-
-        <label for="password">Password</label>
-        <div class="password-field">
-          <input type="password" id="password" required>
-          <img id="togglePassword" src="https://img.icons8.com/ios-filled/50/000000/visible.png" alt="toggle"/>
-        </div>
-
-        <!-- Agent extra fields -->
-        <div class="agent-extra" id="agentFields">
-          <label for="nin">NIN</label>
-          <input type="text" id="nin" placeholder="Enter NIN">
-
-          <label for="bank">Bank Name</label>
-          <input type="text" id="bank">
-
-          <label for="acct">Account Number</label>
-          <input type="text" id="acct">
-
-          <label for="referral">Referral Code (optional)</label>
-          <input type="text" id="referral">
-        </div>
-
-        <button type="submit">Register</button>
-      </form>
-
-      <div class="login-link">
-        <p>Already have an account? <a href="login.html">Login here</a></p>
+      <input type="text" placeholder="Full Name" required>
+      <input type="email" placeholder="Email Address" required>
+      <input type="password" placeholder="Password" required>
+      <!-- Extra fields for Agent -->
+      <div id="agentFields" class="hidden">
+        <input type="text" placeholder="Phone Number">
+        <input type="text" placeholder="Bank Name">
+        <input type="text" placeholder="Account Number">
+        <input type="text" placeholder="Account Name">
       </div>
-    </div>
+      <button type="submit">Register</button>
+    </form>
+    <span class="toggle-link" onclick="showLogin()">Already have an account? Login here</span>
+  </div>
+
+  <!-- Login Page -->
+  <div id="loginPage" class="page">
+    <img src="logo.png" alt="SkyUltimate Logo" class="logo">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <select required>
+        <option value="">Select Role</option>
+        <option value="Customer">Customer</option>
+        <option value="Agent">Agent</option>
+        <option value="Super-admin">Super-admin</option>
+      </select>
+      <input type="email" placeholder="Email Address" required>
+      <input type="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+    <span class="toggle-link" onclick="showRegister()">Don’t have an account? Register here</span>
   </div>
 
   <script>
     // Splash screen timeout
     setTimeout(() => {
-      document.getElementById("splash").style.display = "none";
-      document.getElementById("register-container").style.display = "block";
-    }, 2000);
+      document.getElementById('splash').style.display = 'none';
+    }, 3000);
 
-    // Role selection dynamic fields
-    const roleSelect = document.getElementById("role");
-    const agentFields = document.getElementById("agentFields");
-    roleSelect.addEventListener("change", () => {
-      if(roleSelect.value === "agent"){
-        agentFields.style.display = "block";
+    // Role dropdown listener
+    document.getElementById('role').addEventListener('change', function() {
+      const agentFields = document.getElementById('agentFields');
+      if (this.value === 'Agent') {
+        agentFields.classList.remove('hidden');
       } else {
-        agentFields.style.display = "none";
+        agentFields.classList.add('hidden');
       }
     });
 
-    // Password toggle
-    const togglePassword = document.getElementById("togglePassword");
-    const passwordInput = document.getElementById("password");
-    togglePassword.addEventListener("click", () => {
-      const type = passwordInput.type === "password" ? "text" : "password";
-      passwordInput.type = type;
-      togglePassword.src = 
-        type === "password" 
-        ? "https://img.icons8.com/ios-filled/50/000000/visible.png"
-        : "https://img.icons8.com/ios-filled/50/000000/closed-eye.png";
-    });
-
-    // Form submit
-    document.getElementById("registerForm").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const role = roleSelect.value;
-      const fullName = document.getElementById("fullName").value;
-      const email = document.getElementById("email").value;
-      const password = passwordInput.value;
-      // agent extra
-      const nin = document.getElementById("nin").value;
-      const bank = document.getElementById("bank").value;
-      const acct = document.getElementById("acct").value;
-      const referral = document.getElementById("referral").value;
-
-      const payload = {role, fullName, email, password, nin, bank, acct, referral};
-
-      console.log("Submitting", payload); // Replace with API call
-
-      // Redirect after register
-      window.location.href = "homedashboard.html"; 
-    });
+    // Toggle pages
+    function showLogin() {
+      document.getElementById('registerPage').classList.remove('active');
+      document.getElementById('loginPage').classList.add('active');
+    }
+    function showRegister() {
+      document.getElementById('loginPage').classList.remove('active');
+      document.getElementById('registerPage').classList.add('active');
+    }
   </script>
 </body>
 </html>
