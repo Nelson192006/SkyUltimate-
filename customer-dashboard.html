@@ -1,203 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>SkyUltimate | Customer Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkyUltimate Delivery - Customer Dashboard</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 0;
-      background: #f7f7f7;
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      color: #333;
     }
     header {
-      background: red;
+      background: #d32f2f;
       color: white;
       padding: 15px;
       text-align: center;
-      position: relative;
     }
     header h1 {
       margin: 0;
+      font-size: 1.5rem;
     }
-    #logoutBtn {
-      position: absolute;
-      right: 20px;
-      top: 15px;
-      padding: 8px 16px;
+    nav {
+      display: flex;
+      justify-content: space-around;
+      background: #b71c1c;
+      padding: 10px;
+    }
+    nav button {
+      background: white;
       border: none;
+      padding: 10px 15px;
       border-radius: 20px;
-      background: white;
-      color: red;
-      font-weight: bold;
       cursor: pointer;
+      font-weight: bold;
+      color: #b71c1c;
     }
-    .container {
-      max-width: 800px;
-      margin: 20px auto;
-      background: white;
-      border-radius: 12px;
+    nav button:hover {
+      background: #f1f1f1;
+    }
+    main {
       padding: 20px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    h2 {
-      color: red;
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .card h2 {
       margin-top: 0;
     }
-    form input, form textarea, form button {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      font-size: 14px;
-    }
-    form button {
-      background: red;
+    .logout {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #d32f2f;
       color: white;
-      font-weight: bold;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 25px;
       cursor: pointer;
-    }
-    .delivery-card {
-      border: 1px solid #ddd;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-      background: #fafafa;
-    }
-    .status {
       font-weight: bold;
-      color: red;
+    }
+    .logout:hover {
+      background: #b71c1c;
     }
   </style>
 </head>
 <body>
   <header>
     <h1>Customer Dashboard</h1>
-    <button id="logoutBtn">Logout</button>
   </header>
 
-  <div class="container">
-    <h2 id="welcome">Hello, Customer 👋</h2>
+  <nav>
+    <button onclick="showSection('active')">Active Delivery</button>
+    <button onclick="showSection('new')">Request Delivery</button>
+    <button onclick="showSection('history')">History</button>
+    <button onclick="showSection('profile')">Profile</button>
+  </nav>
 
-    <section>
-      <h3>Request New Delivery</h3>
+  <main>
+    <!-- Active Delivery -->
+    <section id="active" class="card">
+      <h2>Active Delivery</h2>
+      <div id="activeDelivery">Loading...</div>
+    </section>
+
+    <!-- Request New Delivery -->
+    <section id="new" class="card" style="display:none;">
+      <h2>Request New Delivery</h2>
       <form id="deliveryForm">
-        <input type="text" id="pickup" placeholder="Pickup Address" required>
-        <input type="text" id="dropoff" placeholder="Drop-off Address" required>
-        <textarea id="details" placeholder="Package Details (size, weight, note)" required></textarea>
-        <button type="submit">Submit Delivery Request</button>
+        <input type="text" id="pickup" placeholder="Pickup Location" required style="display:block;width:100%;margin-bottom:10px;padding:10px;border-radius:8px;border:1px solid #ccc"/>
+        <input type="text" id="dropoff" placeholder="Dropoff Location" required style="display:block;width:100%;margin-bottom:10px;padding:10px;border-radius:8px;border:1px solid #ccc"/>
+        <input type="text" id="item" placeholder="Item Description" required style="display:block;width:100%;margin-bottom:10px;padding:10px;border-radius:8px;border:1px solid #ccc"/>
+        <button type="submit" style="padding:10px 20px;border:none;border-radius:20px;background:#d32f2f;color:white;font-weight:bold;cursor:pointer;">Submit Request</button>
       </form>
+      <div id="newDeliveryMsg"></div>
     </section>
 
-    <section>
-      <h3>Active Deliveries</h3>
-      <div id="activeDeliveries"></div>
+    <!-- History -->
+    <section id="history" class="card" style="display:none;">
+      <h2>Delivery History</h2>
+      <div id="historyList">Loading...</div>
     </section>
 
-    <section>
-      <h3>Delivery History</h3>
-      <div id="history"></div>
+    <!-- Profile -->
+    <section id="profile" class="card" style="display:none;">
+      <h2>My Profile</h2>
+      <div id="profileDetails">Loading...</div>
     </section>
-  </div>
+  </main>
+
+  <button class="logout" onclick="logout()">Logout</button>
 
   <script>
-    const API_BASE = "https://33vhk4-50000.csb.app";
+    const API_URL = "https://33vhk4-50000.csb.app";
     const token = localStorage.getItem("token");
 
-    // Redirect if no token
     if (!token) {
       window.location.href = "index.html";
     }
 
-    // Logout
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      localStorage.removeItem("token");
-      window.location.href = "index.html";
+    // Default: load active deliveries
+    document.addEventListener("DOMContentLoaded", () => {
+      loadActiveDelivery();
+      loadProfile();
+      loadHistory();
     });
 
-    // Fetch profile
-    async function fetchProfile() {
+    function showSection(section) {
+      document.querySelectorAll("main section").forEach(s => s.style.display = "none");
+      document.getElementById(section).style.display = "block";
+    }
+
+    async function loadActiveDelivery() {
       try {
-        const res = await fetch(`${API_BASE}/auth/me`, {
-          headers: { "Authorization": `Bearer ${token}` }
+        const res = await fetch(`${API_URL}/deliveries/active`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
-        if (!res.ok) throw new Error("Auth failed");
         const data = await res.json();
-        if (data.role !== "customer") {
-          // redirect if wrong role
-          if (data.role === "agent") window.location.href = "agent-dashboard.html";
-          else if (data.role === "admin") window.location.href = "admin-dashboard.html";
-          else if (data.role === "superadmin") window.location.href = "superadmin.html";
-        }
-        document.getElementById("welcome").textContent = `Hello, ${data.fullName} 👋`;
+        document.getElementById("activeDelivery").innerText =
+          data && data.length ? JSON.stringify(data, null, 2) : "No active deliveries.";
       } catch (err) {
-        console.error(err);
-        window.location.href = "index.html";
+        document.getElementById("activeDelivery").innerText = "Error loading deliveries.";
       }
     }
 
-    // Create new delivery
     document.getElementById("deliveryForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const pickup = document.getElementById("pickup").value;
       const dropoff = document.getElementById("dropoff").value;
-      const details = document.getElementById("details").value;
+      const item = document.getElementById("item").value;
 
       try {
-        const res = await fetch(`${API_BASE}/deliveries`, {
+        const res = await fetch(`${API_URL}/deliveries`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
+            Authorization: `Bearer ${token}`
           },
-          body: JSON.stringify({ pickup, dropoff, details })
+          body: JSON.stringify({ pickup, dropoff, item })
         });
-        if (!res.ok) throw new Error("Failed to create delivery");
-        alert("Delivery request submitted!");
-        loadDeliveries();
+        const data = await res.json();
+        document.getElementById("newDeliveryMsg").innerText = "Delivery request submitted!";
+        loadActiveDelivery();
       } catch (err) {
-        alert(err.message);
+        document.getElementById("newDeliveryMsg").innerText = "Error submitting delivery.";
       }
     });
 
-    // Load deliveries
-    async function loadDeliveries() {
+    async function loadHistory() {
       try {
-        const res = await fetch(`${API_BASE}/deliveries`, {
-          headers: { "Authorization": `Bearer ${token}` }
+        const res = await fetch(`${API_URL}/deliveries/history`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
-        const deliveries = await res.json();
-        
-        const activeDiv = document.getElementById("activeDeliveries");
-        const historyDiv = document.getElementById("history");
-        activeDiv.innerHTML = "";
-        historyDiv.innerHTML = "";
-
-        deliveries.forEach(delivery => {
-          const card = document.createElement("div");
-          card.className = "delivery-card";
-          card.innerHTML = `
-            <p><b>From:</b> ${delivery.pickup}</p>
-            <p><b>To:</b> ${delivery.dropoff}</p>
-            <p><b>Details:</b> ${delivery.details}</p>
-            <p class="status">Status: ${delivery.status}</p>
-          `;
-          if (delivery.status === "delivered") {
-            historyDiv.appendChild(card);
-          } else {
-            activeDiv.appendChild(card);
-          }
-        });
+        const data = await res.json();
+        document.getElementById("historyList").innerText =
+          data && data.length ? JSON.stringify(data, null, 2) : "No past deliveries.";
       } catch (err) {
-        console.error(err);
+        document.getElementById("historyList").innerText = "Error loading history.";
       }
     }
 
-    // Init
-    fetchProfile();
-    loadDeliveries();
+    async function loadProfile() {
+      try {
+        const res = await fetch(`${API_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const user = await res.json();
+        document.getElementById("profileDetails").innerText = 
+          `Name: ${user.fullName}\nEmail: ${user.email}\nRole: ${user.role}`;
+      } catch (err) {
+        document.getElementById("profileDetails").innerText = "Error loading profile.";
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "index.html";
+    }
   </script>
 </body>
 </html>
