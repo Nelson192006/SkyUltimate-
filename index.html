@@ -1,1 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SkyUltimate Delivery - Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #b30000;
+      margin: 0;
+      padding: 0;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    .container {
+      background: white;
+      color: black;
+      padding: 20px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      background: #b30000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 18px;
+      color: white;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #b30000;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      margin-top: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #990000;
+    }
+    .link {
+      margin-top: 10px;
+      display: block;
+      font-size: 14px;
+      color: #b30000;
+      cursor: pointer;
+    }
+    .error {
+      color: red;
+      margin-top: 5px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">Sky</div>
+    <h2>Welcome to SkyUltimate</h2>
 
+    <!-- Role Selection -->
+    <select id="role">
+      <option value="customer">Customer</option>
+      <option value="agent">Agent</option>
+      <option value="admin">Admin</option>
+      <option value="superadmin">Super Admin</option>
+    </select>
+
+    <!-- Login -->
+    <input type="email" id="loginEmail" placeholder="Email" required>
+    <input type="password" id="loginPassword" placeholder="Password" required>
+    <button onclick="login()">Login</button>
+    <span class="link" onclick="toggleRegister()">Don't have an account? Register</span>
+    <p class="error" id="loginError"></p>
+
+    <!-- Register -->
+    <div id="registerSection" style="display:none;">
+      <input type="text" id="registerName" placeholder="Full Name">
+      <input type="email" id="registerEmail" placeholder="Email">
+      <input type="password" id="registerPassword" placeholder="Password">
+      <button onclick="register()">Register</button>
+      <span class="link" onclick="toggleRegister()">Already have an account? Login</span>
+      <p class="error" id="registerError"></p>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "https://33vhk4-50000.csb.app"; 
+
+    function toggleRegister() {
+      const reg = document.getElementById("registerSection");
+      reg.style.display = reg.style.display === "none" ? "block" : "none";
+    }
+
+    async function login() {
+      const role = document.getElementById("role").value;
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+      const errorBox = document.getElementById("loginError");
+      errorBox.textContent = "";
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, role })
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.message || "Login failed");
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", role);
+
+        if (role === "customer") window.location.href = "customer-dashboard.html";
+        else if (role === "agent") window.location.href = "agent-dashboard.html";
+        else if (role === "admin") window.location.href = "admin-dashboard.html";
+        else if (role === "superadmin") window.location.href = "superadmin.html";
+      } catch (err) {
+        errorBox.textContent = err.message;
+      }
+    }
+
+    async function register() {
+      const role = document.getElementById("role").value;
+      const name = document.getElementById("registerName").value;
+      const email = document.getElementById("registerEmail").value;
+      const password = document.getElementById("registerPassword").value;
+      const errorBox = document.getElementById("registerError");
+      errorBox.textContent = "";
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fullName: name, email, password, role })
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.message || "Registration failed");
+        alert("Registration successful, please login.");
+        toggleRegister();
+      } catch (err) {
+        errorBox.textContent = err.message;
+      }
+    }
+  </script>
+</body>
+</html>
