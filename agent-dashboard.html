@@ -1,1 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkyUltimate Delivery – Agent Dashboard</title>
+  <style>
+    :root{
+      --red:#c00000;
+      --dark:#8a0000;
+      --light:#fff;
+      --muted:#f5f5f7;
+      --text:#222;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--muted);
+      color:var(--text);
+    }
+    header{
+      background:var(--red);
+      color:var(--light);
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      position:sticky; top:0; z-index:10;
+    }
+    header .brand{font-weight:800; letter-spacing:.3px}
+    header .right{
+      display:flex; gap:10px; align-items:center;
+    }
+    .pill{
+      background:var(--light);
+      color:var(--red);
+      border:none; padding:8px 14px; border-radius:999px; font-weight:700; cursor:pointer;
+    }
+    .container{max-width:1100px; margin:18px auto; padding:0 16px;}
+    .grid{display:grid; grid-template-columns: 1fr; gap:16px;}
+    @media (min-width: 960px){ .grid{grid-template-columns: 1.2fr .8fr;} }
 
+    .card{
+      background:#fff; border-radius:14px; padding:16px; box-shadow:0 6px 24px rgba(0,0,0,.08);
+    }
+    .card h2{margin:0 0 10px; color:var(--red); font-size:1.1rem;}
+    .sub{color:#555; font-size:.92rem;}
+    .row{display:flex; gap:10px; flex-wrap:wrap;}
+    .tag{display:inline-block; background:#ffe6e6; color:var(--red); padding:4px 10px; border-radius:999px; font-weight:700; font-size:.8rem;}
+    .btn{
+      background:var(--red); color:#fff; border:none; padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:700;
+    }
+    .btn.secondary{ background:#eee; color:#222;}
+    .btn.ghost{ background:transparent; border:1px solid #ddd; color:#333;}
+    .list{display:grid; gap:12px;}
+    .job{
+      border:1px solid #eee; border-radius:12px; padding:12px; background:#fff;
+      display:grid; gap:8px;
+    }
+    .job .addr{display:flex; gap:8px; align-items:flex-start;}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:.9rem;}
+    .muted{color:#666;}
+    .accent{color:var(--red); font-weight:800;}
+    .hr{height:1px; background:#eee; margin:10px 0;}
+    .inline{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+    .map{
+      width:100%; height:280px; border:0; border-radius:12px; background:#fafafa;
+    }
+
+    /* Toggle */
+    .toggle{
+      display:inline-flex; align-items:center; gap:10px; font-weight:700;
+      background:#fff; border-radius:999px; padding:6px 10px; border:1px solid #eee;
+    }
+    .switch{
+      width:48px; height:26px; background:#ddd; border-radius:999px; position:relative; transition:.2s;
+      box-shadow: inset 0 0 0 2px rgba(0,0,0,.06);
+      cursor:pointer;
+    }
+    .switch::after{
+      content:""; position:absolute; width:20px; height:20px; top:3px; left:3px; border-radius:50%;
+      background:#fff; box-shadow:0 2px 6px rgba(0,0,0,.2); transition:.25s;
+    }
+    .switch.on{ background:#04c200;}
+    .switch.on::after{ left:25px;}
+
+    /* Countdown bar animation for new job cards */
+    .countdown{
+      height:6px; background:#ffe6e6; border-radius:8px; overflow:hidden;
+    }
+    .countdown > i{
+      display:block; height:100%; background:var(--red); width:100%;
+      animation: shrink 30s linear forwards;
+    }
+    @keyframes shrink{ from{width:100%} to{width:0%} }
+
+    .section-tabs{
+      display:flex; gap:8px; flex-wrap:wrap; margin:12px 0 0;
+    }
+    .tab{
+      border:1px solid #eee; padding:8px 12px; border-radius:999px; background:#fff; cursor:pointer;
+      font-weight:700; color:#555;
+    }
+    .tab.active{ background:var(--red); color:#fff; border-color:var(--red);}
+    .hidden{ display:none !important; }
+    .right-actions{ display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">SkyUltimate – Agent</div>
+    <div class="right">
+      <div class="toggle" title="Go ONLINE/OFFLINE">
+        <span id="onlineLabel">OFFLINE</span>
+        <div id="switch" class="switch" role="switch" aria-checked="false" tabindex="0"></div>
+      </div>
+      <button class="pill" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+      <!-- Left: Board + Active -->
+      <section class="card">
+        <div class="inline" style="justify-content:space-between;">
+          <h2 id="welcome">Welcome, Agent</h2>
+          <div class="right-actions">
+            <span class="tag" id="ratingTag">Rating: —</span>
+            <button class="btn ghost" onclick="refreshAll()">Refresh</button>
+          </div>
+        </div>
+
+        <div class="section-tabs">
+          <button class="tab active" data-tab="board">Delivery Board</button>
+          <button class="tab" data-tab="active">Active Delivery</button>
+          <button class="tab" data-tab="history">History</button>
+          <button class="tab" data-tab="earnings">Earnings</button>
+          <button class="tab" data-tab="profile">My Profile</button>
+        </div>
+
+        <!-- Delivery Board -->
+        <div id="section-board" class="section-content" style="margin-top:12px;">
+          <div class="card sub" style="background:#fafafa;">
+            <div class="inline">
+              <div>Your status:</div>
+              <div id="statusBadge" class="tag">OFFLINE</div>
+              <div class="muted">Toggle ONLINE to receive new jobs instantly.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Live Map</h2>
+            <iframe id="map" class="map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <div class="inline muted" style="margin-top:8px;">
+              <span class="mono" id="coords">Locating…</span>
+              <button class="btn secondary" onclick="locate()">Refresh Location</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Available Deliveries</h2>
+            <div id="availableList" class="list">Loading…</div>
+          </div>
+        </div>
+
+        <!-- Active Delivery -->
+        <div id="section-active" class="section-content hidden" style="margin-top:12px;">
+          <div id="activeWrap" class="list">No active delivery.</div>
+        </div>
+
+        <!-- History -->
+        <div id="section-history" class="section-content hidden" style="margin-top:12px;">
+          <div id="historyWrap" class="list">Loading…</div>
+        </div>
+
+        <!-- Earnings -->
+        <div id="section-earnings" class="section-content hidden" style="margin-top:12px;">
+          <div class="card">
+            <div class="row">
+              <div><span class="muted">Completed Today:</span> <b id="completedToday">—</b></div>
+              <div><span class="muted">Pending Payout:</span> <b class="accent" id="pendingPayout">—</b></div>
+              <div><span class="muted">Total Earned:</span> <b id="totalEarned">—</b></div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Payouts</h2>
+            <div class="sub">Your pending amount is processed by Admin/Super Admin. Ensure your bank details are up to date.</div>
+          </div>
+        </div>
+
+        <!-- Profile -->
+        <div id="section-profile" class="section-content hidden" style="margin-top:12px;">
+          <div class="card">
+            <h2>My Profile</h2>
+            <div id="profileWrap" class="list">Loading…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: Quick Stats -->
+      <aside class="card">
+        <h2>Quick Stats</h2>
+        <div class="row" style="justify-content:space-between;">
+          <div><span class="muted">Completed Today</span><div class="accent" id="statToday">—</div></div>
+          <div><span class="muted">Pending Payout</span><div class="accent" id="statPending">—</div></div>
+        </div>
+        <div class="hr"></div>
+        <div class="sub">Keep ONLINE to receive nearby jobs. First to accept wins the job.</div>
+        <div class="hr"></div>
+        <button class="btn" onclick="refreshAll()">Manual Refresh</button>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const API = "https://33vhk4-50000.csb.app";
+    const token = localStorage.getItem("token");
+    if(!token){ window.location.href="index.html"; }
+
+    // --- Helpers ---
+    const authHeader = () => ({ Authorization: `Bearer ${token}`, "Content-Type":"application/json" });
+    const $ = (id)=>document.getElementById(id);
+    const show = (el)=>el.classList.remove("hidden");
+    const hide = (el)=>el.classList.add("hidden");
+
+    // Tabs
+    document.querySelectorAll(".tab").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        const tab = btn.dataset.tab;
+        document.querySelectorAll(".section-content").forEach(s=>s.classList.add("hidden"));
+        show($(`section-${tab}`));
+        if(tab==="board"){ /* noop */ }
+        if(tab==="active"){ loadActive(); }
+        if(tab==="history"){ loadHistory(); }
+        if(tab==="earnings"){ loadEarnings(); }
+        if(tab==="profile"){ loadProfile(); }
+      });
+    });
+
+    // Auth + role check
+    async function ensureAgent(){
+      try{
+        const res = await fetch(`${API}/auth/me`, { headers: { Authorization:`Bearer ${token}` } });
+        if(!res.ok) throw new Error();
+        const me = await res.json();
+        if(me.role!=="agent"){
+          if(me.role==="customer") return window.location.href="customer-dashboard.html";
+          if(me.role==="admin") return window.location.href="admin-dashboard.html";
+          if(me.role==="superadmin") return window.location.href="superadmin.html";
+          return window.location.href="index.html";
+        }
+        $("welcome").textContent = `Welcome, ${me.fullName}`;
+        if(me.rating){ $("ratingTag").textContent = `Rating: ${Number(me.rating).toFixed(1)} ★`; }
+      }catch(e){
+        logout();
+      }
+    }
+
+    // ONLINE toggle
+    const switchEl = $("switch");
+    const onlineLabel = $("onlineLabel");
+    const statusBadge = $("statusBadge");
+    let isOnline = false;
+    async function setOnline(state){
+      try{
+        isOnline = !!state;
+        switchEl.classList.toggle("on", isOnline);
+        switchEl.setAttribute("aria-checked", String(isOnline));
+        onlineLabel.textContent = isOnline ? "ONLINE" : "OFFLINE";
+        statusBadge.textContent = onlineLabel.textContent;
+        statusBadge.className = "tag";
+        if(isOnline) statusBadge.style.background = "#e6ffea";
+        else statusBadge.style.background = "#ffe6e6";
+        await fetch(`${API}/agent/status`, {
+          method:"POST",
+          headers: authHeader(),
+          body: JSON.stringify({ online:isOnline })
+        });
+        if(isOnline){ pollAvailable(); } // start polling
+      }catch(e){ console.warn("Status update failed"); }
+    }
+    switchEl.addEventListener("click", ()=>setOnline(!isOnline));
+    switchEl.addEventListener("keydown", (e)=>{ if(e.key===" "||e.key==="Enter"){ e.preventDefault(); setOnline(!isOnline);} });
+
+    // Geolocation + Map
+    function locate(){
+      if(!navigator.geolocation) return $("coords").textContent = "Geolocation not supported";
+      navigator.geolocation.getCurrentPosition( pos=>{
+        const {latitude, longitude} = pos.coords;
+        $("coords").textContent = `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`;
+        $("map").src = `https://maps.google.com/maps?q=${latitude},${longitude}&z=14&output=embed`;
+      }, err=>{
+        $("coords").textContent = "Location blocked. Enable GPS.";
+      }, { enableHighAccuracy:true, timeout:8000, maximumAge:30000 });
+    }
+
+    // Board: Available Deliveries
+    let pollTimer=null;
+    async function loadAvailable(){
+      try{
+        const res = await fetch(`${API}/agent/available`, { headers: { Authorization:`Bearer ${token}` } });
+        const list = $("availableList");
+        if(!res.ok){ list.textContent = "Failed to load."; return; }
+        const jobs = await res.json();
+        list.innerHTML = "";
+        if(!jobs || !jobs.length){ list.textContent = isOnline ? "You're all set! New deliveries will appear here instantly." : "Go ONLINE to receive new deliveries."; return; }
+        jobs.forEach(job=>{
+          const div = document.createElement("div");
+          div.className = "job";
+          div.innerHTML = `
+            <div class="inline" style="justify-content:space-between;">
+              <div><b class="accent">Your Payout: ${currency(job.payout)}</b></div>
+              <div class="muted mono">#${job.id || job._id || "—"}</div>
+            </div>
+            <div class="addr"><span>Pickup:</span><div class="mono">${escapeHtml(job.pickup)}</div></div>
+            <div class="addr"><span>Drop-off:</span><div class="mono">${escapeHtml(job.dropoff)}</div></div>
+            <div class="inline muted">
+              <span>Distance: <b>${job.distance?.toFixed ? job.distance.toFixed(1) : (job.distance||"—")}</b></span>
+              <span>Item: <b>${escapeHtml(job.item||job.type||"—")}</b></span>
+            </div>
+            <div class="countdown"><i></i></div>
+            <div class="inline" style="justify-content:flex-end;">
+              <button class="btn" data-accept="${job.id || job._id}">ACCEPT ORDER</button>
+            </div>
+          `;
+          list.appendChild(div);
+        });
+        // bind accept
+        list.querySelectorAll("button[data-accept]").forEach(btn=>{
+          btn.addEventListener("click", ()=>acceptOrder(btn.dataset.accept));
+        });
+      }catch(e){
+        $("availableList").textContent = "Error loading deliveries.";
+      }
+    }
+    function pollAvailable(){
+      clearInterval(pollTimer);
+      if(!isOnline) return;
+      loadAvailable();
+      pollTimer = setInterval(()=>{ if(isOnline){ loadAvailable(); } }, 10000);
+    }
+
+    async function acceptOrder(id){
+      try{
+        const res = await fetch(`${API}/agent/accept`, {
+          method:"POST",
+          headers: authHeader(),
+          body: JSON.stringify({ deliveryId:id })
+        });
+        if(!res.ok){
+          alert("Job already taken or failed.");
+          loadAvailable();
+          return;
+        }
+        alert("Job accepted! Redirecting to Active Delivery.");
+        // switch tab to Active
+        document.querySelector('.tab[data-tab="active"]').click();
+        await loadActive();
+      }catch(e){ alert("Unable to accept job at the moment."); }
+    }
+
+    // Active Delivery
+    async function loadActive(){
+      try{
+        const res = await fetch(`${API}/agent/active`, { headers: { Authorization:`Bearer ${token}` } });
+        const wrap = $("activeWrap");
+        if(!res.ok){ wrap.textContent = "Failed to load active delivery."; return; }
+        const job = await res.json();
+        wrap.innerHTML = "";
+        if(!job || (Array.isArray(job) && !job.length)){
+          wrap.textContent = "No active delivery.";
+          return;
+        }
+        const active = Array.isArray(job) ? job[0] : job;
+        const pickupUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(active.pickup)}`;
+        const dropUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(active.dropoff)}`;
+        const mapQuery = encodeURIComponent(active.pickup);
+        const iframe = `<iframe class="map" src="https://maps.google.com/maps?q=${mapQuery}&z=13&output=embed"></iframe>`;
+        const phone = active.customer?.phone || active.customerPhone || "";
+        const payout = currency(active.payout);
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <h2>Active Delivery</h2>
+          <div class="row" style="justify-content:space-between;">
+            <div class="tag">This Job Payout: ${payout}</div>
+            <div class="muted mono">Order: #${active.id || active._id || "—"}</div>
+          </div>
+          <div class="hr"></div>
+          <div class="addr"><b>Pickup:</b> <div class="mono">${escapeHtml(active.pickup)}</div></div>
+          <div class="addr"><b>Drop-off:</b> <div class="mono">${escapeHtml(active.dropoff)}</div></div>
+          <div class="addr"><b>Item:</b> <div class="mono">${escapeHtml(active.item || active.details || "—")}</div></div>
+          <div class="hr"></div>
+          ${iframe}
+          <div class="row" style="margin-top:10px;">
+            <a class="btn" href="${pickupUrl}" target="_blank" rel="noopener">Start Navigation to Pickup</a>
+            <a class="btn secondary" href="${dropUrl}" target="_blank" rel="noopener">Navigate to Drop-off</a>
+            ${phone ? `<a class="btn ghost" href="tel:${encodeURIComponent(phone)}">Contact Customer</a>` : ""}
+          </div>
+          <div class="hr"></div>
+          <div class="sub">
+            <div><b>Workflow</b></div>
+            <ol>
+              <li>Drive to pickup.</li>
+              <li>Await Customer pickup confirmation in their app.</li>
+              <li>Drive to delivery.</li>
+              <li>Await Customer delivery confirmation.</li>
+            </ol>
+          </div>
+        `;
+        wrap.appendChild(card);
+      }catch(e){
+        $("activeWrap").textContent = "Error fetching active delivery.";
+      }
+    }
+
+    // History
+    async function loadHistory(){
+      try{
+        const res = await fetch(`${API}/agent/history`, { headers: { Authorization:`Bearer ${token}` } });
+        const wrap = $("historyWrap");
+        if(!res.ok){ wrap.textContent = "Failed to load history."; return; }
+        const list = await res.json();
+        wrap.innerHTML = "";
+        if(!list || !list.length){ wrap.textContent = "No completed deliveries yet."; return; }
+        list.forEach(item=>{
+          const div = document.createElement("div");
+          div.className = "job";
+          div.innerHTML = `
+            <div class="inline" style="justify-content:space-between;">
+              <div class="muted mono">#${item.id || item._id || "—"}</div>
+              <div class="tag">Payout: ${currency(item.payout)}</div>
+            </div>
+            <div><b>From:</b> <span class="mono">${escapeHtml(item.pickup)}</span></div>
+            <div><b>To:</b> <span class="mono">${escapeHtml(item.dropoff)}</span></div>
+            <div class="muted">Completed: ${fmtDate(item.completedAt || item.updatedAt || item.createdAt)}</div>
+          `;
+          wrap.appendChild(div);
+        });
+      }catch(e){ $("historyWrap").textContent = "Error loading history."; }
+    }
+
+    // Earnings / Stats
+    async function loadEarnings(){
+      try{
+        const res = await fetch(`${API}/agent/earnings`, { headers: { Authorization:`Bearer ${token}` } });
+        if(!res.ok) throw new Error();
+        const data = await res.json();
+        $("pendingPayout").textContent = currency(data.pendingPayout ?? 0);
+        $("totalEarned").textContent = currency(data.totalEarned ?? 0);
+        $("completedToday").textContent = data.completedToday ?? "0";
+        $("statToday").textContent = data.completedToday ?? "0";
+        $("statPending").textContent = currency(data.pendingPayout ?? 0);
+        if(data.rating){ $("ratingTag").textContent = `Rating: ${Number(data.rating).toFixed(1)} ★`; }
+      }catch(e){
+        // graceful fallback
+        ["pendingPayout","totalEarned","completedToday","statToday","statPending"].forEach(id=>$(id).textContent="—");
+      }
+    }
+
+    // Profile
+    async function loadProfile(){
+      try{
+        const res = await fetch(`${API}/auth/me`, { headers: { Authorization:`Bearer ${token}` } });
+        const wrap = $("profileWrap");
+        if(!res.ok){ wrap.textContent = "Failed to load profile."; retu
