@@ -2,158 +2,208 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SkyUltimate | Register & Login</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkyUltimate Delivery - Register</title>
+  <style>
+    /* Splash screen */
+    #splash {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: white;
+      flex-direction: column;
+    }
+    #splash img {
+      width: 120px;
+      animation: fadeIn 2s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: scale(0.8);}
+      to {opacity: 1; transform: scale(1);}
+    }
+
+    /* Hide form until splash ends */
+    #register-container { display: none; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fff;
+      color: #222;
+    }
+    .form-card {
+      max-width: 400px;
+      margin: 40px auto;
+      background: #fefefe;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #c62828; /* red theme */
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #c62828;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #b71c1c;
+    }
+    .password-field {
+      position: relative;
+    }
+    .password-field img {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      width: 20px;
+      height: 20px;
+      transform: translateY(-50%);
+      cursor: pointer;
+    }
+    .login-link {
+      text-align: center;
+      margin-top: 15px;
+    }
+    .login-link a {
+      color: #c62828;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .agent-extra { display: none; }
+  </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<body>
 
-  <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
-    <h2 id="form-title" class="text-2xl font-bold text-center mb-6">Sign Up</h2>
+  <!-- Splash screen -->
+  <div id="splash">
+    <img src="logo.png" alt="SkyUltimate Logo"/>
+    <p style="color:#c62828;font-weight:bold;">SkyUltimate Delivery</p>
+  </div>
 
-    <!-- Signup/Login form -->
-    <form id="auth-form" class="space-y-4">
-      <div id="name-field">
-        <label class="block text-gray-700">Full Name</label>
-        <input type="text" id="fullName" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300" placeholder="Enter full name" />
-      </div>
+  <!-- Registration container -->
+  <div id="register-container">
+    <div class="form-card">
+      <h2>Create Account</h2>
 
-      <div>
-        <label class="block text-gray-700">Email</label>
-        <input type="email" id="email" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300" placeholder="Enter email" required />
-      </div>
+      <!-- Role Selection (above form) -->
+      <label for="role">Select Role</label>
+      <select id="role" required>
+        <option value="">-- Choose role --</option>
+        <option value="customer">Customer</option>
+        <option value="agent">Agent</option>
+        <!-- Admin option will be injected dynamically if enabled -->
+      </select>
 
-      <div>
-        <label class="block text-gray-700">Password</label>
-        <div class="relative">
-          <input type="password" id="password" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300" placeholder="Enter password" required />
-          <button type="button" id="togglePassword" class="absolute inset-y-0 right-3 flex items-center text-sm text-blue-500">Show</button>
+      <!-- Registration Form -->
+      <form id="registerForm">
+        <label for="fullName">Full Name</label>
+        <input type="text" id="fullName" required>
+
+        <label for="email">Email</label>
+        <input type="email" id="email" required>
+
+        <label for="password">Password</label>
+        <div class="password-field">
+          <input type="password" id="password" required>
+          <img id="togglePassword" src="https://img.icons8.com/ios-filled/50/000000/visible.png" alt="toggle"/>
         </div>
+
+        <!-- Agent extra fields -->
+        <div class="agent-extra" id="agentFields">
+          <label for="nin">NIN</label>
+          <input type="text" id="nin" placeholder="Enter NIN">
+
+          <label for="bank">Bank Name</label>
+          <input type="text" id="bank">
+
+          <label for="acct">Account Number</label>
+          <input type="text" id="acct">
+
+          <label for="referral">Referral Code (optional)</label>
+          <input type="text" id="referral">
+        </div>
+
+        <button type="submit">Register</button>
+      </form>
+
+      <div class="login-link">
+        <p>Already have an account? <a href="login.html">Login here</a></p>
       </div>
-
-      <div id="role-field">
-        <label class="block text-gray-700">Role</label>
-        <select id="role" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300">
-          <option value="customer">Customer</option>
-          <option value="agent">Agent</option>
-          <option value="admin">Admin</option>
-          <option value="superadmin">Super Admin</option>
-        </select>
-      </div>
-
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Submit</button>
-    </form>
-
-    <p class="text-sm text-center text-gray-600 mt-4">
-      <span id="toggle-text">Already have an account?</span>
-      <a href="#" id="toggle-link" class="text-blue-600 hover:underline">Login here</a>
-    </p>
+    </div>
   </div>
 
   <script>
-    const form = document.getElementById("auth-form");
-    const formTitle = document.getElementById("form-title");
-    const nameField = document.getElementById("name-field");
-    const roleField = document.getElementById("role-field");
-    const toggleLink = document.getElementById("toggle-link");
-    const toggleText = document.getElementById("toggle-text");
-    const passwordInput = document.getElementById("password");
+    // Splash screen timeout
+    setTimeout(() => {
+      document.getElementById("splash").style.display = "none";
+      document.getElementById("register-container").style.display = "block";
+    }, 2000);
+
+    // Role selection dynamic fields
+    const roleSelect = document.getElementById("role");
+    const agentFields = document.getElementById("agentFields");
+    roleSelect.addEventListener("change", () => {
+      if(roleSelect.value === "agent"){
+        agentFields.style.display = "block";
+      } else {
+        agentFields.style.display = "none";
+      }
+    });
+
+    // Password toggle
     const togglePassword = document.getElementById("togglePassword");
-
-    let isLogin = false;
-
-    // Toggle password visibility
+    const passwordInput = document.getElementById("password");
     togglePassword.addEventListener("click", () => {
-      if (passwordInput.type === "password") {
-        passwordInput.type = "text";
-        togglePassword.textContent = "Hide";
-      } else {
-        passwordInput.type = "password";
-        togglePassword.textContent = "Show";
-      }
+      const type = passwordInput.type === "password" ? "text" : "password";
+      passwordInput.type = type;
+      togglePassword.src = 
+        type === "password" 
+        ? "https://img.icons8.com/ios-filled/50/000000/visible.png"
+        : "https://img.icons8.com/ios-filled/50/000000/closed-eye.png";
     });
 
-    // Toggle between signup and login
-    toggleLink.addEventListener("click", (e) => {
+    // Form submit
+    document.getElementById("registerForm").addEventListener("submit", (e) => {
       e.preventDefault();
-      isLogin = !isLogin;
-      if (isLogin) {
-        formTitle.textContent = "Login";
-        nameField.style.display = "none";
-        roleField.style.display = "none";
-        toggleText.textContent = "Don't have an account?";
-        toggleLink.textContent = "Sign up here";
-      } else {
-        formTitle.textContent = "Sign Up";
-        nameField.style.display = "block";
-        roleField.style.display = "block";
-        toggleText.textContent = "Already have an account?";
-        toggleLink.textContent = "Login here";
-      }
-    });
-
-    // API base URL (your backend)
-    const API_BASE = "https://33vhk4-50000.csb.app/api/users";
-
-    // Handle form submit
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const fullName = document.getElementById("fullName")?.value;
+      const role = roleSelect.value;
+      const fullName = document.getElementById("fullName").value;
       const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const role = document.getElementById("role")?.value;
+      const password = passwordInput.value;
+      // agent extra
+      const nin = document.getElementById("nin").value;
+      const bank = document.getElementById("bank").value;
+      const acct = document.getElementById("acct").value;
+      const referral = document.getElementById("referral").value;
 
-      try {
-        let response;
-        if (isLogin) {
-          response = await fetch(`${API_BASE}/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-          });
-        } else {
-          response = await fetch(`${API_BASE}/register`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ fullName, email, password, role }),
-          });
-        }
+      const payload = {role, fullName, email, password, nin, bank, acct, referral};
 
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || "Something went wrong");
+      console.log("Submitting", payload); // Replace with API call
 
-        // Store token + session expiry based on role
-        const expiry = getExpiryTime(data.role);
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("expiry", expiry);
-        localStorage.setItem("role", data.role);
-
-        alert(isLogin ? "Login successful!" : "Registration successful!");
-
-        // Redirect to HomeDashboard.html
-        window.location.href = "HomeDashboard.html";
-
-      } catch (error) {
-        alert(error.message);
-      }
+      // Redirect after register
+      window.location.href = "homedashboard.html"; 
     });
-
-    // Session expiry helper
-    function getExpiryTime(role) {
-      const now = new Date().getTime();
-      if (role === "agent") return now + 24 * 60 * 60 * 1000; // 1 day
-      return now + 6 * 60 * 60 * 1000; // 6 hours
-    }
-
-    // Auto redirect if session still valid
-    window.onload = () => {
-      const token = localStorage.getItem("token");
-      const expiry = localStorage.getItem("expiry");
-      const now = new Date().getTime();
-      if (token && expiry && now < expiry) {
-        window.location.href = "HomeDashboard.html";
-      }
-    };
   </script>
 </body>
 </html>
