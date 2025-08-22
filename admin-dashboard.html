@@ -1,1 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkyUltimate | Admin Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#f9f9f9; }
+    header { background:#c00; color:white; padding:1rem; text-align:center; }
+    nav { background:#fff; padding:1rem; display:flex; justify-content:space-between; align-items:center; }
+    nav button { background:#c00; color:#fff; border:none; padding:0.5rem 1rem; border-radius:20px; cursor:pointer; }
+    .container { padding:1.5rem; }
+    .card { background:#fff; padding:1rem; margin-bottom:1rem; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    .card h2 { margin-top:0; color:#c00; }
+    label { display:block; margin:0.5rem 0 0.2rem; }
+    input, select { width:100%; padding:0.5rem; margin-bottom:0.5rem; border:1px solid #ccc; border-radius:5px; }
+    button.action { background:#c00; color:#fff; width:100%; margin-top:0.5rem; border:none; padding:0.7rem; border-radius:20px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <header><h1>Admin Dashboard</h1></header>
+  <nav>
+    <span id="adminName">Loading...</span>
+    <button onclick="logout()">Logout</button>
+  </nav>
+  <div class="container">
+    <div class="card">
+      <h2>Set Delivery Prices</h2>
+      <form id="priceForm">
+        <label>Base Price</label>
+        <input type="number" id="basePrice" required>
+        <label>Per KM Price</label>
+        <input type="number" id="perKmPrice" required>
+        <button type="submit" class="action">Update Prices</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2>Manage Agents</h2>
+      <button class="action" onclick="listAgents()">View Agents</button>
+      <ul id="agentList"></ul>
+    </div>
+    <div class="card">
+      <h2>Reports</h2>
+      <button class="action" onclick="fetchReports()">Generate Report</button>
+      <pre id="reportOutput"></pre>
+    </div>
+  </div>
+  <script>
+    const API = "https://33vhk4-50000.csb.app";
+    const token = localStorage.getItem("token");
 
+    if (!token) window.location.href = "index.html";
+
+    async function authCheck() {
+      const res = await fetch(`${API}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.role !== "admin") window.location.href = "index.html";
+        document.getElementById("adminName").textContent = "Welcome, " + data.fullName;
+      } else {
+        logout();
+      }
+    }
+    authCheck();
+
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "index.html";
+    }
+
+    document.getElementById("priceForm").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const basePrice = document.getElementById("basePrice").value;
+      const perKmPrice = document.getElementById("perKmPrice").value;
+      const res = await fetch(`${API}/admin/prices`, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json", Authorization:`Bearer ${token}` },
+        body: JSON.stringify({ basePrice, perKmPrice })
+      });
+      alert(res.ok ? "Prices updated" : "Failed to update");
+    });
+
+    async function listAgents(){
+      const res = await fetch(`${API}/admin/agents`, {
+        headers:{ Authorization:`Bearer ${token}` }
+      });
+      if(res.ok){
+        const data = await res.json();
+        const list = document.getElementById("agentList");
+        list.innerHTML="";
+        data.forEach(agent=>{
+          const li=document.createElement("li");
+          li.textContent = `${agent.fullName} (${agent.email})`;
+          list.appendChild(li);
+        });
+      }
+    }
+
+    async function fetchReports(){
+      const res = await fetch(`${API}/admin/reports`, {
+        headers:{ Authorization:`Bearer ${token}` }
+      });
+      document.getElementById("reportOutput").textContent = res.ok ? JSON.stringify(await res.json(),null,2) : "Failed to load report";
+    }
+  </script>
+</body>
+  </html>
