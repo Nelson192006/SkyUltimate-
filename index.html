@@ -1,193 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>SkyUltimate – Sign In / Register</title>
 <style>
-  :root {
-    --red: #C00000;
-    --white: #fff;
-    --muted: #6b7280;
+  :root{ --red:#C00000; --white:#fff; --muted:#6b7280; }
+  *{box-sizing:border-box}
+  body{
+    margin:0;font-family:Inter,system-ui,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--red); color:var(--white); min-height:100vh; display:flex;align-items:center;justify-content:center;
   }
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
-  body {
-    margin: 0;
-    font-family: Inter, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
-    background: var(--red);
-    color: var(--white);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  /* Splash Animation */
-  #splash {
-    position: fixed;
-    inset: 0;
-    background: var(--red);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    opacity: 0;
-    animation: fadeIn 0.5s ease forwards, fadeOut 0.6s ease 2.6s forwards;
-  }
-  .logo {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background: var(--white);
-    box-shadow: 0 0 0 6px rgba(255,255,255,0.35), 0 20px 60px rgba(0,0,0,0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  @keyframes fadeIn {
-    from { opacity: 0 }
-    to { opacity: 1 }
-  }
-  @keyframes fadeOut {
-    to { opacity: 0; visibility: hidden }
-  }
-
-  .wrap {
-    width: 100%;
-    max-width: 400px;
-    padding: 16px;
-  }
-  .brand {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 18px;
-  }
-  .brand img {
-    width: 84px;
-    height: 84px;
-    border-radius: 50%;
-    background: #fff;
-    object-fit: contain;
-  }
-  .brand .muted {
-    color: var(--white);
-    font-size: 0.95rem;
-  }
-
-  .card {
-    background: #fff;
-    color: #000;
-    border-radius: 18px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    padding: 18px;
-  }
-  .tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
-  }
-  .tabs button {
-    flex: 1;
-    padding: 12px;
-    border-radius: 999px;
-    border: 1px solid #e5e7eb;
-    background: #fff;
-    font-weight: 800;
-    cursor: pointer;
-  }
-  .tabs button.active {
-    background: var(--red);
-    border-color: var(--red);
-    color: #fff;
-  }
-  .row {
-    display: grid;
-    gap: 12px;
-    margin: 10px 0;
-  }
-  label {
-    font-size: .9rem;
-    color: #374151;
-    font-weight: 700;
-  }
-  input, select {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    background: #fff;
-    font-size: 15px;
-    color: #000;
-  }
-  .field {
-    display: grid;
-    gap: 6px;
-  }
-  .inline {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
-  .btn {
-    background: var(--red);
-    color: #fff;
-    border: none;
-    padding: 12px 16px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-weight: 800;
-  }
-  .muted {
-    color: var(--muted);
-    font-size: .92rem;
-  }
-  .error {
-    color: #b91c1c;
-    font-weight: 700;
-  }
-  .success {
-    color: #047857;
-    font-weight: 700;
-  }
-  .hint {
-    font-size: .82rem;
-    color: #6b7280;
-  }
-  .eye {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #6b7280;
-  }
-  .rel {
-    position: relative;
-  }
-  footer {
-    margin-top: 26px;
-    text-align: center;
-    color: var(--white);
-    font-size: .9rem;
-  }
+  /* Splash */
+  #splash{ position:fixed; inset:0; background:var(--red); display:flex;align-items:center;justify-content:center; z-index:9999; opacity:0; animation:fadeIn .45s ease forwards, fadeOut .6s ease 2.8s forwards; }
+  .logo{ width:120px;height:120px;border-radius:50%; background:var(--white); display:flex;align-items:center;justify-content:center; box-shadow:0 0 0 6px rgba(255,255,255,.35), 0 20px 60px rgba(0,0,0,.25); }
+  .logo img{ width:64px; height:64px; object-fit:contain; }
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes fadeOut{to{opacity:0;visibility:hidden}}
+  .wrap{width:100%;max-width:420px;padding:16px;}
+  .brand{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:18px}
+  .brand img{width:84px;height:84px;border-radius:50%;background:#fff;object-fit:contain}
+  .brand .muted{color:var(--white)}
+  .card{background:#fff;color:#000;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:18px}
+  .tabs{display:flex;gap:8px;margin-bottom:14px}
+  .tabs button{flex:1;padding:12px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;font-weight:800;cursor:pointer}
+  .tabs button.active{background:var(--red);border-color:var(--red);color:#fff}
+  .row{display:grid;gap:12px;margin:10px 0}
+  label{font-size:.9rem;color:#374151;font-weight:700}
+  input,select{width:100%;padding:12px 14px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;font-size:15px;color:#000}
+  .field{display:grid;gap:6px}
+  .inline{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .btn{background:var(--red);color:#fff;border:none;padding:12px 16px;border-radius:12px;cursor:pointer;font-weight:800}
+  .muted{color:var(--muted);font-size:.92rem}
+  .error{color:#b91c1c;font-weight:700}
+  .success{color:#047857;font-weight:700}
+  .hint{font-size:.82rem;color:#6b7280}
+  .eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#6b7280}
+  .rel{position:relative}
+  footer{margin-top:18px;text-align:center;color:var(--white);font-size:.9rem}
+  small.info{display:block;margin-top:8px;color:#6b7280;font-size:.85rem}
 </style>
 </head>
 <body>
-<div id="splash">
-  <div class="logo">
-    <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/1ba03de15cbb4029e67334b7ccc7f4afcf11638f/logo.png" alt="SkyUltimate Logo" style="width: 64px;"/>
-  </div>
-</div>
+
+<!-- Splash -->
+<div id="splash"><div class="logo"><img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/1ba03de15cbb4029e67334b7ccc7f4afcf11638f/logo.png" alt="SkyUltimate"/></div></div>
 
 <div class="wrap">
   <div class="brand">
-    <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/1ba03de15cbb4029e67334b7ccc7f4afcf11638f/logo.png" alt="SkyUltimate Logo"/>
+    <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/1ba03de15cbb4029e67334b7ccc7f4afcf11638f/logo.png" alt="SkyUltimate"/>
     <div class="muted">Welcome to SkyUltimate Delivery Service</div>
   </div>
 
@@ -197,6 +58,7 @@
       <button id="tabRegister">Register</button>
     </div>
 
+    <!-- LOGIN -->
     <div id="loginView">
       <div class="row">
         <div class="field">
@@ -209,38 +71,46 @@
             <option value="superadmin">Super Admin</option>
           </select>
         </div>
+
         <div class="field">
           <label>Email</label>
-          <input id="loginEmail" type="email" placeholder="Enter your email"/>
+          <input id="loginEmail" type="email" placeholder="Enter your email" />
         </div>
+
         <div class="field rel">
           <label>Password</label>
-          <input id="loginPassword" type="password" placeholder="Enter your password"/>
+          <input id="loginPassword" type="password" placeholder="Enter your password" />
           <span class="eye" data-toggle="#loginPassword">👁</span>
         </div>
       </div>
+
       <div class="inline">
         <a class="muted" href="#" id="forgot">Forgot Password?</a>
         <button class="btn" id="loginBtn">Login</button>
       </div>
+
       <div id="loginMsg" class="muted" style="margin-top:8px;"></div>
     </div>
 
+    <!-- REGISTER -->
     <div id="registerView" style="display:none;">
       <div class="row">
         <div class="field">
           <label>Role</label>
           <select id="regRole"></select>
-          <div class="hint">Super Admin appears only for first registration.</div>
+          <div class="hint">Super Admin appears only when backend allows first-time setup.</div>
         </div>
+
         <div class="field">
           <label>Full Name</label>
           <input id="regName" type="text" placeholder="Full name" />
         </div>
+
         <div class="field">
           <label>Email</label>
           <input id="regEmail" type="email" placeholder="Email address" />
         </div>
+
         <div class="field rel">
           <label>Password</label>
           <input id="regPassword" type="password" placeholder="Create a password" />
@@ -249,111 +119,208 @@
 
         <div id="agentMore" style="display:none;">
           <div class="field">
-            <label>Phone Number</label>
-            <input id="regPhone" type="tel" placeholder="+234 801 234 5678"/>
+            <label>Phone Number</label><input id="regPhone" type="tel" placeholder="+234 801 234 5678" />
           </div>
           <div class="field">
             <label>Delivery Vehicle</label>
-            <select id="regVehicle">
-              <option value="">Select Vehicle</option>
-              <option>Motorcycle</option>
-              <option>Car</option>
-              <option>Van</option>
-              <option>Bicycle</option>
-            </select>
+            <select id="regVehicle"><option value="">Select</option><option>Motorcycle</option><option>Car</option><option>Van</option><option>Bicycle</option></select>
           </div>
-          <div class="field">
-            <label>Bank Name</label>
-            <input id="regBankName" type="text" placeholder="Bank name"/>
-          </div>
-          <div class="field">
-            <label>Account Number</label>
-            <input id="regAccountNumber" type="text" placeholder="1234567890"/>
-          </div>
-          <div class="field">
-            <label>Account Holder Name</label>
-            <input id="regAccountName" type="text" placeholder="Account holder"/>
-          </div>
+          <div class="field"><label>Bank Name</label><input id="regBankName" type="text" placeholder="Bank name" /></div>
+          <div class="field"><label>Account Number</label><input id="regAccountNumber" type="text" placeholder="1234567890" /></div>
+          <div class="field"><label>Account Holder Name</label><input id="regAccountName" type="text" placeholder="Account holder" /></div>
         </div>
       </div>
+
       <div class="inline">
         <span></span>
         <button class="btn" id="registerBtn">Create Account</button>
       </div>
+
       <div id="regMsg" class="muted" style="margin-top:8px;"></div>
     </div>
   </div>
+
   <footer>© <span id="yr"></span> SkyUltimate Delivery Service</footer>
+  <small class="info" id="modeInfo"></small>
 </div>
 
 <script>
-  const $ = sel => document.querySelector(sel);
-  $("#yr").textContent = new Date().getFullYear();
+/* CONFIG */
+const API = "https://33vhk4-50000.csb.app"; // your backend; change if needed
+const RAW_LOGO = "https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/1ba03de15cbb4029e67334b7ccc7f4afcf11638f/logo.png";
 
-  document.querySelectorAll(".eye").forEach(icon => {
-    icon.addEventListener("click", () => {
-      const input = document.querySelector(icon.dataset.toggle);
-      input.type = input.type === "password" ? "text" : "password";
-    });
-  });
+/* helpers */
+const $ = s => document.querySelector(s);
+const showMsg = (el, txt, cls="muted") => { el.textContent = txt; el.className = cls; };
+let offlineMode = false; // fallback if backend is unreachable
 
-  $("#tabLogin").addEventListener("click", () => {
-    $("#tabLogin").classList.add("active");
-    $("#tabRegister").classList.remove("active");
-    $("#loginView").style.display = "block";
-    $("#registerView").style.display = "none";
-  });
-  $("#tabRegister").addEventListener("click", () => {
-    $("#tabRegister").classList.add("active");
-    $("#tabLogin").classList.remove("active");
-    $("#registerView").style.display = "block";
-    $("#loginView").style.display = "none";
-  });
+// set year & logo already in markup; splash removal
+$("#yr").textContent = new Date().getFullYear();
+setTimeout(()=>{ const s = $("#splash"); if(s) s.remove(); }, 3200);
 
-  async function loadPublicConfig() {
-    // Simulate API response
-    const conf = { allowAdminRegistration: true, hasAnyUser: false };
-    const sel = $("#regRole");
+/* password eye toggle */
+document.querySelectorAll(".eye").forEach(icon=>{
+  icon.addEventListener("click", ()=>{
+    const input = document.querySelector(icon.dataset.toggle);
+    if(!input) return;
+    input.type = (input.type === "password") ? "text" : "password";
+  });
+});
+
+/* tabs */
+$("#tabLogin").addEventListener("click", ()=>{ $("#tabLogin").classList.add("active"); $("#tabRegister").classList.remove("active"); $("#loginView").style.display="block"; $("#registerView").style.display="none"; });
+$("#tabRegister").addEventListener("click", ()=>{ $("#tabRegister").classList.add("active"); $("#tabLogin").classList.remove("active"); $("#registerView").style.display="block"; $("#loginView").style.display="none"; });
+
+/* load public config from backend to decide roles visibility */
+async function loadPublicConfig(){
+  const sel = $("#regRole");
+  try{
+    const res = await fetch(`${API}/config/public`);
+    if(!res.ok) throw new Error("No config");
+    const conf = await res.json();
+    // expected conf = { allowAdminRegistration: true/false, hasAnyUser: true/false }
     sel.innerHTML = "";
-    sel.append(new Option("Customer", "customer"));
-    sel.append(new Option("Agent", "agent"));
-    if (conf.allowAdminRegistration) sel.append(new Option("Admin", "admin"));
-    if (!conf.hasAnyUser) sel.append(new Option("Super-admin", "superadmin"));
+    sel.append(new Option("Customer","customer"));
+    sel.append(new Option("Agent","agent"));
+    if(conf.allowAdminRegistration) sel.append(new Option("Admin","admin"));
+    if(!conf.hasAnyUser) sel.append(new Option("Super-admin","superadmin")); // one-time
+    offlineMode = false;
+    $("#modeInfo").textContent = ""; // clear demo hint
+  }catch(err){
+    // fallback (demo mode) — do not show super-admin by default for safety
+    offlineMode = true;
+    sel.innerHTML = "";
+    sel.append(new Option("Customer","customer"));
+    sel.append(new Option("Agent","agent"));
+    // inform user
+    $("#modeInfo").textContent = "Server unreachable — UI running in demo mode. API actions will be simulated locally.";
+    console.warn("Could not load config/public, switching to demo mode", err);
   }
-  loadPublicConfig();
+}
+loadPublicConfig();
 
-  $("#regRole").addEventListener("change", () => {
-    $("#agentMore").style.display = $("#regRole").value === "agent" ? "block" : "none";
-  });
+/* show/hide agent fields */
+$("#regRole").addEventListener("change", ()=> {
+  $("#agentMore").style.display = $("#regRole").value === "agent" ? "block" : "none";
+});
 
-  $("#loginBtn").addEventListener("click", () => {
-    const role = $("#loginRole").value, email = $("#loginEmail").value, password = $("#loginPassword").value;
-    if (!role || !email || !password) {
-      $("#loginMsg").textContent = "Please fill in all fields.";
-      $("#loginMsg").className = "error";
-      return;
+/* Forgot Password */
+$("#forgot").addEventListener("click", async (e)=>{
+  e.preventDefault();
+  const email = prompt("Enter your email to receive a reset link:");
+  if(!email) return;
+  if(offlineMode){
+    alert("Demo: forgot password simulated. (No server available.)");
+    return;
+  }
+  try{
+    const res = await fetch(`${API}/auth/forgot`, {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ email })
+    });
+    if(res.ok) alert("If that email exists, a reset link was sent.");
+    else {
+      const payload = await res.json().catch(()=>({}));
+      alert(payload.message || "Unable to send reset link right now.");
     }
-    console.log("Login:", { role, email });
-    $("#loginMsg").textContent = "Login simulated — check console.";
-    $("#loginMsg").className = "success";
-  });
+  }catch(err){
+    alert("Network error while sending reset link.");
+    console.error(err);
+  }
+});
 
-  $("#registerBtn").addEventListener("click", () => {
-    const role = $("#regRole").value, fullName = $("#regName").value;
-    if (!role || !fullName) {
-      $("#regMsg").textContent = "Please fill in all fields.";
-      $("#regMsg").className = "error";
-      return;
-    }
-    console.log("Register:", role, fullName);
-    $("#regMsg").textContent = "Registration simulated — check console.";
-    $("#regMsg").className = "success";
-  });
+/* Login */
+$("#loginBtn").addEventListener("click", async ()=>{
+  const role = $("#loginRole").value.trim();
+  const email = $("#loginEmail").value.trim();
+  const password = $("#loginPassword").value;
+  const msgEl = $("#loginMsg");
+  if(!role || !email || !password) return showMsg(msgEl, "Please select role and enter your credentials.", "error");
+  showMsg(msgEl, "Authenticating...");
+  if(offlineMode){
+    // demo behavior
+    console.log("DEMO LOGIN:", { role, email });
+    localStorage.setItem("token", "demo-token");
+    localStorage.setItem("user", JSON.stringify({ fullName: email.split("@")[0], role, email }));
+    showMsg(msgEl, "Demo login successful — redirecting", "success");
+    setTimeout(()=> routeByRole(role), 700);
+    return;
+  }
+  try{
+    const res = await fetch(`${API}/auth/login`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ role, email, password })
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok) return showMsg(msgEl, data.message || "Invalid credentials.", "error");
+    // expected: { token, user }
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    showMsg(msgEl, "Login successful. Redirecting…", "success");
+    setTimeout(()=> routeByRole(data.user?.role || role), 400);
+  }catch(err){
+    console.error(err);
+    showMsg(msgEl, "Network error. Try again.", "error");
+  }
+});
 
-  setTimeout(() => {
-    const s = $("#splash");
-    if (s) s.remove();
-  }, 3200);
+/* Register */
+$("#registerBtn").addEventListener("click", async ()=>{
+  const role = $("#regRole").value.trim();
+  const fullName = $("#regName").value.trim();
+  const email = $("#regEmail").value.trim();
+  const password = $("#regPassword").value;
+  const msgEl = $("#regMsg");
+  if(!role || !fullName || !email || !password) return showMsg(msgEl, "Please complete all fields.", "error");
+
+  const payload = { role, fullName, email, password };
+  if(role === "agent"){
+    payload.phone = $("#regPhone").value.trim();
+    payload.vehicleType = $("#regVehicle").value.trim();
+    payload.bankName = $("#regBankName").value.trim();
+    payload.accountNumber = $("#regAccountNumber").value.trim();
+    payload.accountName = $("#regAccountName").value.trim();
+  }
+
+  showMsg(msgEl, "Creating account…");
+  if(offlineMode){
+    // demo registration
+    console.log("DEMO REGISTER:", payload);
+    localStorage.setItem("token","demo-token");
+    localStorage.setItem("user", JSON.stringify({ fullName, email, role }));
+    showMsg(msgEl, "Demo registration successful — redirecting", "success");
+    // If user created superadmin in demo mode, do not turn off UI here (since demo)
+    setTimeout(()=> routeByRole(role), 500);
+    return;
+  }
+
+  try{
+    const res = await fetch(`${API}/auth/register`, {
+      method:"POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok) return showMsg(msgEl, data.message || "Registration failed.", "error");
+    // success - backend should return token & user
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    showMsg(msgEl, "Account created! Redirecting…", "success");
+    setTimeout(()=> routeByRole(data.user?.role || role), 400);
+  }catch(err){
+    console.error(err);
+    showMsg(msgEl, "Network error. Try again.", "error");
+  }
+});
+
+/* routing helper */
+function routeByRole(role){
+  // change to your real routes
+  if(role==="customer") return location.href = "home.html";
+  if(role==="agent") return location.href = "home.html";
+  if(role==="admin") return location.href = "home.html";
+  if(role==="superadmin") return location.href = "home.html";
+  location.href = "home.html";
+}
 </script>
 </body>
-</html>
+                                               </html>
