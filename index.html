@@ -5,9 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>SkyUltimate – Sign In / Register</title>
 <style>
-  :root{ --red:#C00000; --white:#fff; --soft:#f7f7f9; --ink:#222; --muted:#6b7280; }
+  :root{ --red:#C00000; --white:#fff; --muted:#6b7280; }
   *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--soft);color:var(--ink);}
+  body{
+    margin:0;
+    font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    background:var(--red); /* Red background */
+    color:var(--white);
+  }
 
   /* Splash */
   #splash{
@@ -22,11 +27,11 @@
   @keyframes fadeIn{from{opacity:0}to{opacity:1}}
   @keyframes fadeOut{to{opacity:0;visibility:hidden}}
 
-  header{padding:22px 16px;background:var(--red);color:var(--white);text-align:center;font-weight:800;position:sticky;top:0}
   .wrap{max-width:920px;margin:28px auto;padding:0 16px;}
   .brand{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:18px}
-  .brand .round{width:84px;height:84px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--red);}
-  .card{background:#fff;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.08);padding:18px;}
+  .brand img{width:84px;height:84px;border-radius:50%;background:#fff;object-fit:contain;}
+
+  .card{background:#fff;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:18px;color:#000;}
   .tabs{display:flex;gap:8px;margin-bottom:14px;}
   .tabs button{flex:1;padding:12px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;font-weight:800;cursor:pointer}
   .tabs button.active{background:var(--red);border-color:var(--red);color:#fff}
@@ -45,17 +50,16 @@
   .hint{font-size:.82rem;color:#6b7280}
   .eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#6b7280}
   .rel{position:relative}
-  footer{margin:26px 0;text-align:center;color:#6b7280}
+  footer{margin:26px 0;text-align:center;color:#fff}
 </style>
 </head>
 <body>
-<div id="splash"><div class="logo">SU</div></div>
+<div id="splash"><div class="logo"><img src="your-logo.png" alt="SkyUltimate Logo"/></div></div>
 
-<header>SkyUltimate – Access</header>
 <div class="wrap">
   <div class="brand">
-    <div class="round">SU</div>
-    <div class="muted">Welcome to SkyUltimate Delivery Service</div>
+    <img src="your-logo.png" alt="SkyUltimate Logo"/>
+    <div class="muted" style="color:#fff;">Welcome to SkyUltimate Delivery Service</div>
   </div>
 
   <div class="card">
@@ -99,10 +103,8 @@
       <div class="row">
         <div class="field">
           <label>Role</label>
-          <select id="regRole">
-            <!-- Will be dynamically controlled by backend flags -->
-          </select>
-          <div class="hint">Super-admin will only appear if there are no users in DB. Admin appears only if enabled by Super Admin.</div>
+          <select id="regRole"></select>
+          <div class="hint">Super-admin only appears for first-ever registration.</div>
         </div>
         <div class="field">
           <label>Full Name</label>
@@ -158,38 +160,10 @@
 
 <script>
 const API = "https://33vhk4-50000.csb.app";
-
-// ===== UI helpers =====
 const $ = sel => document.querySelector(sel);
-const msg = (el, text, kind="") => { el.textContent=text; el.className=kind?kind:"muted"; };
-document.querySelectorAll(".eye").forEach(t=>{
-  t.addEventListener("click", ()=> {
-    const input = document.querySelector(t.dataset.toggle);
-    input.type = input.type === "password" ? "text" : "password";
-  });
-});
 $("#yr").textContent = new Date().getFullYear();
 
-// Splash ends after animation; but we also remove node just in case
-setTimeout(()=>{ const s=$("#splash"); if(s) s.remove(); }, 3200);
-
-// Auto redirect if already logged in
-(async function guard(){
-  const token = localStorage.getItem("token");
-  if(!token) return;
-  try{
-    const res = await fetch(`${API}/auth/me`, { headers: { Authorization:`Bearer ${token}` }});
-    if(!res.ok) throw 0;
-    const me = await res.json();
-    routeByRole(me.role);
-  }catch{ /* stay */ }
-})();
-
-// Tabs
-$("#tabLogin").onclick = ()=>{ $("#tabLogin").classList.add("active"); $("#tabRegister").classList.remove("active"); $("#loginView").style.display="block"; $("#registerView").style.display="none"; };
-$("#tabRegister").onclick = ()=>{ $("#tabRegister").classList.add("active"); $("#tabLogin").classList.remove("active"); $("#registerView").style.display="block"; $("#loginView").style.display="none"; };
-
-// Build Register role list from backend flags
+// Role registration control
 async function loadPublicConfig(){
   try{
     const res = await fetch(`${API}/config/public`);
@@ -198,13 +172,11 @@ async function loadPublicConfig(){
     const hasAnyUser = !!conf.hasAnyUser;
     const sel = $("#regRole");
     sel.innerHTML = "";
-    // Base roles:
-    const base = [{v:"customer",t:"Customer"},{v:"agent",t:"Agent"}];
-    base.forEach(o=>sel.append(new Option(o.t,o.v)));
+    sel.append(new Option("Customer","customer"));
+    sel.append(new Option("Agent","agent"));
     if(allowAdmin) sel.append(new Option("Admin","admin"));
-    if(!hasAnyUser) sel.append(new Option("Super-admin","superadmin"));
+    if(!hasAnyUser) sel.append(new Option("Super-admin","superadmin")); // only first time
   }catch(e){
-    // Fallback – show customer+agent
     const sel = $("#regRole");
     sel.innerHTML = "";
     sel.append(new Option("Customer","customer"));
@@ -212,97 +184,6 @@ async function loadPublicConfig(){
   }
 }
 loadPublicConfig();
-
-// Conditional Agent fields
-$("#regRole").addEventListener("change", ()=>{
-  const isAgent = $("#regRole").value === "agent";
-  $("#agentMore").style.display = isAgent ? "block" : "none";
-});
-
-// Forgot password (simple route – if your API differs, tweak here)
-$("#forgot").addEventListener("click", async (e)=>{
-  e.preventDefault();
-  const email = prompt("Enter your email to receive a reset link:");
-  if(!email) return;
-  try{
-    const res = await fetch(`${API}/auth/forgot`, {
-      method:"POST", headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ email })
-    });
-    if(res.ok) alert("If the email exists, a reset link has been sent.");
-    else alert("Unable to send reset link right now.");
-  }catch{ alert("Network error."); }
-});
-
-// Login
-$("#loginBtn").addEventListener("click", async ()=>{
-  const role = $("#loginRole").value.trim();
-  const email = $("#loginEmail").value.trim();
-  const password = $("#loginPassword").value;
-  if(!role || !email || !password) return msg($("#loginMsg"), "Please select role and enter your credentials.", "error");
-
-  msg($("#loginMsg"), "Authenticating…");
-  try{
-    const res = await fetch(`${API}/auth/login`,{
-      method:"POST", headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ role, email, password })
-    });
-    const data = await res.json();
-    if(!res.ok) return msg($("#loginMsg"), data.message || "Invalid credentials.", "error");
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user || { email, role, fullName:data.fullName }));
-    msg($("#loginMsg"), "Success!", "success");
-    setTimeout(()=>routeByRole(data.user?.role || role), 300);
-  }catch(e){
-    msg($("#loginMsg"), "Network error. Try again.", "error");
-  }
-});
-
-// Register
-$("#registerBtn").addEventListener("click", async ()=>{
-  const role = $("#regRole").value.trim();
-  const fullName = $("#regName").value.trim();
-  const email = $("#regEmail").value.trim();
-  const password = $("#regPassword").value;
-
-  if(!role || !fullName || !email || !password) return msg($("#regMsg"), "Please complete all fields.", "error");
-
-  const payload = { role, fullName, email, password };
-  if(role==="agent"){
-    Object.assign(payload,{
-      phone: $("#regPhone").value.trim(),
-      vehicleType: $("#regVehicle").value.trim(),
-      bankName: $("#regBankName").value.trim(),
-      accountNumber: $("#regAccountNumber").value.trim(),
-      accountName: $("#regAccountName").value.trim()
-    });
-  }
-
-  msg($("#regMsg"), "Creating account…");
-  try{
-    const res = await fetch(`${API}/auth/register`, {
-      method:"POST", headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if(!res.ok) return msg($("#regMsg"), data.message || "Registration failed.", "error");
-    // Auto-login on success
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user || { email, role, fullName }));
-    msg($("#regMsg"), "Account created! Redirecting…", "success");
-    setTimeout(()=>routeByRole(data.user?.role || role), 400);
-  }catch(e){
-    msg($("#regMsg"), "Network error. Try again.", "error");
-  }
-});
-
-function routeByRole(role){
-  if(role==="customer") return location.href="home.html";          // home routes to dashboards
-  if(role==="agent") return location.href="home.html";
-  if(role==="admin") return location.href="home.html";
-  if(role==="superadmin") return location.href="home.html";
-  location.href="home.html";
-}
 </script>
 </body>
   </html>
