@@ -37,8 +37,8 @@
     animation: fadeIn 0.45s ease forwards, fadeOut 0.6s ease 2.9s forwards;
   }
   .logo {
-    width: 140px;
-    height: 140px;
+    width: 180px;
+    height: 180px;
     border-radius: 50%;
     background: var(--white);
     display: flex;
@@ -46,7 +46,7 @@
     justify-content: center;
     box-shadow: 0 0 0 6px rgba(255,255,255,0.35), 0 20px 60px rgba(0,0,0,0.25);
   }
-  .logo img { width: 80px; height: 80px; object-fit: contain; }
+  .logo img { width: 120px; height: 120px; object-fit: contain; }
 
   @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
   @keyframes fadeOut { to { opacity: 0; visibility: hidden } }
@@ -93,7 +93,8 @@
   /* minor responsiveness */
   @media (max-width:420px) {
     .brand img { width: 88px; height:88px; }
-    .logo { width:110px; height:110px; }
+    .logo { width:140px; height:140px; }
+    .logo img { width:90px; height:90px; }
   }
 
   /* small info text for demo/online mode */
@@ -224,16 +225,11 @@
   </div>
 
   <script>
-  /**********************************************************************
-   * Config - change these if needed
-   **********************************************************************/
-  const API = "https://33vhk4-50000.csb.app"; // your backend base URL
-  // Update HOME_URL to point to where your home page lives (GitHub Pages or local)
-  const HOME_URL = "https://Nelson192006.github.io/SkyUltimate-/home.html"; // change if needed
+  /* Config */
+  const API = "https://33vhk4-50000.csb.app"; 
+  const HOME_URL = "https://Nelson192006.github.io/SkyUltimate-/home.html"; 
 
-  /**********************************************************************
-   * Helpers & UI boot
-   **********************************************************************/
+  /* Helpers */
   const $ = s => document.querySelector(s);
   const showMsg = (el, text, cls="muted") => { if(!el) return; el.textContent = text; el.className = cls; };
   $("#yr").textContent = new Date().getFullYear();
@@ -264,13 +260,7 @@
     $("#loginView").style.display = "none";
   });
 
-  /**********************************************************************
-   * Online / offline (demo) mode detection + load config
-   *
-   * - We call GET ${API}/config/public which should return:
-   *   { allowAdminRegistration: boolean, hasAnyUser: boolean }
-   * - If backend unreachable, we fallback to demo mode and keep UI usable.
-   **********************************************************************/
+  /* Online / offline config */
   let offlineMode = false;
 
   async function loadPublicConfig(){
@@ -280,46 +270,37 @@
       if(!res.ok) throw new Error("bad config response");
       const conf = await res.json();
       offlineMode = false;
-      $("#modeInfo").textContent = ""; // clear demo message
+      $("#modeInfo").textContent = "";
       sel.innerHTML = "";
       sel.append(new Option("Customer","customer"));
       sel.append(new Option("Agent","agent"));
       if(conf.allowAdminRegistration) sel.append(new Option("Admin","admin"));
-      // Show Super-admin only if backend reports zero users AND client hasn't recorded a previous super-admin
       const localLock = localStorage.getItem("superAdminRegistered");
       if(!conf.hasAnyUser && !localLock) sel.append(new Option("Super-admin","superadmin"));
     } catch(err) {
-      // fallback to safe defaults (demo mode)
-      console.warn("Could not fetch config/public — switching to demo mode.", err);
+      console.warn("Config failed — demo mode", err);
       offlineMode = true;
       sel.innerHTML = "";
       sel.append(new Option("Customer","customer"));
       sel.append(new Option("Agent","agent"));
-      // If localStorage shows superAdminRegistered (from a previous demo run), we DO NOT show superadmin.
       if(!localStorage.getItem("superAdminRegistered")) {
-        // optional: show superadmin even in demo mode (user asked to allow first-time registration). 
-        // To be safe, we show it in demo mode only if there's no local lock:
         sel.append(new Option("Super-admin","superadmin"));
       }
-      $("#modeInfo").textContent = "Server unreachable — running in demo mode. API calls will be simulated until your backend is available.";
+      $("#modeInfo").textContent = "Server unreachable — running in demo mode. API calls will be simulated.";
     }
   }
-  await loadPublicConfig();
+  loadPublicConfig();
 
-  // show/hide agent fields when role changes
   $("#regRole").addEventListener("change", ()=> {
     $("#agentMore").style.display = $("#regRole").value === "agent" ? "block" : "none";
   });
 
-  /**********************************************************************
-   * Guard: auto-redirect if user token exists and /auth/me returns user
-   **********************************************************************/
+  /* Guard */
   (async function guard(){
     const token = localStorage.getItem("token");
     if(!token) return;
     try {
       if(offlineMode) {
-        // demo redirect if token present
         const user = JSON.parse(localStorage.getItem("user") || "{}");
         return routeByRole(user.role || "customer");
       }
@@ -332,16 +313,13 @@
     }
   })();
 
-  /**********************************************************************
-   * FORGOT PASSWORD
-   **********************************************************************/
+  /* Forgot password */
   $("#forgot").addEventListener("click", async (e)=>{
     e.preventDefault();
-    // show simple prompt input for now
     const email = prompt("Enter your email to receive a password reset link:");
     if(!email) return;
     if(offlineMode) {
-      alert("Demo mode: password reset simulated. (No server available.)");
+      alert("Demo mode: password reset simulated.");
       return;
     }
     try {
@@ -353,17 +331,14 @@
       if(res.ok) alert("If that email exists, a reset link was sent.");
       else {
         const payload = await res.json().catch(()=>({}));
-        alert(payload.message || "Unable to send reset link right now.");
+        alert(payload.message || "Unable to send reset link.");
       }
     } catch(err) {
-      console.error(err);
       alert("Network error while sending reset link.");
     }
   });
 
-  /**********************************************************************
-   * LOGIN
-   **********************************************************************/
+  /* Login */
   $("#loginBtn").addEventListener("click", async ()=>{
     const role = $("#loginRole").value.trim();
     const email = $("#loginEmail").value.trim();
@@ -374,8 +349,6 @@
     showMsg(msgEl, "Authenticating...");
 
     if(offlineMode) {
-      // Demo login: accept anything and store demo token
-      console.log("DEMO LOGIN", { role, email });
       localStorage.setItem("token","demo-token");
       localStorage.setItem("user", JSON.stringify({ role, email, fullName: email.split("@")[0] }));
       showMsg(msgEl, "Demo login successful — redirecting", "success");
@@ -392,22 +365,16 @@
       const data = await res.json().catch(()=>({}));
       if(!res.ok) return showMsg(msgEl, data.message || "Invalid credentials.", "error");
 
-      // expected: { token, user }
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       showMsg(msgEl, "Login successful — redirecting...", "success");
       setTimeout(()=> routeByRole(data.user?.role || role), 400);
     } catch(err) {
-      console.error("Login error:", err);
       showMsg(msgEl, "Network error. Try again.", "error");
     }
   });
 
-  /**********************************************************************
-   * REGISTER
-   * - After successful register: set localStorage.superAdminRegistered if role === 'superadmin'
-   * - Redirect to HOME_URL on success
-   **********************************************************************/
+  /* Register */
   $("#registerBtn").addEventListener("click", async ()=>{
     const role = $("#regRole").value?.trim();
     const fullName = $("#regName").value?.trim();
@@ -417,7 +384,6 @@
 
     if(!role || !fullName || !email || !password) return showMsg(msgEl, "Please complete all required fields.", "error");
 
-    // Build payload
     const payload = { role, fullName, email, password };
     if(role === "agent") {
       payload.phone = $("#regPhone").value.trim();
@@ -429,24 +395,15 @@
 
     showMsg(msgEl, "Creating account...");
 
-    // Demo fallback if offline
     if(offlineMode) {
-      console.log("DEMO REGISTER:", payload);
-      // Mark super admin registration locally if applicable
       if(role === "superadmin") localStorage.setItem("superAdminRegistered", "true");
-      // Save demo token & user
       localStorage.setItem("token","demo-token");
       localStorage.setItem("user", JSON.stringify({ role, fullName, email }));
       showMsg(msgEl, "Demo registration successful — redirecting...", "success");
-      setTimeout(()=> {
-        // Remove super admin option so it won't be visible next time
-        removeSuperAdminOption();
-        routeByRole(role);
-      }, 700);
+      setTimeout(()=> { removeSuperAdminOption(); routeByRole(role); }, 700);
       return;
     }
 
-    // Real API call
     try {
       const res = await fetch(`${API}/auth/register`, {
         method: "POST",
@@ -456,48 +413,19 @@
       const data = await res.json().catch(()=>({}));
       if(!res.ok) return showMsg(msgEl, data.message || "Registration failed.", "error");
 
-      // success: backend should return token & user
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // If this was a superadmin registration, set local lock (client-side) so it's hidden forever
-      if(role === "superadmin") {
-        localStorage.setItem("superAdminRegistered", "true");
-        // also attempt to call a backend route to set flag if you have one (optional)
-      }
+      if(role === "superadmin") localStorage.setItem("superAdminRegistered", "true");
 
-      // remove super-admin option from UI now
       removeSuperAdminOption();
-
       showMsg(msgEl, "Account created! Redirecting...", "success");
       setTimeout(()=> routeByRole(data.user?.role || role), 450);
-
     } catch(err) {
-      console.error("Register error:", err);
       showMsg(msgEl, "Network error. Try again.", "error");
     }
   });
 
-  /**********************************************************************
-   * Helpers
-   **********************************************************************/
+  /* Helpers */
   function removeSuperAdminOption(){
-    // Remove superadmin option from regRole if present
     const sel = $("#regRole");
-    if(!sel) return;
-    for(let i = sel.options.length -1; i>=0; i--){
-      if(sel.options[i].value === "superadmin" || sel.options[i].text.toLowerCase().includes("super")){
-        sel.remove(i);
-      }
-    }
-  }
-
-  function routeByRole(role){
-    // all roles take user to HOME_URL in this prototype
-    const url = HOME_URL || "home.html";
-    // If you prefer different pages per role, change this mapping
-    window.location.href = url;
-  }
-  </script>
-</body>
-  </html>
