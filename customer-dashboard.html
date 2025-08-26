@@ -10,16 +10,10 @@
   a { text-decoration:none; color:inherit; }
   button { cursor:pointer; border:none; outline:none; }
 
-  /* --- Container --- */
   #container { width:100%; min-height:100%; padding:20px; display:flex; flex-direction:column; align-items:center; position:relative; }
-
-  /* --- Logo --- */
   #logo { width:100px; height:100px; border-radius:50%; margin-bottom:10px; }
-
-  /* --- Welcome --- */
   #welcome { font-size:1.4rem; color:white; margin-bottom:20px; text-align:center; }
 
-  /* --- Order Card --- */
   .card { background:white; border-radius:12px; padding:20px; width:100%; max-width:500px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
   .card h3 { margin-bottom:15px; color:#C00000; }
   .card label { display:block; margin-bottom:5px; font-weight:bold; }
@@ -27,30 +21,24 @@
   .card button { width:100%; padding:12px; border-radius:12px; background:#C00000; color:white; font-weight:bold; transition:0.3s; }
   .card button:disabled { background:#ccc; cursor:not-allowed; }
 
-  /* --- Action Buttons --- */
   .action-btn { width:100%; padding:12px; border-radius:12px; background:white; color:#C00000; font-weight:bold; margin-bottom:10px; transition:0.3s; }
   .action-btn:disabled { background:#ccc; color:#666; cursor:not-allowed; }
 
-  /* --- Hamburger Menu --- */
   #hamburger { position:absolute; top:20px; left:20px; width:30px; height:22px; cursor:pointer; display:flex; flex-direction:column; justify-content:space-between; }
   .bar { width:100%; height:4px; background:white; border-radius:2px; }
 
-  /* --- Menu Overlay --- */
   #menu { position:fixed; top:0; left:-300px; width:250px; height:100%; background:white; color:#C00000; box-shadow:3px 0 10px rgba(0,0,0,0.3); transition:0.3s; display:flex; flex-direction:column; padding:20px; }
   #menu h2 { margin-bottom:20px; font-size:1.2rem; }
   .menu-item { margin:10px 0; cursor:pointer; font-weight:bold; }
 
-  /* --- Overlay Pages --- */
   .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); color:#C00000; padding:40px; overflow-y:auto; display:none; }
   .overlay h2 { margin-bottom:15px; }
   .overlay p { margin-bottom:10px; line-height:1.5; }
   .close-overlay { position:absolute; top:20px; right:20px; font-weight:bold; cursor:pointer; font-size:1.2rem; }
 
-  /* --- Logout Button --- */
   #logout { position:absolute; top:20px; right:20px; background:white; color:#C00000; padding:8px 12px; border-radius:8px; font-weight:bold; transition:0.3s; }
   #logout:hover { background:#f0f0f0; }
 
-  /* --- Modal --- */
   #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; }
   #modal-content { background:white; padding:20px; border-radius:12px; width:90%; max-width:400px; color:#C00000; }
   #modal-content h3 { margin-bottom:15px; }
@@ -136,14 +124,18 @@
 </div>
 
 <script>
-  // --- Session & API ---
   const name = sessionStorage.getItem('name') || 'User';
   const token = sessionStorage.getItem('token');
-  const apiURL = 'https://skyultimate-backend-api-structure.onrender.com';
+  const apiURL = 'https://skyultimate-backend-api-structure.onrender.com/api';
+
+  if(!token){
+    window.location.href = "index.html";
+  }
 
   document.getElementById('welcome').textContent = `Welcome back, ${name}!`;
 
-  // --- Form Validation & Enable Button ---
+  let currentOrderId = null;
+
   const calculateBtn = document.getElementById('calculate-btn');
   const inputs = ['itemType','weight','pickup','delivery'].map(id=>document.getElementById(id));
   inputs.forEach(input=>{
@@ -168,30 +160,60 @@
         body:JSON.stringify(data)
       });
       const result = await res.json();
-      document.getElementById('order-info').innerHTML = `
-        <p>Final Price: ₦${result.price}</p>
-        <p>Bank Name: Nelson Emmanuel Godspower</p>
-        <p>Moniepoint / Opay / Palmpay: 9128884830</p>
-        <p>UBA: 2342835397</p>
-        <p>GTBank: 0734090626</p>
-      `;
-      document.getElementById('modal').style.display='flex';
-      document.getElementById('confirm-pickup').disabled=false;
-    } catch(err){ alert('Error calculating price'); }
+      if(res.ok){
+        currentOrderId = result.orderId; // returned from backend
+        document.getElementById('order-info').innerHTML = `
+          <p>Final Price: ₦${result.price}</p>
+          <p>Bank Name: Nelson Emmanuel Godspower</p>
+          <p>Moniepoint / Opay / Palmpay: 9128884830</p>
+          <p>UBA: 2342835397</p>
+          <p>GTBank: 0734090626</p>
+        `;
+        document.getElementById('modal').style.display='flex';
+        document.getElementById('confirm-pickup').disabled=false;
+      }else{
+        alert(result.message || "Error calculating price");
+      }
+    } catch(err){ alert('Error connecting to server'); }
   });
 
   function closeModal(){ document.getElementById('modal').style.display='none'; }
 
-  // --- Confirm Pickup & Delivered (Dummy toggles for frontend) ---
-  document.getElementById('confirm-pickup').addEventListener('click',()=>{
-    alert('Pickup Confirmed. Button now enables delivery confirmation.');
-    document.getElementById('confirm-delivered').disabled=false;
-    document.getElementById('confirm-pickup').disabled=true;
+  // --- Confirm Pickup ---
+  document.getElementById('confirm-pickup').addEventListener('click',async ()=>{
+    if(!currentOrderId) return;
+    try{
+      const res = await fetch(`${apiURL}/orders/${currentOrderId}/pickup`,{
+        method:'PATCH',
+        headers:{ 'Authorization':`Bearer ${token}` }
+      });
+      if(res.ok){
+        alert('Pickup confirmed!');
+        document.getElementById('confirm-delivered').disabled=false;
+        document.getElementById('confirm-pickup').disabled=true;
+      }else{
+        const r = await res.json();
+        alert(r.message || "Error confirming pickup");
+      }
+    }catch(e){ alert("Error connecting to server"); }
   });
 
-  document.getElementById('confirm-delivered').addEventListener('click',()=>{
-    alert('Order Delivered. Super Admin notified and agent payout triggered.');
-    document.getElementById('confirm-delivered').disabled=true;
+  // --- Confirm Delivery ---
+  document.getElementById('confirm-delivered').addEventListener('click',async ()=>{
+    if(!currentOrderId) return;
+    try{
+      const res = await fetch(`${apiURL}/orders/${currentOrderId}/deliver`,{
+        method:'PATCH',
+        headers:{ 'Authorization':`Bearer ${token}` }
+      });
+      if(res.ok){
+        alert('Order delivered successfully!');
+        document.getElementById('confirm-delivered').disabled=true;
+      }else{
+        const r = await res.json();
+        alert(r.message || "Error confirming delivery");
+      }
+    }catch(e){ alert("Error connecting to server"); }
   });
 
   // --- Report Agent ---
@@ -199,13 +221,14 @@
     const reason = prompt('Enter your report or complaint:');
     if(reason){
       try{
-        await fetch(`${apiURL}/tickets`,{
+        const res = await fetch(`${apiURL}/tickets`,{
           method:'POST',
           headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` },
           body:JSON.stringify({reason})
         });
-        alert('Report submitted successfully.');
-      }catch(e){ alert('Error submitting report.'); }
+        if(res.ok) alert('Report submitted successfully.');
+        else alert('Error submitting report.');
+      }catch(e){ alert('Error connecting to server.'); }
     }
   });
 
@@ -218,7 +241,6 @@
     menu.style.left = menuOpen?'0':'-300px';
   });
 
-  // --- Overlay Function ---
   const openOverlay = (id)=>{ document.getElementById(id).style.display='block'; menu.style.left='-300px'; menuOpen=false; }
   const closeOverlay = (id)=>{ document.getElementById(id).style.display='none'; }
 
@@ -233,4 +255,4 @@
   });
 </script>
 </body>
-</html>
+ </html>
