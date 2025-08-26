@@ -3,316 +3,231 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SkyUltimate Delivery</title>
+<title>Super Admin Dashboard</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-  body, html { width: 100%; height: 100%; }
+  * { margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
+  body, html { min-height:100vh; background-color:#C00000; color:white; }
+  #container { max-width:1200px; margin:auto; padding:20px; }
+  #logo { width:140px; height:140px; border-radius:50%; display:block; margin:20px auto; }
+  h2 { text-align:center; margin-bottom:20px; }
 
-  /* Splash Screen */
-  #splash {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #C00000;
-    width: 100%;
-    height: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    opacity: 1;
-    transition: opacity 0.5s ease;
-  }
-  #splash img {
-    width: 220px;
-    height: 220px;
-    border-radius: 50%;
-    animation: fadeIn 0.5s ease forwards;
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.8); }
-    to { opacity: 1; transform: scale(1); }
-  }
+  .section { background: rgba(255,255,255,0.95); color: #C00000; padding:20px; border-radius:12px; margin-bottom:20px; }
+  input, select, textarea { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ccc; }
+  button { padding:10px 15px; border:none; border-radius:8px; background:#C00000; color:white; cursor:pointer; margin-right:5px; }
+  button:disabled { background: grey; cursor:not-allowed; }
+  .list-item { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #ccc; }
+  #hamburger { position:absolute; top:20px; left:20px; font-size:30px; cursor:pointer; }
+  #side-menu { position:fixed; top:0; left:-250px; width:250px; height:100%; background:#fff; color:#C00000;
+    box-shadow:3px 0 10px rgba(0,0,0,0.3); transition:0.3s; padding-top:60px; z-index:100; }
+  #side-menu a { display:block; padding:15px 20px; text-decoration:none; color:#C00000; font-weight:bold; }
+  #side-menu a:hover { background:#f0f0f0; }
 
-  /* Main App */
-  #app {
-    display: none;
-    background-color: #C00000;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  /* Card */
-  .card {
-    background: rgba(255,255,255,0.95);
-    border-radius: 12px;
-    padding: 30px;
-    width: 350px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  }
-
-  /* Logo inside App */
-  #app-logo {
-    display: block;
-    margin: 0 auto 20px;
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-  }
-
-  /* Tabs */
-  .tabs { display: flex; margin-bottom: 20px; cursor: pointer; }
-  .tab { flex: 1; text-align: center; padding: 10px; font-weight: bold; }
-  .active-tab { border-bottom: 3px solid #C00000; }
-
-  /* Form fields */
-  .form-group { margin-bottom: 15px; position: relative; }
-  .form-group input, .form-group select {
-    width: 100%;
-    padding: 10px 35px 10px 10px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-  }
-  .form-group .toggle-password {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-  }
-
-  /* Buttons */
-  button {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    background-color: #C00000;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-  }
-
-  /* Error messages */
-  .error { color: red; font-size: 14px; margin-top: 5px; display: none; }
-
-  /* Forgot password */
-  .forgot-password {
-    display: block;
-    text-align: right;
-    font-size: 13px;
-    margin-top: -10px;
-    margin-bottom: 15px;
-    text-decoration: underline;
-    cursor: pointer;
-  }
-
+  /* Modal */
+  .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:200;
+    color:white; justify-content:center; align-items:center; padding:20px; overflow:auto; }
+  .modal-content { background:white; color:#C00000; padding:20px; border-radius:10px; max-width:500px; width:100%; }
+  .modal-content h3 { margin-bottom:15px; }
 </style>
 </head>
 <body>
 
-<!-- Splash Screen -->
-<div id="splash">
-  <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="SkyUltimate Logo" />
+<div id="hamburger">&#9776;</div>
+<div id="side-menu">
+  <a href="#" onclick="showSection('user-management')">User Management</a>
+  <a href="#" onclick="showSection('admin-queue')">Admin Request Queue</a>
+  <a href="#" onclick="showSection('financials')">Financials & Payouts</a>
+  <a href="#" onclick="showSection('platform-settings')">Platform Settings</a>
+  <a href="#" onclick="logout()">Logout</a>
 </div>
 
-<!-- Main App -->
-<div id="app">
-  <div class="card">
-    <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="Logo" id="app-logo">
-    
-    <div class="tabs">
-      <div class="tab active-tab" id="login-tab">Login</div>
-      <div class="tab" id="register-tab">Register</div>
-    </div>
+<div id="container">
+  <img id="logo" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="Logo">
+  <h2>Master Control Panel</h2>
 
-    <!-- Login Form -->
-    <div id="login-form">
-      <div class="form-group">
-        <select id="login-role">
-          <option value="">Select Role</option>
-          <option value="Customer">Customer</option>
-          <option value="Agent">Agent</option>
-          <option value="Admin">Admin</option>
-          <option value="Super-admin">Super-admin</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <input type="email" id="login-email" placeholder="Enter your email">
-      </div>
-      <div class="form-group">
-        <input type="password" id="login-password" placeholder="Enter your password">
-        <span class="toggle-password" onclick="togglePassword('login-password', this)">👁️</span>
-      </div>
-      <span class="forgot-password" onclick="forgotPassword()">Forgot Password?</span>
-      <button onclick="login()">Login</button>
-      <div class="error" id="login-error"></div>
-    </div>
+  <!-- Sections -->
+  <div id="user-management" class="section">
+    <h3>User Management</h3>
+    <div id="user-list"></div>
+  </div>
 
-    <!-- Register Form -->
-    <div id="register-form" style="display:none;">
-      <div class="form-group">
-        <select id="register-role" onchange="renderFields()">
-          <option value="">Select Role</option>
-          <option value="Customer">Customer</option>
-          <option value="Agent">Agent</option>
-        </select>
-      </div>
-      <div id="dynamic-fields"></div>
-      <button onclick="register()">Register</button>
-      <div class="error" id="register-error"></div>
-    </div>
+  <div id="admin-queue" class="section" style="display:none;">
+    <h3>Admin Request Queue</h3>
+    <div id="admin-requests"></div>
+  </div>
 
+  <div id="financials" class="section" style="display:none;">
+    <h3>Financials & Payouts</h3>
+    <div id="agents-list"></div>
+    <button onclick="processPayouts()">Process Selected Payouts</button>
+  </div>
+
+  <div id="platform-settings" class="section" style="display:none;">
+    <h3>Platform Settings</h3>
+    <label>Commission Rate (%)</label>
+    <input type="number" id="commission-rate" placeholder="Enter commission rate">
+    <label>Company Bank Details</label>
+    <input type="text" id="bank-details" placeholder="Bank info">
+    <button onclick="saveSettings()">Save Settings</button>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div id="confirm-modal" class="modal">
+  <div class="modal-content">
+    <h3>Confirm Action</h3>
+    <p id="confirm-text"></p>
+    <button id="confirm-yes">Yes</button>
+    <button onclick="closeModal('confirm-modal')">No</button>
   </div>
 </div>
 
 <script>
-  // Splash Screen
-  window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-      const splash = document.getElementById('splash');
-      splash.style.opacity = 0;
-      setTimeout(() => {
-        splash.style.display = 'none';
-        document.getElementById('app').style.display = 'flex';
-      }, 500);
-    }, 3000);
+const API_BASE = 'https://skyultimate-backend-api-structure.onrender.com';
+const token = sessionStorage.getItem('token');
+let selectedUsers = [];
+let confirmCallback=null;
+
+// Hamburger toggle
+const hamburger = document.getElementById('hamburger');
+const sideMenu = document.getElementById('side-menu');
+let menuOpen = false;
+hamburger.onclick = () => {
+  sideMenu.style.left = menuOpen ? '-250px' : '0';
+  menuOpen = !menuOpen;
+};
+
+// Section switch
+function showSection(id){
+  ['user-management','admin-queue','financials','platform-settings'].forEach(sec=>{
+    document.getElementById(sec).style.display = sec===id?'block':'none';
   });
+  if(id==='user-management') fetchUsers();
+  if(id==='admin-queue') fetchAdminQueue();
+  if(id==='financials') fetchAgents();
+}
 
-  // Tab switching
-  document.getElementById('login-tab').addEventListener('click', () => {
-    document.getElementById('login-form').style.display = 'block';
-    document.getElementById('register-form').style.display = 'none';
-    document.getElementById('login-tab').classList.add('active-tab');
-    document.getElementById('register-tab').classList.remove('active-tab');
-  });
-  document.getElementById('register-tab').addEventListener('click', () => {
-    document.getElementById('login-form').style.display = 'none';
-    document.getElementById('register-form').style.display = 'block';
-    document.getElementById('register-tab').classList.add('active-tab');
-    document.getElementById('login-tab').classList.remove('active-tab');
-  });
-
-  // Toggle password visibility
-  function togglePassword(fieldId, icon) {
-    const field = document.getElementById(fieldId);
-    if(field.type === 'password') {
-      field.type = 'text';
-      icon.textContent = '🙈';
-    } else {
-      field.type = 'password';
-      icon.textContent = '👁️';
-    }
-  }
-
-  // Dynamic fields for registration
-  function renderFields() {
-    const role = document.getElementById('register-role').value;
-    const container = document.getElementById('dynamic-fields');
-    container.innerHTML = '';
-    if(role === 'Customer') {
-      container.innerHTML = `
-        <div class="form-group"><input type="text" id="reg-fullname" placeholder="Full Name"></div>
-        <div class="form-group"><input type="email" id="reg-email" placeholder="Email"></div>
-        <div class="form-group"><input type="password" id="reg-password" placeholder="Password">
-          <span class="toggle-password" onclick="togglePassword('reg-password', this)">👁️</span>
-        </div>
-      `;
-    }
-    if(role === 'Agent') {
-      container.innerHTML = `
-        <div class="form-group"><input type="text" id="reg-fullname" placeholder="Full Name"></div>
-        <div class="form-group"><input type="email" id="reg-email" placeholder="Email"></div>
-        <div class="form-group"><input type="password" id="reg-password" placeholder="Password">
-          <span class="toggle-password" onclick="togglePassword('reg-password', this)">👁️</span>
-        </div>
-        <div class="form-group"><input type="text" id="reg-phone" placeholder="Phone Number"></div>
-        <div class="form-group"><input type="text" id="reg-bank" placeholder="Bank Details"></div>
-      `;
-    }
-  }
-
-  // API Base
-  const API_BASE = 'https://skyultimate-backend-api-structure.onrender.com';
-
-  // Login function
-  async function login() {
-    const role = document.getElementById('login-role').value;
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    const errorDiv = document.getElementById('login-error');
-    errorDiv.style.display = 'none';
-    if(!role || !email || !password) {
-      errorDiv.textContent = 'Please fill in all fields.';
-      errorDiv.style.display = 'block';
-      return;
-    }
-    try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ role, email, password })
+// Fetch users for management
+async function fetchUsers(){
+  try{
+    const res = await fetch(`${API_BASE}/users`,{headers:{'Authorization':`Bearer ${token}`}});
+    const users = await res.json();
+    const list = document.getElementById('user-list');
+    list.innerHTML='';
+    users.forEach(user=>{
+      const div = document.createElement('div');
+      div.className='list-item';
+      div.innerHTML=`<span>${user.fullName} (${user.role})</span>`;
+      const suspendBtn = document.createElement('button');
+      suspendBtn.textContent='Suspend';
+      suspendBtn.onclick=()=> confirmAction(`Suspend ${user.fullName}?`, async ()=>{
+        await fetch(`${API_BASE}/users/suspend/${user.id}`,{method:'POST',headers:{'Authorization':`Bearer ${token}`}});
+        fetchUsers();
       });
-      const data = await res.json();
-      if(res.ok) {
-        sessionStorage.setItem('token', data.token);
-        sessionStorage.setItem('role', data.role);
-        window.location.href = 'home.html';
-      } else {
-        errorDiv.textContent = data.message || 'Invalid credentials. Please check your role and login details';
-        errorDiv.style.display = 'block';
-      }
-    } catch(err) {
-      errorDiv.textContent = 'Server error. Try again later.';
-      errorDiv.style.display = 'block';
-    }
-  }
-
-  // Register function
-  async function register() {
-    const role = document.getElementById('register-role').value;
-    const fullname = document.getElementById('reg-fullname')?.value;
-    const email = document.getElementById('reg-email')?.value;
-    const password = document.getElementById('reg-password')?.value;
-    const phone = document.getElementById('reg-phone')?.value;
-    const bank = document.getElementById('reg-bank')?.value;
-    const errorDiv = document.getElementById('register-error');
-    errorDiv.style.display = 'none';
-    if(!role || !fullname || !email || !password || (role==='Agent' && (!phone || !bank))) {
-      errorDiv.textContent = 'Please fill in all required fields.';
-      errorDiv.style.display = 'block';
-      return;
-    }
-    try {
-      const payload = { role, fullname, email, password };
-      if(role==='Agent'){ payload.phone = phone; payload.bank = bank; }
-      const res = await fetch(`${API_BASE}/auth/register`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent='DELETE USER';
+      deleteBtn.onclick=()=> confirmAction(`DELETE ${user.fullName}? This cannot be undone.`, async ()=>{
+        await fetch(`${API_BASE}/users/${user.id}`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});
+        fetchUsers();
       });
-      const data = await res.json();
-      if(res.ok) {
-        sessionStorage.setItem('token', data.token);
-        sessionStorage.setItem('role', data.role);
-        window.location.href = 'home.html';
-      } else {
-        errorDiv.textContent = data.message || 'Registration failed. Try login if already registered.';
-        errorDiv.style.display = 'block';
-      }
-    } catch(err) {
-      errorDiv.textContent = 'Server error. Try again later.';
-      errorDiv.style.display = 'block';
-    }
-  }
+      div.appendChild(suspendBtn);
+      div.appendChild(deleteBtn);
+      list.appendChild(div);
+    });
+  } catch(err){ console.error(err); }
+}
 
-  function forgotPassword() {
-    alert('Redirect to forgot password page (to be implemented)');
-  }
+// Fetch Admin Request Queue
+async function fetchAdminQueue(){
+  try{
+    const res = await fetch(`${API_BASE}/admin/requests`,{headers:{'Authorization':`Bearer ${token}`}});
+    const requests = await res.json();
+    const list = document.getElementById('admin-requests');
+    list.innerHTML='';
+    requests.forEach(req=>{
+      const div = document.createElement('div');
+      div.className='list-item';
+      div.innerHTML=`<span>${req.userName} requested ${req.action}</span>`;
+      const approve = document.createElement('button');
+      approve.textContent='Approve';
+      approve.onclick=async ()=> {await fetch(`${API_BASE}/admin/requests/approve/${req.id}`,{method:'POST',headers:{'Authorization':`Bearer ${token}`}}); fetchAdminQueue();};
+      const deny = document.createElement('button');
+      deny.textContent='Deny';
+      deny.onclick=async ()=> {await fetch(`${API_BASE}/admin/requests/deny/${req.id}`,{method:'POST',headers:{'Authorization':`Bearer ${token}`}}); fetchAdminQueue();};
+      div.appendChild(approve);
+      div.appendChild(deny);
+      list.appendChild(div);
+    });
+  } catch(err){ console.error(err); }
+}
 
+// Financials
+async function fetchAgents(){
+  try{
+    const res = await fetch(`${API_BASE}/agents`,{headers:{'Authorization':`Bearer ${token}`}});
+    const agents = await res.json();
+    const list = document.getElementById('agents-list');
+    list.innerHTML='';
+    agents.forEach(agent=>{
+      const div = document.createElement('div');
+      div.className='list-item';
+      div.innerHTML=`<span>${agent.fullName} - Pending: ${agent.pendingPayout}</span>`;
+      const checkbox = document.createElement('input');
+      checkbox.type='checkbox';
+      checkbox.onchange=(e)=>{
+        if(e.target.checked) selectedUsers.push(agent.id);
+        else selectedUsers = selectedUsers.filter(id=>id!==agent.id);
+      };
+      div.appendChild(checkbox);
+      list.appendChild(div);
+    });
+  } catch(err){ console.error(err); }
+}
+
+async function processPayouts(){
+  if(selectedUsers.length===0){ alert('Select agents first'); return; }
+  try{
+    await fetch(`${API_BASE}/payouts/process`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      body: JSON.stringify({agentIds:selectedUsers})
+    });
+    alert('Payouts processed');
+    selectedUsers=[];
+    fetchAgents();
+  } catch(err){ console.error(err); }
+}
+
+// Platform Settings
+async function saveSettings(){
+  const rate = document.getElementById('commission-rate').value;
+  const bank = document.getElementById('bank-details').value;
+  if(!rate || !bank){ alert('Fill all fields'); return; }
+  try{
+    await fetch(`${API_BASE}/settings`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      body: JSON.stringify({commissionRate:rate,bankDetails:bank})
+    });
+    alert('Settings saved');
+  } catch(err){ console.error(err); }
+}
+
+// Confirm modal
+function confirmAction(msg, callback){
+  document.getElementById('confirm-text').innerText = msg;
+  confirmCallback=callback;
+  document.getElementById('confirm-yes').onclick = async ()=>{
+    await confirmCallback();
+    closeModal('confirm-modal');
+  };
+  document.getElementById('confirm-modal').style.display='flex';
+}
+function closeModal(id){ document.getElementById(id).style.display='none'; }
+
+function logout(){
+  sessionStorage.clear();
+  window.location.href='home.html';
+}
 </script>
-
 </body>
-  </html>
+</html>
