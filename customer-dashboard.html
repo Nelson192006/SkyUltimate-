@@ -1,275 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SkyUltimate – Customer Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Dashboard</title>
 <style>
-  :root{ --red:#C00000; --muted:#6b7280; --soft:#f8fafc; }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--soft);color:#111827;}
-  header{background:var(--red);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
-  .brand{font-weight:900}
-  .pill{background:#fff1;border:1px solid #ffffff33;color:#fff;border-radius:10px;padding:8px 10px;cursor:pointer}
-  .wrap{max-width:1000px;margin:22px auto;padding:0 16px}
-  .grid{display:grid;gap:16px}
-  @media(min-width:960px){ .grid{grid-template-columns:1.1fr .9fr} }
-  .card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
-  label{font-size:.9rem;font-weight:700}
-  input, select, textarea{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:12px}
-  .row{display:grid;gap:10px}
-  .btn{background:var(--red);color:#fff;border:none;border-radius:10px;padding:12px 14px;cursor:pointer;font-weight:800}
-  .btn.ghost{background:#eef2ff;color:#111827}
-  .muted{color:var(--muted)}
-  .list{display:grid;gap:12px}
-  .job{border:1px solid #eee;border-radius:12px;padding:12px;background:#fff}
-  .map{width:100%;height:280px;border:0;border-radius:12px;background:#f3f4f6}
-  .tag{display:inline-block;background:#ffe6e6;color:var(--red);padding:4px 10px;border-radius:999px;font-weight:700;font-size:.8rem;}
-  .hr{height:1px;background:#eee;margin:10px 0}
-  .hidden{display:none!important}
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+  body, html { min-height: 100vh; background-color: #C00000; color: white; }
+  #container { padding: 20px; max-width: 800px; margin: auto; }
+  #logo { width: 140px; height: 140px; border-radius: 50%; display: block; margin: 20px auto; }
+  h2 { text-align: center; margin-bottom: 20px; }
+
+  /* Order Card */
+  .card { background: rgba(255,255,255,0.95); color: #C00000; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  .form-group { margin-bottom: 15px; }
+  input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: #C00000;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  button:disabled { background-color: grey; cursor: not-allowed; }
+
+  /* Hamburger menu */
+  #hamburger { position: absolute; top: 20px; left: 20px; font-size: 30px; cursor: pointer; }
+  #side-menu { position: fixed; top: 0; left: -250px; width: 250px; height: 100%; background: #fff; color: #C00000;
+    box-shadow: 3px 0 10px rgba(0,0,0,0.3); transition: 0.3s; padding-top: 60px; z-index: 100; }
+  #side-menu a { display: block; padding: 15px 20px; text-decoration: none; color: #C00000; font-weight: bold; }
+  #side-menu a:hover { background: #f0f0f0; }
+
+  /* Modal */
+  .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index:200;
+    color:white; justify-content:center; align-items:center; padding:20px; }
+  .modal-content { background:white; color:#C00000; padding:20px; border-radius:10px; max-width:400px; width:100%; }
+  .modal-content h3 { margin-bottom: 15px; }
+  .modal-content button { margin-top: 10px; }
+
 </style>
 </head>
 <body>
 
-<header>
-  <div class="brand">Customer Dashboard</div>
-  <div>
-    <button class="pill" onclick="openMenu()">☰</button>
-    <button class="pill" onclick="logout()">⎋</button>
+<div id="hamburger">&#9776;</div>
+<div id="side-menu">
+  <a href="#" onclick="showOverlay('rate-agent')">Rate Agent</a>
+  <a href="#" onclick="showOverlay('report-agent')">Report Agent</a>
+  <a href="#" onclick="logout()">Logout</a>
+</div>
+
+<div id="container">
+  <img id="logo" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="Logo">
+  <h2>Place a New Order</h2>
+
+  <div class="card">
+    <div class="form-group">
+      <select id="item-type">
+        <option value="">Select Item Type</option>
+        <option value="Document">Document</option>
+        <option value="Parcel">Parcel</option>
+        <option value="General Goods">General Goods</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <input type="number" id="weight" placeholder="Weight (kg)">
+    </div>
+    <div class="form-group">
+      <input type="text" id="pickup" placeholder="Pickup Address">
+    </div>
+    <div class="form-group">
+      <input type="text" id="delivery" placeholder="Delivery Address">
+    </div>
+    <button id="calculate-btn" disabled onclick="calculatePrice()">Calculate Final Price</button>
   </div>
-</header>
+</div>
 
-<div class="wrap">
-  <div class="grid">
-    <!-- Left: Order or Live -->
-    <section id="leftCol" class="card">
-      <h2 id="title">Place a New Order</h2>
-      <div id="placeOrder">
-        <div class="row">
-          <div>
-            <label>What are you sending?</label>
-            <select id="itemType">
-              <option>Food</option><option>Documents</option><option>Clothing</option><option>Electronics</option><option>Other Packages</option>
-            </select>
-          </div>
-          <div>
-            <label>Brief Description</label>
-            <input id="itemDesc" placeholder="e.g. 1 large pizza box"/>
-          </div>
-          <div>
-            <label>Estimated Weight</label>
-            <select id="weight">
-              <option>Under 1kg</option><option>1-5kg</option><option>5-10kg</option><option>10kg+</option>
-            </select>
-          </div>
-          <div>
-            <label>Pickup Address</label>
-            <input id="pickup" placeholder="Type pickup address"/>
-          </div>
-          <div>
-            <label>Delivery Address</label>
-            <input id="dropoff" placeholder="Type delivery address"/>
-          </div>
-        </div>
-        <div class="hr"></div>
-        <div class="row">
-          <div><b>Estimated Price:</b> <span id="estPrice" class="tag">$0.00</span></div>
-          <button class="btn" id="quoteBtn" disabled>Calculate Final Price</button>
-        </div>
-      </div>
+<!-- Price Modal -->
+<div id="price-modal" class="modal">
+  <div class="modal-content">
+    <h3>Order Summary</h3>
+    <p id="price-info"></p>
+    <p><strong>Bank Details:</strong></p>
+    <select id="bank-selection">
+      <option value="Moniepoint">Moniepoint - 9128884830</option>
+      <option value="Opay">Opay - 9128884830</option>
+      <option value="Palmpay">Palmpay - 9128884830</option>
+      <option value="UBA">UBA - 2342835397</option>
+      <option value="GTBank">GTBank - 0734090626</option>
+    </select>
+    <p>Account Name: Nelson Emmanuel Godspower</p>
+    <button onclick="closeModal('price-modal')">Close</button>
+  </div>
+</div>
 
-      <!-- Modal-ish: Payment Instructions -->
-      <div id="confirmPay" class="hidden">
-        <h3>Final Price & Payment Instructions</h3>
-        <div class="row">
-          <div><b>Total:</b> <span id="finalTotal" class="tag">$0.00</span></div>
-          <div class="muted">This price is final and includes all fees.</div>
-        </div>
-        <div class="hr"></div>
-        <div id="bankDetails" class="row"></div>
-        <div class="hr"></div>
-        <div class="muted">Transfer to the account above. Your order becomes visible to agents after admin confirms payment.</div>
-        <div class="hr"></div>
-        <button class="btn" id="goToOrders">See My Orders</button>
-      </div>
+<!-- Rate Agent Overlay -->
+<div id="rate-agent" class="modal">
+  <div class="modal-content">
+    <h3>Rate Agent</h3>
+    <p>Rate your agent after completing an order:</p>
+    <select id="star-rating">
+      <option value="1">⭐</option>
+      <option value="2">⭐⭐</option>
+      <option value="3">⭐⭐⭐</option>
+      <option value="4">⭐⭐⭐⭐</option>
+      <option value="5">⭐⭐⭐⭐⭐</option>
+    </select>
+    <textarea id="rating-comment" placeholder="Comment (optional)" style="width:100%;margin-top:10px;"></textarea>
+    <button onclick="submitRating()">Submit Rating</button>
+    <button onclick="closeModal('rate-agent')">Close</button>
+  </div>
+</div>
 
-      <!-- Live Tracking -->
-      <div id="live" class="hidden">
-        <div class="row">
-          <div class="tag" id="liveStatus">Loading…</div>
-          <div id="agentLine" class="muted"></div>
-        </div>
-        <div class="hr"></div>
-        <iframe id="liveMap" class="map"></iframe>
-        <div class="hr"></div>
-        <div class="row">
-          <button id="confirmPickup" class="btn hidden">Confirm Item has been Picked Up</button>
-          <button id="confirmDelivered" class="btn hidden">Confirm Order Delivered</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Right: Orders -->
-    <aside class="card">
-      <h2>My Orders</h2>
-      <div id="orders" class="list">Loading…</div>
-    </aside>
+<!-- Report Agent Overlay -->
+<div id="report-agent" class="modal">
+  <div class="modal-content">
+    <h3>Report Agent</h3>
+    <textarea id="report-comment" placeholder="Describe the issue" style="width:100%;margin-top:10px;"></textarea>
+    <button onclick="submitReport()">Submit Report</button>
+    <button onclick="closeModal('report-agent')">Close</button>
   </div>
 </div>
 
 <script>
-const API = "https://33vhk4-50000.csb.app";
-const token = localStorage.getItem("token");
-if(!token) location.href="index.html";
-
-const $ = id => document.getElementById(id);
-const auth = ()=>({ Authorization:`Bearer ${token}`, "Content-Type":"application/json" });
-function currency(n){ n=Number(n||0); return "$"+n.toFixed(2); }
-function escapeHtml(s=""){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-function logout(){ localStorage.clear(); location.href="index.html"; }
-function openMenu(){ alert("Use Home drawer for About/Mission/FAQ. This page focuses on orders."); }
-
-// Load profile and ensure role
-(async function init(){
-  try{
-    const meRes = await fetch(`${API}/auth/me`, { headers:{ Authorization:`Bearer ${token}` }});
-    if(!meRes.ok) throw 0;
-    const me = await meRes.json();
-    if(me.role!=="customer"){
-      if(me.role==="agent") return location.href="agent-dashboard.html";
-      if(me.role==="admin") return location.href="admin-dashboard.html";
-      if(me.role==="superadmin") return location.href="superadmin.html";
-      return location.href="index.html";
-    }
-    bindPlaceOrderUI();
-    await loadOrders();
-  }catch{ logout(); }
-})();
-
-// Bind order form events
-function bindPlaceOrderUI(){
-  const required = ["itemType","itemDesc","weight","pickup","dropoff"].map(id=>$(id));
-  required.forEach(el=> el.addEventListener("input", ()=>{
-    const ok = required.every(f=>f.value && f.value.trim().length>0);
-    $("quoteBtn").disabled = !ok;
-    // tiny client-side estimate
-    const base = 8, w = $("weight").value.includes("10")?5:$("weight").value.includes("5-10")?4:$("weight").value.includes("1-5")?2:1;
-    $("estPrice").textContent = currency(base+w);
-  }));
-  $("quoteBtn").addEventListener("click", getFinalPrice);
-}
-
-// Get quote and create order
-let pendingOrderCache = null;
-async function getFinalPrice(){
-  const payload = {
-    itemType: $("itemType").value,
-    description: $("itemDesc").value,
-    weight: $("weight").value,
-    pickup: $("pickup").value,
-    dropoff: $("dropoff").value
+  // Hamburger toggle
+  const hamburger = document.getElementById('hamburger');
+  const sideMenu = document.getElementById('side-menu');
+  let menuOpen = false;
+  hamburger.onclick = () => {
+    sideMenu.style.left = menuOpen ? '-250px' : '0';
+    menuOpen = !menuOpen;
   };
-  try{
-    const q = await fetch(`${API}/orders/quote`, { method:"POST", headers: auth(), body: JSON.stringify(payload) });
-    const quote = await q.json();
-    if(!q.ok) return alert(quote.message||"Unable to get quote");
 
-    const create = await fetch(`${API}/orders`, { method:"POST", headers: auth(), body: JSON.stringify({ ...payload, quotedTotal: quote.total, status:"pending_payment" }) });
-    const order = await create.json();
-    if(!create.ok) return alert(order.message||"Unable to create order");
+  // Enable calculate button when fields filled
+  const fields = ['item-type','weight','pickup','delivery'];
+  fields.forEach(id => {
+    document.getElementById(id).addEventListener('input', checkFields);
+  });
+  function checkFields() {
+    const filled = fields.every(id => document.getElementById(id).value);
+    document.getElementById('calculate-btn').disabled = !filled;
+  }
 
-    pendingOrderCache = order;
-    const sres = await fetch(`${API}/settings/payment`, { headers: { Authorization:`Bearer ${token}` }});
-    const settings = await sres.json();
-    $("finalTotal").textContent = currency(order.total || quote.total);
-    $("bankDetails").innerHTML = `
-      <div><b>Bank Name:</b> ${escapeHtml(settings.bankName||"—")}</div>
-      <div><b>Account Name:</b> ${escapeHtml(settings.accountName||"—")}</div>
-      <div><b>Account Number:</b> ${escapeHtml(settings.accountNumber||"—")}</div>
-    `;
-    $("placeOrder").classList.add("hidden");
-    $("confirmPay").classList.remove("hidden");
-  }catch(e){ alert("Network error."); }
-}
+  // API Base
+  const API_BASE = 'https://skyultimate-backend-api-structure.onrender.com';
 
-$("goToOrders").addEventListener("click", ()=>{
-  $("confirmPay").classList.add("hidden");
-  $("placeOrder").classList.remove("hidden");
-  loadOrders();
-});
+  // Calculate price
+  async function calculatePrice() {
+    const payload = {
+      itemType: document.getElementById('item-type').value,
+      weight: document.getElementById('weight').value,
+      pickup: document.getElementById('pickup').value,
+      delivery: document.getElementById('delivery').value
+    };
+    try {
+      const token = sessionStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/orders/calculate`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if(res.ok){
+        document.getElementById('price-info').innerHTML = `Final Price: ₦${data.finalPrice}`;
+        document.getElementById('price-modal').style.display = 'flex';
+      } else { alert(data.message || 'Error calculating price'); }
+    } catch(err){ alert('Server error'); }
+  }
 
-// Orders list + live tracking
-async function loadOrders(){
-  try{
-    const res = await fetch(`${API}/orders/my`, { headers:{ Authorization:`Bearer ${token}` }});
-    const wrap = $("orders");
-    if(!res.ok){ wrap.textContent = "Failed to load."; return; }
-    const list = await res.json();
-    wrap.innerHTML = "";
-    if(!list || !list.length){ wrap.textContent = "No orders yet."; return; }
+  function closeModal(id){ document.getElementById(id).style.display='none'; }
 
-    let active = null;
-    list.forEach(o=>{
-      const d = document.createElement("div");
-      d.className = "job";
-      d.innerHTML = `
-        <div style="display:flex;justify-content:space-between;">
-          <div class="tag">${escapeHtml(o.status)}</div>
-          <div><b class="muted">#${o.id || o._id || ""}</b></div>
-        </div>
-        <div><b>From:</b> <span>${escapeHtml(o.pickup)}</span></div>
-        <div><b>To:</b> <span>${escapeHtml(o.dropoff)}</span></div>
-        <div><b>Item:</b> <span>${escapeHtml(o.itemType)} – ${escapeHtml(o.description||"")}</span></div>
-        <div class="hr"></div>
-        <div><b>Total:</b> ${currency(o.total || o.quotedTotal || 0)}</div>
-      `;
-      wrap.appendChild(d);
-      if(["payment_confirmed","agent_assigned","enroute_pickup","enroute_delivery"].includes((o.status||"").toLowerCase())) active = o;
-    });
+  // Placeholder rating/report submissions
+  function submitRating(){ alert('Rating submitted (API integration pending)'); closeModal('rate-agent'); }
+  function submitReport(){ alert('Report submitted (API integration pending)'); closeModal('report-agent'); }
 
-    if(active){ showLive(active); } else { hideLive(); }
-  }catch(e){ $("orders").textContent = "Error loading orders."; }
-}
-
-function hideLive(){
-  $("live").classList.add("hidden");
-  $("title").textContent = "Place a New Order";
-}
-function showLive(order){
-  $("title").textContent = "Live Tracking";
-  $("live").classList.remove("hidden");
-  $("placeOrder").classList.add("hidden");
-  $("confirmPay").classList.add("hidden");
-
-  $("liveStatus").textContent = order.status;
-  const agent = order.agent || {};
-  $("agentLine").textContent = agent.firstName ? `Agent ${agent.firstName} is handling your delivery.` : "Waiting for agent...";
-  $("liveMap").src = `https://maps.google.com/maps?q=${encodeURIComponent(order.pickup)}&z=12&output=embed`;
-
-  const picked = ["picked_up","enroute_delivery"].includes(order.status.toLowerCase());
-  const canPick = ["agent_assigned","enroute_pickup"].includes(order.status.toLowerCase());
-  $("confirmPickup").classList.toggle("hidden", !canPick);
-  $("confirmDelivered").classList.toggle("hidden", !picked);
-
-  $("confirmPickup").onclick = ()=> confirmPickup(order.id || order._id);
-  $("confirmDelivered").onclick = ()=> confirmDelivered(order.id || order._id);
-}
-
-async function confirmPickup(id){
-  try{
-    const res = await fetch(`${API}/orders/${id}/confirm-pickup`, { method:"POST", headers: auth() });
-    if(!res.ok) return alert("Unable to confirm pickup.");
-    await loadOrders();
-  }catch{ alert("Network error."); }
-}
-async function confirmDelivered(id){
-  try{
-    const res = await fetch(`${API}/orders/${id}/confirm-delivered`, { method:"POST", headers: auth() });
-    if(!res.ok) return alert("Unable to confirm delivery.");
-    alert("Delivery complete! Thank you for using SkyUltimate.");
-    await loadOrders();
-  }catch{ alert("Network error."); }
-}
+  // Logout
+  function logout(){
+    sessionStorage.clear();
+    window.location.href = 'home.html';
+  }
 </script>
+
 </body>
-                                                                             </html>
+  </html>
