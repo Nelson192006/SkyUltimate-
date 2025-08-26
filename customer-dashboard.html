@@ -3,187 +3,234 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Customer Dashboard</title>
+<title>SkyUltimate - Customer Dashboard</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-  body, html { min-height: 100vh; background-color: #C00000; color: white; }
-  #container { padding: 20px; max-width: 800px; margin: auto; }
-  #logo { width: 140px; height: 140px; border-radius: 50%; display: block; margin: 20px auto; }
-  h2 { text-align: center; margin-bottom: 20px; }
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
+  body, html { width:100%; height:100%; background:#C00000; }
+  a { text-decoration:none; color:inherit; }
+  button { cursor:pointer; border:none; outline:none; }
 
-  /* Order Card */
-  .card { background: rgba(255,255,255,0.95); color: #C00000; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-  .form-group { margin-bottom: 15px; }
-  input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; }
+  /* --- Container --- */
+  #container { width:100%; min-height:100%; padding:20px; display:flex; flex-direction:column; align-items:center; position:relative; }
 
-  button {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    background-color: #C00000;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    margin-top: 10px;
-  }
-  button:disabled { background-color: grey; cursor: not-allowed; }
+  /* --- Logo --- */
+  #logo { width:100px; height:100px; border-radius:50%; margin-bottom:10px; }
 
-  /* Hamburger menu */
-  #hamburger { position: absolute; top: 20px; left: 20px; font-size: 30px; cursor: pointer; }
-  #side-menu { position: fixed; top: 0; left: -250px; width: 250px; height: 100%; background: #fff; color: #C00000;
-    box-shadow: 3px 0 10px rgba(0,0,0,0.3); transition: 0.3s; padding-top: 60px; z-index: 100; }
-  #side-menu a { display: block; padding: 15px 20px; text-decoration: none; color: #C00000; font-weight: bold; }
-  #side-menu a:hover { background: #f0f0f0; }
+  /* --- Welcome --- */
+  #welcome { font-size:1.4rem; color:white; margin-bottom:20px; text-align:center; }
 
-  /* Modal */
-  .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index:200;
-    color:white; justify-content:center; align-items:center; padding:20px; }
-  .modal-content { background:white; color:#C00000; padding:20px; border-radius:10px; max-width:400px; width:100%; }
-  .modal-content h3 { margin-bottom: 15px; }
-  .modal-content button { margin-top: 10px; }
+  /* --- Order Card --- */
+  .card { background:white; border-radius:12px; padding:20px; width:100%; max-width:500px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+  .card h3 { margin-bottom:15px; color:#C00000; }
+  .card label { display:block; margin-bottom:5px; font-weight:bold; }
+  .card input, .card select { width:100%; padding:10px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; }
+  .card button { width:100%; padding:12px; border-radius:12px; background:#C00000; color:white; font-weight:bold; transition:0.3s; }
+  .card button:disabled { background:#ccc; cursor:not-allowed; }
 
+  /* --- Action Buttons --- */
+  .action-btn { width:100%; padding:12px; border-radius:12px; background:white; color:#C00000; font-weight:bold; margin-bottom:10px; transition:0.3s; }
+  .action-btn:disabled { background:#ccc; color:#666; cursor:not-allowed; }
+
+  /* --- Hamburger Menu --- */
+  #hamburger { position:absolute; top:20px; left:20px; width:30px; height:22px; cursor:pointer; display:flex; flex-direction:column; justify-content:space-between; }
+  .bar { width:100%; height:4px; background:white; border-radius:2px; }
+
+  /* --- Menu Overlay --- */
+  #menu { position:fixed; top:0; left:-300px; width:250px; height:100%; background:white; color:#C00000; box-shadow:3px 0 10px rgba(0,0,0,0.3); transition:0.3s; display:flex; flex-direction:column; padding:20px; }
+  #menu h2 { margin-bottom:20px; font-size:1.2rem; }
+  .menu-item { margin:10px 0; cursor:pointer; font-weight:bold; }
+
+  /* --- Overlay Pages --- */
+  .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); color:#C00000; padding:40px; overflow-y:auto; display:none; }
+  .overlay h2 { margin-bottom:15px; }
+  .overlay p { margin-bottom:10px; line-height:1.5; }
+  .close-overlay { position:absolute; top:20px; right:20px; font-weight:bold; cursor:pointer; font-size:1.2rem; }
+
+  /* --- Logout Button --- */
+  #logout { position:absolute; top:20px; right:20px; background:white; color:#C00000; padding:8px 12px; border-radius:8px; font-weight:bold; transition:0.3s; }
+  #logout:hover { background:#f0f0f0; }
+
+  /* --- Modal --- */
+  #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; }
+  #modal-content { background:white; padding:20px; border-radius:12px; width:90%; max-width:400px; color:#C00000; }
+  #modal-content h3 { margin-bottom:15px; }
+  #modal-content button { background:#C00000; color:white; width:100%; border-radius:12px; padding:10px; margin-top:10px; }
 </style>
 </head>
 <body>
-
-<div id="hamburger">&#9776;</div>
-<div id="side-menu">
-  <a href="#" onclick="showOverlay('rate-agent')">Rate Agent</a>
-  <a href="#" onclick="showOverlay('report-agent')">Report Agent</a>
-  <a href="#" onclick="logout()">Logout</a>
-</div>
-
 <div id="container">
   <img id="logo" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="Logo">
-  <h2>Place a New Order</h2>
+  <div id="welcome">Welcome back!</div>
 
   <div class="card">
-    <div class="form-group">
-      <select id="item-type">
-        <option value="">Select Item Type</option>
-        <option value="Document">Document</option>
-        <option value="Parcel">Parcel</option>
-        <option value="General Goods">General Goods</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <input type="number" id="weight" placeholder="Weight (kg)">
-    </div>
-    <div class="form-group">
-      <input type="text" id="pickup" placeholder="Pickup Address">
-    </div>
-    <div class="form-group">
-      <input type="text" id="delivery" placeholder="Delivery Address">
-    </div>
-    <button id="calculate-btn" disabled onclick="calculatePrice()">Calculate Final Price</button>
-  </div>
-</div>
-
-<!-- Price Modal -->
-<div id="price-modal" class="modal">
-  <div class="modal-content">
-    <h3>Order Summary</h3>
-    <p id="price-info"></p>
-    <p><strong>Bank Details:</strong></p>
-    <select id="bank-selection">
-      <option value="Moniepoint">Moniepoint - 9128884830</option>
-      <option value="Opay">Opay - 9128884830</option>
-      <option value="Palmpay">Palmpay - 9128884830</option>
-      <option value="UBA">UBA - 2342835397</option>
-      <option value="GTBank">GTBank - 0734090626</option>
+    <h3>Place a New Order</h3>
+    <label>Item Type</label>
+    <select id="itemType">
+      <option value="">Select Item Type</option>
+      <option value="document">Document</option>
+      <option value="parcel">Parcel</option>
+      <option value="general">General Goods</option>
     </select>
-    <p>Account Name: Nelson Emmanuel Godspower</p>
-    <button onclick="closeModal('price-modal')">Close</button>
+
+    <label>Weight (kg)</label>
+    <input type="number" id="weight" placeholder="Enter Weight">
+
+    <label>Pickup Address</label>
+    <input type="text" id="pickup" placeholder="Pickup Address">
+
+    <label>Delivery Address</label>
+    <input type="text" id="delivery" placeholder="Delivery Address">
+
+    <button id="calculate-btn" disabled>Calculate Final Price</button>
   </div>
+
+  <button id="confirm-pickup" class="action-btn" disabled>Confirm Item Picked Up</button>
+  <button id="confirm-delivered" class="action-btn" disabled>Confirm Order Delivered</button>
+  <button id="report-agent" class="action-btn">Report Agent / Complaint</button>
+
+  <div id="hamburger">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+  </div>
+  <div id="menu">
+    <h2>Menu</h2>
+    <div class="menu-item" id="aboutus-menu">About Us</div>
+    <div class="menu-item" id="mission-menu">Mission & Vision</div>
+    <div class="menu-item" id="faq-menu">FAQ / Support</div>
+  </div>
+
+  <div class="overlay" id="aboutus-overlay">
+    <div class="close-overlay" onclick="closeOverlay('aboutus-overlay')">X</div>
+    <h2>About Us</h2>
+    <p>SkyUltimate Delivery Service, founded in 2024, ensures your packages are handled safely and delivered on time...</p>
+  </div>
+
+  <div class="overlay" id="mission-overlay">
+    <div class="close-overlay" onclick="closeOverlay('mission-overlay')">X</div>
+    <h2>Our Mission</h2>
+    <p>To provide a seamless, reliable, and efficient delivery experience exceeding customer expectations...</p>
+    <h2>Our Vision</h2>
+    <p>To be the leader in delivery services known for speed, reliability, and customer satisfaction...</p>
+  </div>
+
+  <div class="overlay" id="faq-overlay">
+    <div class="close-overlay" onclick="closeOverlay('faq-overlay')">X</div>
+    <h2>FAQ & Support</h2>
+    <p>Tracking: Use the tracking number provided in your email.</p>
+    <p>Delivery hours: 9:00 AM - 6:00 PM, Mon-Sat. Special arrangements possible.</p>
+    <p>WhatsApp / Phone: 09128884830</p>
+    <p>Social: Instagram, Facebook (editable)</p>
+  </div>
+
+  <button id="logout">Logout</button>
 </div>
 
-<!-- Rate Agent Overlay -->
-<div id="rate-agent" class="modal">
-  <div class="modal-content">
-    <h3>Rate Agent</h3>
-    <p>Rate your agent after completing an order:</p>
-    <select id="star-rating">
-      <option value="1">⭐</option>
-      <option value="2">⭐⭐</option>
-      <option value="3">⭐⭐⭐</option>
-      <option value="4">⭐⭐⭐⭐</option>
-      <option value="5">⭐⭐⭐⭐⭐</option>
-    </select>
-    <textarea id="rating-comment" placeholder="Comment (optional)" style="width:100%;margin-top:10px;"></textarea>
-    <button onclick="submitRating()">Submit Rating</button>
-    <button onclick="closeModal('rate-agent')">Close</button>
-  </div>
-</div>
-
-<!-- Report Agent Overlay -->
-<div id="report-agent" class="modal">
-  <div class="modal-content">
-    <h3>Report Agent</h3>
-    <textarea id="report-comment" placeholder="Describe the issue" style="width:100%;margin-top:10px;"></textarea>
-    <button onclick="submitReport()">Submit Report</button>
-    <button onclick="closeModal('report-agent')">Close</button>
+<!-- Modal -->
+<div id="modal">
+  <div id="modal-content">
+    <h3>Order Price & Bank Details</h3>
+    <div id="order-info"></div>
+    <button onclick="closeModal()">Close</button>
   </div>
 </div>
 
 <script>
-  // Hamburger toggle
-  const hamburger = document.getElementById('hamburger');
-  const sideMenu = document.getElementById('side-menu');
-  let menuOpen = false;
-  hamburger.onclick = () => {
-    sideMenu.style.left = menuOpen ? '-250px' : '0';
-    menuOpen = !menuOpen;
-  };
+  // --- Session & API ---
+  const name = sessionStorage.getItem('name') || 'User';
+  const token = sessionStorage.getItem('token');
+  const apiURL = 'https://skyultimate-backend-api-structure.onrender.com';
 
-  // Enable calculate button when fields filled
-  const fields = ['item-type','weight','pickup','delivery'];
-  fields.forEach(id => {
-    document.getElementById(id).addEventListener('input', checkFields);
+  document.getElementById('welcome').textContent = `Welcome back, ${name}!`;
+
+  // --- Form Validation & Enable Button ---
+  const calculateBtn = document.getElementById('calculate-btn');
+  const inputs = ['itemType','weight','pickup','delivery'].map(id=>document.getElementById(id));
+  inputs.forEach(input=>{
+    input.addEventListener('input',()=>{
+      calculateBtn.disabled = inputs.some(i=>i.value==='');
+    });
   });
-  function checkFields() {
-    const filled = fields.every(id => document.getElementById(id).value);
-    document.getElementById('calculate-btn').disabled = !filled;
-  }
 
-  // API Base
-  const API_BASE = 'https://skyultimate-backend-api-structure.onrender.com';
-
-  // Calculate price
-  async function calculatePrice() {
-    const payload = {
-      itemType: document.getElementById('item-type').value,
+  // --- Calculate Final Price ---
+  calculateBtn.addEventListener('click',async ()=>{
+    const data = {
+      itemType: document.getElementById('itemType').value,
       weight: document.getElementById('weight').value,
       pickup: document.getElementById('pickup').value,
       delivery: document.getElementById('delivery').value
     };
+
     try {
-      const token = sessionStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/orders/calculate`, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
-        body: JSON.stringify(payload)
+      const res = await fetch(`${apiURL}/orders/calculate`,{
+        method:'POST',
+        headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` },
+        body:JSON.stringify(data)
       });
-      const data = await res.json();
-      if(res.ok){
-        document.getElementById('price-info').innerHTML = `Final Price: ₦${data.finalPrice}`;
-        document.getElementById('price-modal').style.display = 'flex';
-      } else { alert(data.message || 'Error calculating price'); }
-    } catch(err){ alert('Server error'); }
-  }
+      const result = await res.json();
+      document.getElementById('order-info').innerHTML = `
+        <p>Final Price: ₦${result.price}</p>
+        <p>Bank Name: Nelson Emmanuel Godspower</p>
+        <p>Moniepoint / Opay / Palmpay: 9128884830</p>
+        <p>UBA: 2342835397</p>
+        <p>GTBank: 0734090626</p>
+      `;
+      document.getElementById('modal').style.display='flex';
+      document.getElementById('confirm-pickup').disabled=false;
+    } catch(err){ alert('Error calculating price'); }
+  });
 
-  function closeModal(id){ document.getElementById(id).style.display='none'; }
+  function closeModal(){ document.getElementById('modal').style.display='none'; }
 
-  // Placeholder rating/report submissions
-  function submitRating(){ alert('Rating submitted (API integration pending)'); closeModal('rate-agent'); }
-  function submitReport(){ alert('Report submitted (API integration pending)'); closeModal('report-agent'); }
+  // --- Confirm Pickup & Delivered (Dummy toggles for frontend) ---
+  document.getElementById('confirm-pickup').addEventListener('click',()=>{
+    alert('Pickup Confirmed. Button now enables delivery confirmation.');
+    document.getElementById('confirm-delivered').disabled=false;
+    document.getElementById('confirm-pickup').disabled=true;
+  });
 
-  // Logout
-  function logout(){
+  document.getElementById('confirm-delivered').addEventListener('click',()=>{
+    alert('Order Delivered. Super Admin notified and agent payout triggered.');
+    document.getElementById('confirm-delivered').disabled=true;
+  });
+
+  // --- Report Agent ---
+  document.getElementById('report-agent').addEventListener('click',async ()=>{
+    const reason = prompt('Enter your report or complaint:');
+    if(reason){
+      try{
+        await fetch(`${apiURL}/tickets`,{
+          method:'POST',
+          headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` },
+          body:JSON.stringify({reason})
+        });
+        alert('Report submitted successfully.');
+      }catch(e){ alert('Error submitting report.'); }
+    }
+  });
+
+  // --- Hamburger Menu ---
+  const hamburger = document.getElementById('hamburger');
+  const menu = document.getElementById('menu');
+  let menuOpen = false;
+  hamburger.addEventListener('click',()=>{
+    menuOpen=!menuOpen;
+    menu.style.left = menuOpen?'0':'-300px';
+  });
+
+  // --- Overlay Function ---
+  const openOverlay = (id)=>{ document.getElementById(id).style.display='block'; menu.style.left='-300px'; menuOpen=false; }
+  const closeOverlay = (id)=>{ document.getElementById(id).style.display='none'; }
+
+  document.getElementById('aboutus-menu').addEventListener('click',()=>openOverlay('aboutus-overlay'));
+  document.getElementById('mission-menu').addEventListener('click',()=>openOverlay('mission-overlay'));
+  document.getElementById('faq-menu').addEventListener('click',()=>openOverlay('faq-overlay'));
+
+  // --- Logout ---
+  document.getElementById('logout').addEventListener('click',()=>{
     sessionStorage.clear();
-    window.location.href = 'home.html';
-  }
+    window.location.href='index.html';
+  });
 </script>
-
 </body>
-  </html>
+</html>
