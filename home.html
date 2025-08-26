@@ -1,190 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SkyUltimate – Home</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkyUltimate Home</title>
 <style>
-  :root{ --red:#C00000; --ink:#111827; --white:#fff; --soft:#f9fafb; }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--soft);color:var(--ink);}
-  /* Splash intro on first load of home too */
-  #intro{position:fixed; inset:0; background:var(--red); display:flex; align-items:center; justify-content:center; z-index:9999; animation:fadeOut .7s ease 1.8s forwards;}
-  .logo{width:120px;height:120px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--red);font-size:26px; animation:fadeIn .6s ease forwards;}
-  @keyframes fadeIn{from{opacity:0; transform:scale(.9)} to{opacity:1; transform:scale(1)}}
-  @keyframes fadeOut{to{opacity:0; visibility:hidden}}
-  header{background:var(--red);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:900}
-  .round{width:40px;height:40px;border-radius:50%;background:#fff;color:var(--red);display:flex;align-items:center;justify-content:center;font-weight:900}
-  .hamb{background:#fff1;border:1px solid #ffffff33;color:#fff;border-radius:10px;padding:8px 10px;cursor:pointer}
-  .wrap{max-width:980px;margin:24px auto;padding:0 16px;}
-  .hero{background:var(--red);color:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.1)}
-  .cta{background:#fff;color:var(--red);border:none;border-radius:999px;padding:14px 18px;font-weight:900;cursor:pointer;margin-top:12px}
-  .grid{display:grid;gap:16px;margin:18px 0}
-  .card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
-  .muted{color:#6b7280}
-  .btn{background:var(--red);color:#fff;border:none;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:800}
-  footer{margin:28px 0;text-align:center;color:#6b7280}
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+  body, html { width: 100%; height: 100%; background-color: #C00000; }
 
-  /* Drawer */
-  #drawer{position:fixed; inset:0 40% 0 -60%; background:rgba(0,0,0,.45); display:none;}
-  #drawer.open{display:block;}
-  .panel{position:absolute; left:0; top:0; bottom:0; width:320px; background:#111827; color:#fff; padding:16px; box-shadow: 8px 0 30px rgba(0,0,0,.3); overflow:auto;}
-  .panel h3{margin:10px 0 6px}
-  .panel .muted{color:#d1d5db}
-  .link{display:block;padding:10px 12px;border-radius:10px;color:#fff;text-decoration:none;margin:4px 0;border:1px solid #ffffff1a}
-  .link:hover{background:#ffffff12}
-  .x{background:#ffffff14;border:none;color:#fff;border-radius:8px;padding:8px 10px;cursor:pointer}
-  pre{white-space:pre-wrap;word-wrap:break-word}
+  /* Container */
+  #container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    min-height: 100vh;
+    color: white;
+  }
+
+  /* Logo */
+  #logo { width: 160px; height: 160px; border-radius: 50%; margin-top: 40px; }
+
+  /* Welcome message */
+  #welcome { font-size: 22px; margin: 20px 0; text-align: center; }
+
+  /* Main button */
+  #main-action {
+    background: white;
+    color: #C00000;
+    padding: 15px 25px;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    cursor: pointer;
+    margin: 20px 0;
+    width: 80%;
+    max-width: 300px;
+  }
+
+  /* Hamburger menu */
+  #hamburger {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 30px;
+    cursor: pointer;
+  }
+
+  /* Side menu */
+  #side-menu {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    width: 250px;
+    height: 100%;
+    background: #fff;
+    color: #C00000;
+    box-shadow: 3px 0 10px rgba(0,0,0,0.3);
+    transition: 0.3s;
+    padding-top: 60px;
+    z-index: 100;
+  }
+
+  #side-menu a {
+    display: block;
+    padding: 15px 20px;
+    text-decoration: none;
+    color: #C00000;
+    font-weight: bold;
+  }
+
+  #side-menu a:hover { background: #f0f0f0; }
+
+  /* Overlay content */
+  .overlay {
+    display: none;
+    position: fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background: rgba(0,0,0,0.95);
+    color:white;
+    overflow-y: auto;
+    padding: 40px 20px;
+    z-index: 200;
+  }
+
+  .overlay h2 { text-align: center; margin-bottom: 20px; }
+  .overlay p { margin-bottom: 15px; line-height: 1.6; }
+  .overlay .close-btn {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 30px;
+    cursor: pointer;
+  }
+
+  /* Logout */
+  #logout-btn {
+    margin-top: auto;
+    background: #fff;
+    color: #C00000;
+    padding: 12px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 200px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+
 </style>
 </head>
 <body>
-<div id="intro"><div class="logo">SU</div></div>
 
-<header>
-  <div class="brand">
-    <div class="round">SU</div> SkyUltimate
-  </div>
-  <div>
-    <button class="hamb" id="menuBtn">☰</button>
-    <button class="hamb" id="logoutBtn" title="Logout">⎋</button>
-  </div>
-</header>
+<div id="hamburger">&#9776;</div>
 
-<div class="wrap">
-  <section class="hero">
-    <h1 id="welcome">Welcome to SkyUltimate!</h1>
-    <p class="muted" id="hint">Fast, reliable deliveries. Seamless for customers and agents.</p>
-    <button class="cta" id="goBtn">Go to my dashboard</button>
-  </section>
-
-  <div class="grid">
-    <div class="card">
-      <h3>How it works</h3>
-      <ol class="muted">
-        <li>Place an order (price is calculated and confirmed).</li>
-        <li>Pay to activate — admin confirms payment.</li>
-        <li>Agents accept the job (first to accept wins).</li>
-        <li>Live tracking until delivery is confirmed.</li>
-        <li>Agent payout moves to queue for processing.</li>
-      </ol>
-    </div>
-    <div class="card">
-      <h3>Need help?</h3>
-      <p class="muted">Use the drawer to read About Us, Mission, Vision, FAQ/Support.</p>
-    </div>
-  </div>
-
-  <footer>© <span id="yr"></span> SkyUltimate Delivery Service</footer>
+<div id="side-menu">
+  <a href="#" onclick="showOverlay('about')">About Us</a>
+  <a href="#" onclick="showOverlay('mission')">Mission & Vision</a>
+  <a href="#" onclick="showOverlay('faq')">FAQ / Support</a>
 </div>
 
-<!-- Drawer -->
-<div id="drawer">
-  <aside class="panel">
-    <div class="inline" style="display:flex;justify-content:space-between;align-items:center">
-      <h3>Navigation</h3>
-      <button class="x" id="closeDrawer">✕</button>
-    </div>
-    <a class="link" href="#" data-section="about">About Us</a>
-    <a class="link" href="#" data-section="mission">Our Mission</a>
-    <a class="link" href="#" data-section="vision">Our Vision</a>
-    <a class="link" href="#" data-section="faq">FAQ & Support</a>
+<div id="container">
+  <img id="logo" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="Logo">
+  <div id="welcome">Welcome back!</div>
+  <button id="main-action"></button>
+  <button id="logout-btn" onclick="logout()">Logout</button>
+</div>
 
-    <div id="content" style="margin-top:10px">
-      <pre class="muted">Select a section above.</pre>
-    </div>
-  </aside>
+<!-- Overlays -->
+<div id="about" class="overlay">
+  <span class="close-btn" onclick="closeOverlay('about')">&times;</span>
+  <h2>About Us</h2>
+  <p>Welcome to SkyUltimate Delivery Service, where we're dedicated to taking your delivery experience to new heights! Founded in 2024, our company was born from a simple idea: to create a delivery service that's not just fast and reliable, but also puts the customer first. We understand the importance of your packages, whether it's a crucial document for your business or a thoughtful gift for a loved one. That's why our team of dedicated professionals works tirelessly to ensure every item is handled with the utmost care and delivered on time, every time. At SkyUltimate, we're more than just a delivery company; we're your trusted partner in logistics.</p>
+</div>
+
+<div id="mission" class="overlay">
+  <span class="close-btn" onclick="closeOverlay('mission')">&times;</span>
+  <h2>Mission & Vision</h2>
+  <h3>Our Mission</h3>
+  <p>Our mission at SkyUltimate Delivery Service is to provide a seamless, reliable, and efficient delivery experience that exceeds our customers' expectations. We are committed to leveraging innovative technology and exceptional customer service to simplify logistics for businesses and individuals alike. We strive to be the most trusted and preferred delivery service, one package at a time.</p>
+  <h3>Our Vision</h3>
+  <p>To be the industry leader in delivery services, known for our speed, reliability, and unwavering commitment to customer satisfaction. We envision a future where SkyUltimate Delivery Service is synonymous with excellence, setting the standard for logistics solutions and positively impacting the communities we serve.</p>
+</div>
+
+<div id="faq" class="overlay">
+  <span class="close-btn" onclick="closeOverlay('faq')">&times;</span>
+  <h2>FAQ & Support</h2>
+  <p><strong>How do I track my package?</strong> You can track your package using the tracking number provided in your confirmation email. Enter the number on our tracking page.</p>
+  <p><strong>Delivery hours?</strong> 9:00 AM - 6:00 PM, Monday-Saturday. Special arrangements available on request.</p>
+  <p><strong>Items we deliver?</strong> Documents, parcels, general goods. No hazardous, illegal, or live animals.</p>
+  <p><strong>Lost or damaged package?</strong> Contact our support immediately at WhatsApp or phone: <a href="tel:09128884830">09128884830</a></p>
+  <p><strong>Contact support:</strong> WhatsApp / Call: <a href="tel:09128884830">09128884830</a> | Instagram: <span id="insta-placeholder">Your Instagram Link</span> | Facebook: <span id="fb-placeholder">Your Facebook Link</span></p>
 </div>
 
 <script>
-const API = "https://skyultimate-backend-api-structure.onrender.com/auths";
-const token = localStorage.getItem("token");
-const user = JSON.parse(localStorage.getItem("user") || "null");
+  // Get user info
+  const role = sessionStorage.getItem('role') || '';
+  const name = sessionStorage.getItem('fullname') || 'User';
+  document.getElementById('welcome').textContent = `Welcome back, ${name.split(' ')[0]}!`;
 
-document.getElementById("yr").textContent = new Date().getFullYear();
+  // Dynamic main action button
+  const mainBtn = document.getElementById('main-action');
+  const dashboardLinks = {
+    'Customer': '/customer-dashboard',
+    'Agent': '/agent-dashboard',
+    'Admin': '/admin-dashboard',
+    'Super-admin': '/super-admin-dashboard'
+  };
+  const dashboardText = {
+    'Customer': 'Go to My Dashboard',
+    'Agent': 'Go to Delivery Board',
+    'Admin': 'Go to Operations Hub',
+    'Super-admin': 'Go to Master Control Panel'
+  };
+  mainBtn.textContent = dashboardText[role] || 'Go to Dashboard';
+  mainBtn.onclick = () => {
+    window.location.href = dashboardLinks[role] || '/';
+  };
 
-// Auth check and personalize CTA
-(async function init(){
-  if(!token){
-    $("#welcome").textContent = "Welcome to SkyUltimate!";
-    $("#goBtn").onclick = ()=>location.href="index.html";
-    return;
+  // Hamburger menu toggle
+  const hamburger = document.getElementById('hamburger');
+  const sideMenu = document.getElementById('side-menu');
+  let menuOpen = false;
+  hamburger.onclick = () => {
+    sideMenu.style.left = menuOpen ? '-250px' : '0';
+    menuOpen = !menuOpen;
+  };
+
+  // Overlay functions
+  function showOverlay(id) { document.getElementById(id).style.display = 'block'; }
+  function closeOverlay(id) { document.getElementById(id).style.display = 'none'; }
+
+  // Logout
+  function logout() {
+    sessionStorage.clear();
+    window.location.href = 'index.html';
   }
-  try{
-    const res = await fetch(`${API}/me`, { headers:{ Authorization:`Bearer ${token}` } });
-    if(!res.ok) throw 0;
-    const me = await res.json();
-    localStorage.setItem("user", JSON.stringify(me));
-    $("#welcome").textContent = `Welcome back, ${me.fullName || "there"}!`;
-    document.getElementById("hint").textContent = roleHint(me.role);
-    document.getElementById("goBtn").onclick = ()=> routeByRole(me.role);
-  }catch{
-    logout();
-  }
-})();
-
-function roleHint(role){
-  switch(role){
-    case "customer": return "Track orders or place a new one.";
-    case "agent": return "View the delivery board and start earning.";
-    case "admin": return "Go to Operations Hub.";
-    case "superadmin": return "Go to Master Control Panel.";
-    default: return "Fast, reliable deliveries. Seamless for customers and agents.";
-  }
-}
-
-function routeByRole(role){
-  switch(role){
-    case "customer": location.href="customer-dashboard.html"; break;
-    case "agent": location.href="agent-dashboard.html"; break;
-    case "admin": location.href="admin-dashboard.html"; break;
-    case "superadmin": location.href="superadmin.html"; break;
-    default: location.href="index.html";
-  }
-}
-
-function $(s){return document.querySelector(s);}
-function logout(){ localStorage.clear(); location.href="index.html"; }
-$("#logoutBtn").onclick = logout;
-
-// Drawer
-const drawer = $("#drawer");
-$("#menuBtn").onclick = ()=> drawer.classList.add("open");
-$("#closeDrawer").onclick = ()=> drawer.classList.remove("open");
-document.querySelectorAll(".link[data-section]").forEach(a=>{
-  a.addEventListener("click", e=>{
-    e.preventDefault();
-    const sec = a.dataset.section;
-    const c = $("#content");
-    switch(sec){
-      case "about":
-        c.innerHTML = `<div>
-          <h3>About Us</h3>
-          <p>Welcome to SkyUltimate Delivery Service, where we're dedicated to taking your delivery experience to new heights! Founded in 2024...</p>
-          <p>At SkyUltimate, we're more than just a delivery company; we're your trusted partner in logistics.</p>
-        </div>`; break;
-      case "mission":
-        c.innerHTML = `<div>
-          <h3>Our Mission</h3>
-          <p>Provide a seamless, reliable, and efficient delivery experience that exceeds expectations...</p>
-        </div>`; break;
-      case "vision":
-        c.innerHTML = `<div>
-          <h3>Our Vision</h3>
-          <p>To be the industry leader in delivery services, known for speed, reliability, and customer satisfaction.</p>
-        </div>`; break;
-      case "faq":
-        c.innerHTML = `<div>
-          <h3>FAQ & Support</h3>
-          <p><b>How do I track my package?</b> Use your tracking number on the tracking page (or your dashboard).</p>
-          <p><b>Delivery hours?</b> 9:00 AM – 6:00 PM, Mon–Sat. For urgent cases, contact support.</p>
-          <p><b>What items can you deliver?</b> Documents, parcels, and general goods (no hazardous materials or illegal items).</p>
-          <p><b>Lost or damaged?</b> Contact support immediately; we'll investigate and resolve it.</p>
-          <p><b>Contact support?</b> Via phone, email, or live chat from your dashboard.</p>
-        </div>`; break;
-    }
-  });
-});
 </script>
+
 </body>
 </html>
