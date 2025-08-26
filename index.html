@@ -1,213 +1,318 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SkyUltimate – Home</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkyUltimate Delivery</title>
 <style>
-  :root{
-    --red:#C00000; 
-    --ink:#111827; 
-    --white:#fff; 
-    --soft:#f9fafb; 
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+  body, html { width: 100%; height: 100%; }
+
+  /* Splash Screen */
+  #splash {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #C00000;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.5s ease;
   }
-  *{box-sizing:border-box;}
-  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--soft);color:var(--ink);}
-  /* Splash intro */
-  #intro{
-    position:fixed; inset:0; background:var(--red); 
-    display:flex; align-items:center; justify-content:center; z-index:9999; 
-    animation:fadeOut 0.7s ease 1.8s forwards;
+  #splash img {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    animation: fadeIn 0.5s ease forwards;
   }
-  .logo{
-    width:120px;height:120px;border-radius:50%;background:#fff;
-    display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--red);font-size:26px; 
-    animation:fadeIn 0.6s ease forwards;
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
   }
-  @keyframes fadeIn{from{opacity:0; transform:scale(.9)} to{opacity:1; transform:scale(1)}}
-  @keyframes fadeOut{to{opacity:0; visibility:hidden}}
-  
-  header{
-    background:var(--red);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10
+
+  /* Main App */
+  #app {
+    display: none;
+    background-color: #C00000;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
-  .brand{display:flex;align-items:center;gap:10px;font-weight:900}
-  .round{width:40px;height:40px;border-radius:50%;background:#fff;color:var(--red);display:flex;align-items:center;justify-content:center;font-weight:900}
-  .hamb{background:#fff1;border:1px solid #ffffff33;color:#fff;border-radius:10px;padding:8px 10px;cursor:pointer}
-  
-  .wrap{max-width:980px;margin:24px auto;padding:0 16px;}
-  .hero{background:var(--red);color:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.1)}
-  .cta{background:#fff;color:var(--red);border:none;border-radius:999px;padding:14px 18px;font-weight:900;cursor:pointer;margin-top:12px}
-  
-  .grid{display:grid;gap:16px;margin:18px 0}
-  .card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
-  .muted{color:#6b7280}
-  .btn{background:var(--red);color:#fff;border:none;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:800}
-  
-  footer{margin:28px 0;text-align:center;color:#6b7280}
-  
-  /* Drawer */
-  #drawer{position:fixed; inset:0 40% 0 -60%; background:rgba(0,0,0,.45); display:none;}
-  #drawer.open{display:block;}
-  .panel{position:absolute; left:0; top:0; bottom:0; width:320px; background:#111827; color:#fff; padding:16px; box-shadow: 8px 0 30px rgba(0,0,0,.3); overflow:auto;}
-  .panel h3{margin:10px 0 6px}
-  .panel .muted{color:#d1d5db}
-  .link{display:block;padding:10px 12px;border-radius:10px;color:#fff;text-decoration:none;margin:4px 0;border:1px solid #ffffff1a}
-  .link:hover{background:#ffffff12}
-  .x{background:#ffffff14;border:none;color:#fff;border-radius:8px;padding:8px 10px;cursor:pointer}
-  pre{white-space:pre-wrap;word-wrap:break-word}
+
+  /* Card */
+  .card {
+    background: rgba(255,255,255,0.95);
+    border-radius: 12px;
+    padding: 30px;
+    width: 350px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  }
+
+  /* Logo inside App */
+  #app-logo {
+    display: block;
+    margin: 0 auto 20px;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+  }
+
+  /* Tabs */
+  .tabs { display: flex; margin-bottom: 20px; cursor: pointer; }
+  .tab { flex: 1; text-align: center; padding: 10px; font-weight: bold; }
+  .active-tab { border-bottom: 3px solid #C00000; }
+
+  /* Form fields */
+  .form-group { margin-bottom: 15px; position: relative; }
+  .form-group input, .form-group select {
+    width: 100%;
+    padding: 10px 35px 10px 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+  .form-group .toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+  }
+
+  /* Buttons */
+  button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: #C00000;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  /* Error messages */
+  .error { color: red; font-size: 14px; margin-top: 5px; display: none; }
+
+  /* Forgot password */
+  .forgot-password {
+    display: block;
+    text-align: right;
+    font-size: 13px;
+    margin-top: -10px;
+    margin-bottom: 15px;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
 </style>
 </head>
 <body>
-<div id="intro"><div class="logo">SU</div></div>
 
-<header>
-  <div class="brand">
-    <div class="round">SU</div> SkyUltimate
-  </div>
-  <div>
-    <button class="hamb" id="menuBtn">☰</button>
-    <button class="hamb" id="logoutBtn" title="Logout">⎋</button>
-  </div>
-</header>
-
-<div class="wrap">
-  <section class="hero">
-    <h1 id="welcome">Welcome to SkyUltimate!</h1>
-    <p class="muted" id="hint">Fast, reliable deliveries. Seamless for customers and agents.</p>
-    <button class="cta" id="goBtn">Go to my dashboard</button>
-  </section>
-
-  <div class="grid">
-    <div class="card">
-      <h3>How it works</h3>
-      <ol class="muted">
-        <li>Place an order (price is calculated and confirmed).</li>
-        <li>Pay to activate — admin confirms payment.</li>
-        <li>Agents accept the job (first to accept wins).</li>
-        <li>Live tracking until delivery is confirmed.</li>
-        <li>Agent payout moves to queue for processing.</li>
-      </ol>
-    </div>
-    <div class="card">
-      <h3>Need help?</h3>
-      <p class="muted">Use the drawer to read About Us, Mission, Vision, FAQ/Support.</p>
-    </div>
-  </div>
-
-  <footer>© <span id="yr"></span> SkyUltimate Delivery Service</footer>
+<!-- Splash Screen -->
+<div id="splash">
+  <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="SkyUltimate Logo" />
 </div>
 
-<!-- Drawer -->
-<div id="drawer">
-  <aside class="panel">
-    <div class="inline" style="display:flex;justify-content:space-between;align-items:center">
-      <h3>Navigation</h3>
-      <button class="x" id="closeDrawer">✕</button>
+<!-- Main App -->
+<div id="app">
+  <div class="card">
+    <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="Logo" id="app-logo">
+    
+    <div class="tabs">
+      <div class="tab active-tab" id="login-tab">Login</div>
+      <div class="tab" id="register-tab">Register</div>
     </div>
-    <a class="link" href="#" data-section="about">About Us</a>
-    <a class="link" href="#" data-section="mission">Our Mission</a>
-    <a class="link" href="#" data-section="vision">Our Vision</a>
-    <a class="link" href="#" data-section="faq">FAQ & Support</a>
-    <div id="content" style="margin-top:10px">
-      <pre class="muted">Select a section above.</pre>
+
+    <!-- Login Form -->
+    <div id="login-form">
+      <div class="form-group">
+        <select id="login-role">
+          <option value="">Select Role</option>
+          <option value="Customer">Customer</option>
+          <option value="Agent">Agent</option>
+          <option value="Admin">Admin</option>
+          <option value="Super-admin">Super-admin</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <input type="email" id="login-email" placeholder="Enter your email">
+      </div>
+      <div class="form-group">
+        <input type="password" id="login-password" placeholder="Enter your password">
+        <span class="toggle-password" onclick="togglePassword('login-password', this)">👁️</span>
+      </div>
+      <span class="forgot-password" onclick="forgotPassword()">Forgot Password?</span>
+      <button onclick="login()">Login</button>
+      <div class="error" id="login-error"></div>
     </div>
-  </aside>
+
+    <!-- Register Form -->
+    <div id="register-form" style="display:none;">
+      <div class="form-group">
+        <select id="register-role" onchange="renderFields()">
+          <option value="">Select Role</option>
+          <option value="Customer">Customer</option>
+          <option value="Agent">Agent</option>
+        </select>
+      </div>
+      <div id="dynamic-fields"></div>
+      <button onclick="register()">Register</button>
+      <div class="error" id="register-error"></div>
+    </div>
+
+  </div>
 </div>
 
 <script>
-const API = "https://33vhk4-50000.csb.app";  
-const token = localStorage.getItem("token");  
-const user = JSON.parse(localStorage.getItem("user") || "null");  
-
-// Set year
-document.getElementById("yr").textContent = new Date().getFullYear();
-
-// Splash fade-out completion
-const intro = document.getElementById("intro");
-intro.addEventListener("animationend", () => { intro.style.display = "none"; });
-
-// Auth check and CTA routing
-(async function init(){
-  const goBtn = document.getElementById("goBtn");
-  const welcome = document.getElementById("welcome");
-  const hint = document.getElementById("hint");
-
-  if(!token){
-    welcome.textContent = "Welcome to SkyUltimate!";  
-    goBtn.onclick = ()=>location.href="index.html";  
-    return;  
-  }  
-
-  try{
-    const res = await fetch(`${API}/auth/me`, { headers:{ Authorization:`Bearer ${token}` } });
-    if(!res.ok) throw new Error("Invalid token");  
-    const me = await res.json();  
-    welcome.textContent = `Welcome back, ${me.fullName || "there"}!`;  
-    hint.textContent = roleHint(me.role);  
-    goBtn.onclick = ()=> routeByRole(me.role);  
-  }catch(err){
-    console.warn("Auth check failed", err);
-    logout();
-  }
-})();
-
-function roleHint(role){
-  if(role==="customer") return "Track orders or place a new one.";
-  if(role==="agent") return "View the delivery board and start earning.";
-  if(role==="admin") return "Go to Operations Hub.";
-  if(role==="superadmin") return "Go to Master Control Panel.";
-  return "Fast, reliable deliveries. Seamless for customers and agents.";
-}
-
-function routeByRole(role){
-  if(role==="customer") return location.href="customer-dashboard.html";
-  if(role==="agent") return location.href="agent-dashboard.html";
-  if(role==="admin") return location.href="admin-dashboard.html";
-  if(role==="superadmin") return location.href="superadmin.html";
-  location.href="index.html";
-}
-
-function logout(){ localStorage.clear(); location.href="index.html"; }
-document.getElementById("logoutBtn").onclick = logout;
-
-// Drawer
-const drawer = document.getElementById("drawer");
-document.getElementById("menuBtn").onclick = ()=> drawer.classList.add("open");
-document.getElementById("closeDrawer").onclick = ()=> drawer.classList.remove("open");
-
-document.querySelectorAll(".link[data-section]").forEach(a=>{
-  a.addEventListener("click", (e)=>{
-    e.preventDefault();
-    const sec = a.dataset.section;
-    const c = document.getElementById("content");
-    if(sec==="about"){
-      c.innerHTML = `<div>
-        <h3>About Us</h3>
-        <p>Welcome to SkyUltimate Delivery Service, where we're dedicated to taking your delivery experience to new heights! Founded in 2024...</p>
-        <p>At SkyUltimate, we're more than just a delivery company; we're your trusted partner in logistics.</p>
-      </div>`;
-    }else if(sec==="mission"){
-      c.innerHTML = `<div>
-        <h3>Our Mission</h3>
-        <p>Provide a seamless, reliable, and efficient delivery experience that exceeds expectations...</p>
-      </div>`;
-    }else if(sec==="vision"){
-      c.innerHTML = `<div>
-        <h3>Our Vision</h3>
-        <p>To be the industry leader in delivery services, known for speed, reliability, and customer satisfaction.</p>
-      </div>`;
-    }else if(sec==="faq"){
-      c.innerHTML = `<div>
-        <h3>FAQ & Support</h3>
-        <p><b>How do I track my package?</b> Use your tracking number on the tracking page (or your dashboard).</p>
-        <p><b>Delivery hours?</b> 9:00 AM – 6:00 PM, Mon–Sat. For urgent cases, contact support.</p>
-        <p><b>What items can you deliver?</b> Documents, parcels, and general goods (no hazardous materials or illegal items).</p>
-        <p><b>Lost or damaged?</b> Contact support immediately; we'll investigate and resolve it.</p>
-        <p><b>Contact support?</b> Via phone, email, or live chat from your dashboard.</p>
-      </div>`;
-    }
+  // Splash Screen
+  window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      const splash = document.getElementById('splash');
+      splash.style.opacity = 0;
+      setTimeout(() => {
+        splash.style.display = 'none';
+        document.getElementById('app').style.display = 'flex';
+      }, 500);
+    }, 3000);
   });
-});
+
+  // Tab switching
+  document.getElementById('login-tab').addEventListener('click', () => {
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('register-form').style.display = 'none';
+    document.getElementById('login-tab').classList.add('active-tab');
+    document.getElementById('register-tab').classList.remove('active-tab');
+  });
+  document.getElementById('register-tab').addEventListener('click', () => {
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('register-form').style.display = 'block';
+    document.getElementById('register-tab').classList.add('active-tab');
+    document.getElementById('login-tab').classList.remove('active-tab');
+  });
+
+  // Toggle password visibility
+  function togglePassword(fieldId, icon) {
+    const field = document.getElementById(fieldId);
+    if(field.type === 'password') {
+      field.type = 'text';
+      icon.textContent = '🙈';
+    } else {
+      field.type = 'password';
+      icon.textContent = '👁️';
+    }
+  }
+
+  // Dynamic fields for registration
+  function renderFields() {
+    const role = document.getElementById('register-role').value;
+    const container = document.getElementById('dynamic-fields');
+    container.innerHTML = '';
+    if(role === 'Customer') {
+      container.innerHTML = `
+        <div class="form-group"><input type="text" id="reg-fullname" placeholder="Full Name"></div>
+        <div class="form-group"><input type="email" id="reg-email" placeholder="Email"></div>
+        <div class="form-group"><input type="password" id="reg-password" placeholder="Password">
+          <span class="toggle-password" onclick="togglePassword('reg-password', this)">👁️</span>
+        </div>
+      `;
+    }
+    if(role === 'Agent') {
+      container.innerHTML = `
+        <div class="form-group"><input type="text" id="reg-fullname" placeholder="Full Name"></div>
+        <div class="form-group"><input type="email" id="reg-email" placeholder="Email"></div>
+        <div class="form-group"><input type="password" id="reg-password" placeholder="Password">
+          <span class="toggle-password" onclick="togglePassword('reg-password', this)">👁️</span>
+        </div>
+        <div class="form-group"><input type="text" id="reg-phone" placeholder="Phone Number"></div>
+        <div class="form-group"><input type="text" id="reg-bank" placeholder="Bank Details"></div>
+      `;
+    }
+  }
+
+  // API Base
+  const API_BASE = 'https://skyultimate-backend-api-structure.onrender.com';
+
+  // Login function
+  async function login() {
+    const role = document.getElementById('login-role').value;
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const errorDiv = document.getElementById('login-error');
+    errorDiv.style.display = 'none';
+    if(!role || !email || !password) {
+      errorDiv.textContent = 'Please fill in all fields.';
+      errorDiv.style.display = 'block';
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ role, email, password })
+      });
+      const data = await res.json();
+      if(res.ok) {
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('role', data.role);
+        window.location.href = 'home.html';
+      } else {
+        errorDiv.textContent = data.message || 'Invalid credentials. Please check your role and login details';
+        errorDiv.style.display = 'block';
+      }
+    } catch(err) {
+      errorDiv.textContent = 'Server error. Try again later.';
+      errorDiv.style.display = 'block';
+    }
+  }
+
+  // Register function
+  async function register() {
+    const role = document.getElementById('register-role').value;
+    const fullname = document.getElementById('reg-fullname')?.value;
+    const email = document.getElementById('reg-email')?.value;
+    const password = document.getElementById('reg-password')?.value;
+    const phone = document.getElementById('reg-phone')?.value;
+    const bank = document.getElementById('reg-bank')?.value;
+    const errorDiv = document.getElementById('register-error');
+    errorDiv.style.display = 'none';
+    if(!role || !fullname || !email || !password || (role==='Agent' && (!phone || !bank))) {
+      errorDiv.textContent = 'Please fill in all required fields.';
+      errorDiv.style.display = 'block';
+      return;
+    }
+    try {
+      const payload = { role, fullname, email, password };
+      if(role==='Agent'){ payload.phone = phone; payload.bank = bank; }
+      const res = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if(res.ok) {
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('role', data.role);
+        window.location.href = 'home.html';
+      } else {
+        errorDiv.textContent = data.message || 'Registration failed. Try login if already registered.';
+        errorDiv.style.display = 'block';
+      }
+    } catch(err) {
+      errorDiv.textContent = 'Server error. Try again later.';
+      errorDiv.style.display = 'block';
+    }
+  }
+
+  function forgotPassword() {
+    alert('Redirect to forgot password page (to be implemented)');
+  }
+
 </script>
+
 </body>
   </html>
