@@ -95,7 +95,6 @@
   .rel { position:relative; }
   footer { margin-top:18px; text-align:center; color:var(--white); font-size:.9rem; }
 
-  /* minor responsiveness */
   @media (max-width:420px) {
     .brand img { width: 110px; height:110px; }
     .splash-logo { width:160px; height:160px; }
@@ -104,7 +103,6 @@
 
   .info { font-size:.85rem; color:#6b7280; margin-top:8px; display:block; }
 
-  /* small message style inside card */
   .msg { margin-top:10px; font-size:0.95rem; text-align:center; }
   .msg.error { color:#b91c1c; }
   .msg.success { color:#047857; }
@@ -191,7 +189,6 @@
             <span class="eye" data-toggle="#regPassword">👁</span>
           </div>
 
-          <!-- Agent-only fields -->
           <div id="agentMore" style="display:none;">
             <div class="field">
               <label>Phone Number</label>
@@ -236,22 +233,23 @@
 
   <script>
   document.addEventListener("DOMContentLoaded", async () => {
-    // Config
-    const API = "https://33vhk4-50000.csb.app"; // base you provided
-    const HOME_URL = "https://Nelson192006.github.io/SkyUltimate-/home.html";
+    const API = "https://skyultimate-backend-api-structure.onrender.com";
+    const HOME_URLS = {
+      customer: "/customer.html",
+      agent: "/agent.html",
+      admin: "/admin.html",
+      superadmin: "/superadmin.html"
+    };
 
-    // Helpers
     const $ = s => document.querySelector(s);
     const showMsg = (el, text, cls="msg") => { if(!el) return; el.textContent = text; el.className = cls; };
 
     $("#yr").textContent = new Date().getFullYear();
 
-    // Remove splash after animation ends (3s)
+    // Splash
     setTimeout(()=> {
-      const s = $("#splash");
-      if(s) s.style.display = "none";
-      const app = $("#app");
-      if(app) app.style.display = "block";
+      $("#splash").style.display = "none";
+      $("#app").style.display = "block";
     }, 3000);
 
     // password eye toggles
@@ -277,86 +275,37 @@
       $("#loginView").style.display = "none";
     });
 
-    // Online / offline (demo) mode detection + load config
-    let offlineMode = false;
-
-    async function loadPublicConfig(){
-      const sel = $("#regRole");
-      try {
-        const res = await fetch(`${API}/auths/config/public`);
-        if(!res.ok) throw new Error("bad config response");
-        const conf = await res.json();
-        offlineMode = false;
-        $("#modeInfo").textContent = "";
-        sel.innerHTML = "";
-        sel.append(new Option("Customer","customer"));
-        sel.append(new Option("Agent","agent"));
-        if(conf.allowAdminRegistration) sel.append(new Option("Admin","admin"));
-        const localLock = localStorage.getItem("superAdminRegistered");
-        if(!conf.hasAnyUser && !localLock) sel.append(new Option("Super-admin","superadmin"));
-      } catch(err) {
-        console.warn("Could not fetch config/public — demo mode.", err);
-        offlineMode = true;
-        sel.innerHTML = "";
-        sel.append(new Option("Customer","customer"));
-        sel.append(new Option("Agent","agent"));
-        if(!localStorage.getItem("superAdminRegistered")) {
-          sel.append(new Option("Super-admin","superadmin"));
-        }
-        $("#modeInfo").textContent = "Server unreachable — running in demo mode. API calls will be simulated.";
-      }
+    // Load roles dynamically
+    const sel = $("#regRole");
+    try {
+      const res = await fetch(`${API}/auths/config/public`);
+      const conf = await res.json();
+      sel.innerHTML = "";
+      sel.append(new Option("Customer","customer"));
+      sel.append(new Option("Agent","agent"));
+      if(conf.allowAdminRegistration) sel.append(new Option("Admin","admin"));
+      if(!conf.hasAnyUser) sel.append(new Option("Super-admin","superadmin"));
+    } catch(e){
+      sel.innerHTML = "";
+      sel.append(new Option("Customer","customer"));
+      sel.append(new Option("Agent","agent"));
     }
 
-    await loadPublicConfig();
-
-    // Show/hide agent fields when role changes
     $("#regRole").addEventListener("change", ()=> {
       $("#agentMore").style.display = $("#regRole").value === "agent" ? "block" : "none";
     });
 
-    // Guard: auto-redirect if user token exists and /auths/me returns user (demo fallback)
+    // Guard: auto redirect if token valid
     (async function guard(){
       const token = localStorage.getItem("token");
       if(!token) return;
       try {
-        if(offlineMode) {
-          const user = JSON.parse(localStorage.getItem("user") || "{}");
-          return routeByRole(user.role || "customer");
-        }
         const res = await fetch(`${API}/auths/me`, { headers: { Authorization: `Bearer ${token}` }});
-        if(!res.ok) throw new Error("not authenticated");
-        const me = await res.json();
-        routeByRole(me.role);
-      } catch(e){
-        console.warn("guard check failed:", e);
-      }
+        if(!res.ok) throw new Error();
+        const user = await res.json();
+        window.location.href = HOME_URLS[user.role] || HOME_URLS.customer;
+      } catch(e){ localStorage.removeItem("token"); localStorage.removeItem("user"); }
     })();
-
-    // Forgot password link
-    $("#forgot").addEventListener("click", async (e)=>{
-      e.preventDefault();
-      const email = prompt("Enter your email to receive a password reset link:");
-      if(!email) return;
-      if(offlineMode) {
-        alert("Demo mode: password reset simulated. (No server available.)");
-        return;
-      }
-      try {
-        const res = await fetch(`${API}/auths/forgot-password`, {
-          method: "POST",
-          headers: {"Content-Type":"application/json"},
-          body: JSON.stringify({ email })
-        });
-        if(res.ok) alert("If that email exists, a reset link was sent.");
-        else {
-          const payload = await res.json().catch(()=>({}));
-          alert(payload.message || "Unable to send reset link right now.");
-        }
-      } catch(err) {
-        console.error(err);
-        alert("Network error while sending reset link.");
-      }
-    });
 
     // Login
     $("#loginBtn").addEventListener("click", async ()=>{
@@ -364,112 +313,35 @@
       const email = $("#loginEmail").value.trim();
       const password = $("#loginPassword").value;
       const msgEl = $("#loginMsg");
-
-      if(!role || !email || !password) return showMsg(msgEl, "Please select role and enter your credentials.", "msg error");
+      if(!role || !email || !password) return showMsg(msgEl, "Complete all fields","msg error");
       showMsg(msgEl, "Authenticating...");
-
-      if(offlineMode) {
-        console.log("DEMO LOGIN", { role, email });
-        localStorage.setItem("token","demo-token");
-        localStorage.setItem("user", JSON.stringify({ role, email, fullName: email.split("@")[0] }));
-        showMsg(msgEl, "Demo login successful — redirecting", "msg success");
-        setTimeout(()=> routeByRole(role), 600);
-        return;
-      }
-
       try {
         const res = await fetch(`${API}/auths/login`, {
-          method: "POST",
+          method:"POST",
           headers: {"Content-Type":"application/json"},
-          body: JSON.stringify({ role, email, password })
+          body: JSON.stringify({ role,email,password })
         });
-        const data = await res.json().catch(()=>({}));
-        if(!res.ok) return showMsg(msgEl, data.message || "Invalid credentials.", "msg error");
-
-        // expected: { token, user }
+        const data = await res.json();
+        if(!res.ok) return showMsg(msgEl, data.message||"Invalid credentials","msg error");
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
-        showMsg(msgEl, "Login successful — redirecting...", "msg success");
-        setTimeout(()=> routeByRole(data.user?.role || role), 500);
-      } catch(err) {
-        console.error("Login error:", err);
-        showMsg(msgEl, "Network error. Try again.", "msg error");
-      }
+        showMsg(msgEl,"Login successful","msg success");
+        setTimeout(()=>window.location.href = HOME_URLS[data.user.role],500);
+      } catch(e){ showMsg(msgEl,"Network error","msg error"); }
     });
 
     // Register
     $("#registerBtn").addEventListener("click", async ()=>{
-      const role = $("#regRole").value?.trim();
-      const fullName = $("#regName").value?.trim();
-      const email = $("#regEmail").value?.trim();
+      const role = $("#regRole").value.trim();
+      const fullName = $("#regName").value.trim();
+      const email = $("#regEmail").value.trim();
       const password = $("#regPassword").value;
       const msgEl = $("#regMsg");
-
-      if(!role || !fullName || !email || !password) return showMsg(msgEl, "Please complete all required fields.", "msg error");
-
+      if(!role||!fullName||!email||!password) return showMsg(msgEl,"Complete all fields","msg error");
       const payload = { role, fullName, email, password };
-      if(role === "agent") {
+      if(role==="agent") {
         payload.phone = $("#regPhone").value.trim();
         payload.vehicleType = $("#regVehicle").value.trim();
         payload.bankName = $("#regBankName").value.trim();
         payload.accountNumber = $("#regAccountNumber").value.trim();
-        payload.accountName = $("#regAccountName").value.trim();
-      }
-
-      showMsg(msgEl, "Creating account...");
-
-      if(offlineMode) {
-        console.log("DEMO REGISTER:", payload);
-        if(role === "superadmin") localStorage.setItem("superAdminRegistered", "true");
-        localStorage.setItem("token","demo-token");
-        localStorage.setItem("user", JSON.stringify({ role, fullName, email }));
-        showMsg(msgEl, "Demo registration successful — redirecting...", "msg success");
-        setTimeout(()=> {
-          removeSuperAdminOption();
-          routeByRole(role);
-        }, 700);
-        return;
-      }
-
-      try {
-        const res = await fetch(`${API}/auths/register`, {
-          method: "POST",
-          headers: {"Content-Type":"application/json"},
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json().catch(()=>({}));
-        if(!res.ok) return showMsg(msgEl, data.message || "Registration failed.", "msg error");
-
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-
-        if(role === "superadmin") localStorage.setItem("superAdminRegistered", "true");
-
-        removeSuperAdminOption();
-
-        showMsg(msgEl, "Account created! Redirecting...", "msg success");
-        setTimeout(()=> routeByRole(data.user?.role || role), 500);
-      } catch(err) {
-        console.error("Register error:", err);
-        showMsg(msgEl, "Network error. Try again.", "msg error");
-      }
-    });
-
-    function removeSuperAdminOption(){
-      const sel = $("#regRole");
-      if(!sel) return;
-      for(let i = sel.options.length -1; i>=0; i--){
-        if(sel.options[i].value === "superadmin" || sel.options[i].text.toLowerCase().includes("super")){
-          sel.remove(i);
-        }
-      }
-    }
-
-    function routeByRole(role){
-      // redirect to HOME_URL for prototype
-      window.location.href = HOME_URL || "home.html";
-    }
-  });
-  </script>
-</body>
-          </html>
+        payload.accountName = $("#regAccountName").
