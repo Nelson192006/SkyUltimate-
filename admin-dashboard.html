@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SkyUltimate - Agent Dashboard</title>
+<title>SkyUltimate - Admin Dashboard</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
-  body, html { width:100%; height:100%; background:#C00000; }
+  body, html { width:100%; min-height:100%; background:#C00000; }
   button { cursor:pointer; border:none; outline:none; }
   a { text-decoration:none; color:inherit; }
 
@@ -15,26 +15,15 @@
   #logo { width:100px; height:100px; border-radius:50%; margin-bottom:10px; }
   #welcome { font-size:1.4rem; color:white; margin-bottom:20px; text-align:center; }
 
-  /* --- Toggle --- */
-  .toggle-container { display:flex; align-items:center; justify-content:center; margin-bottom:20px; }
-  .toggle-label { color:white; margin:0 10px; font-weight:bold; }
-  .toggle-btn { width:60px; height:30px; background:white; border-radius:15px; position:relative; cursor:pointer; }
-  .toggle-circle { width:26px; height:26px; background:#C00000; border-radius:50%; position:absolute; top:2px; left:2px; transition:0.3s; }
-
-  /* --- Job Card --- */
-  .job-card { background:white; border-radius:12px; padding:15px; width:100%; max-width:500px; margin-bottom:15px; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
-  .job-card h3 { color:#C00000; margin-bottom:10px; }
-  .job-card p { margin-bottom:8px; }
-  .job-card button { width:100%; padding:10px; border-radius:12px; background:#C00000; color:white; font-weight:bold; margin-top:10px; transition:0.3s; }
-
-  /* --- Action Buttons --- */
-  .action-btn { width:100%; padding:12px; border-radius:12px; background:white; color:#C00000; font-weight:bold; margin-bottom:10px; transition:0.3s; }
-  .action-btn:disabled { background:#ccc; color:#666; cursor:not-allowed; }
+  /* --- Sections --- */
+  .section { width:100%; max-width:600px; background:white; border-radius:12px; padding:15px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+  .section h3 { color:#C00000; margin-bottom:10px; }
+  .section input, .section select, .section textarea { width:100%; padding:10px; margin:5px 0 15px 0; border-radius:8px; border:1px solid #ccc; }
+  .section button { width:100%; padding:12px; border-radius:12px; background:#C00000; color:white; font-weight:bold; margin-top:10px; transition:0.3s; }
 
   /* --- Hamburger Menu --- */
   #hamburger { position:absolute; top:20px; left:20px; width:30px; height:22px; cursor:pointer; display:flex; flex-direction:column; justify-content:space-between; }
   .bar { width:100%; height:4px; background:white; border-radius:2px; }
-
   #menu { position:fixed; top:0; left:-300px; width:250px; height:100%; background:white; color:#C00000; box-shadow:3px 0 10px rgba(0,0,0,0.3); transition:0.3s; display:flex; flex-direction:column; padding:20px; }
   #menu h2 { margin-bottom:20px; font-size:1.2rem; }
   .menu-item { margin:10px 0; cursor:pointer; font-weight:bold; }
@@ -51,18 +40,38 @@
 <body>
 <div id="container">
   <img id="logo" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="Logo">
-  <div id="welcome">Welcome back!</div>
+  <div id="welcome">Welcome back, Admin!</div>
 
-  <!-- ONLINE / OFFLINE Toggle -->
-  <div class="toggle-container">
-    <span class="toggle-label">OFFLINE</span>
-    <div class="toggle-btn" id="toggleBtn"><div class="toggle-circle"></div></div>
-    <span class="toggle-label">ONLINE</span>
+  <!-- Live Dashboard Section -->
+  <div class="section" id="live-dashboard">
+    <h3>Live Orders</h3>
+    <div id="order-list">Loading orders...</div>
   </div>
 
-  <!-- Job List -->
-  <div id="job-list"></div>
+  <!-- User Lookup & Request Action -->
+  <div class="section">
+    <h3>User Lookup</h3>
+    <input type="text" id="user-search" placeholder="Search by name or email">
+    <div id="search-results"></div>
+  </div>
 
+  <!-- Issue Resolution Center -->
+  <div class="section" id="issue-center">
+    <h3>Open Tickets</h3>
+    <div id="ticket-list">Loading tickets...</div>
+  </div>
+
+  <!-- Editable Admin Bank Details -->
+  <div class="section" id="bank-details">
+    <h3>Your Bank Details</h3>
+    <label>Bank Name</label>
+    <input type="text" id="bank-name" placeholder="Your Bank Name">
+    <label>Account Number</label>
+    <input type="text" id="account-number" placeholder="Your Account Number">
+    <button id="save-bank">Save Bank Details</button>
+  </div>
+
+  <!-- Hamburger Menu -->
   <div id="hamburger">
     <div class="bar"></div>
     <div class="bar"></div>
@@ -102,100 +111,132 @@
 </div>
 
 <script>
-  const name = sessionStorage.getItem('name') || 'Agent';
-  const token = sessionStorage.getItem('token');
   const apiURL = 'https://skyultimate-backend-api-structure.onrender.com';
+  const token = sessionStorage.getItem('token');
+  const name = sessionStorage.getItem('name') || 'Admin';
   document.getElementById('welcome').textContent = `Welcome back, ${name}!`;
 
-  // --- Toggle ONLINE / OFFLINE ---
-  const toggleBtn = document.getElementById('toggleBtn');
-  const toggleCircle = toggleBtn.querySelector('.toggle-circle');
-  let online = false;
-
-  toggleBtn.addEventListener('click',()=>{
-    online = !online;
-    toggleCircle.style.left = online?'32px':'2px';
-    alert(`Agent is now ${online?'ONLINE':'OFFLINE'}`);
-    if(online) startPollingJobs();
-  });
-
-  // --- Fetch Jobs ---
-  const jobList = document.getElementById('job-list');
-  async function startPollingJobs(){
-    jobList.innerHTML='';
+  // --- Fetch Live Orders ---
+  async function loadOrders(){
+    const list = document.getElementById('order-list');
     try{
-      const res = await fetch(`${apiURL}/orders/available`,{
-        headers:{ 'Authorization':`Bearer ${token}` }
-      });
-      const jobs = await res.json();
-      jobs.forEach(job=>{
-        const card = document.createElement('div');
-        card.className='job-card';
-        card.innerHTML=`
-          <h3>Order #${job.id}</h3>
-          <p>Pickup: ${job.pickup}</p>
-          <p>Delivery: ${job.delivery}</p>
-          <p>Weight: ${job.weight}kg</p>
-          <p>Type: ${job.itemType}</p>
-          <button class="accept-btn">ACCEPT ORDER</button>
+      const res = await fetch(`${apiURL}/orders/all`,{ headers:{ 'Authorization':`Bearer ${token}` } });
+      const orders = await res.json();
+      list.innerHTML='';
+      orders.forEach(order=>{
+        const div = document.createElement('div');
+        div.innerHTML=`
+          <p>Order #${order.id} | Customer: ${order.customerName} | Status: ${order.status}</p>
+          <button onclick="viewOrder(${order.id})">View Details</button>
+          <button onclick="requestSuperAdmin(${order.customerId})">Request Action</button>
         `;
-        card.querySelector('.accept-btn').addEventListener('click',()=>acceptJob(job.id,card));
-        jobList.appendChild(card);
+        list.appendChild(div);
       });
-    }catch(err){ console.log('Error fetching jobs', err); }
+    }catch(e){ list.innerHTML='Failed to load orders'; }
+  }
+  loadOrders();
+
+  async function viewOrder(orderId){
+    alert(`Order details for #${orderId} (replace with modal view with API fetch)`);
   }
 
-  async function acceptJob(jobId, card){
+  async function requestSuperAdmin(userId){
+    const reason = prompt('Enter reason for action request:');
+    const type = prompt('Enter action type (Suspend/Delete):');
+    if(!reason || !type) return alert('Action cancelled');
     try{
-      const res = await fetch(`${apiURL}/orders/accept/${jobId}`,{
+      await fetch(`${apiURL}/admin/request/${userId}`,{
         method:'POST',
-        headers:{ 'Authorization':`Bearer ${token}` }
+        headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
+        body: JSON.stringify({type, reason})
       });
-      const result = await res.json();
-      if(result.success){
-        alert('Order Accepted! Active Delivery Mode Enabled.');
-        card.innerHTML=`
-          <h3>Order #${jobId}</h3>
-          <button class="action-btn" onclick="startNavigation('${result.pickup}')">Start Navigation</button>
-          <button class="action-btn" onclick="contactCustomer('${result.customerPhone}')">Contact Customer</button>
-          <p>Expected Income: ₦${result.agentPayout}</p>
+      alert('Request sent to Super Admin');
+    }catch(e){ alert('Failed to send request'); }
+  }
+
+  // --- Issue Resolution ---
+  async function loadTickets(){
+    const ticketsDiv = document.getElementById('ticket-list');
+    try{
+      const res = await fetch(`${apiURL}/tickets/open`,{ headers:{'Authorization':`Bearer ${token}`}});
+      const tickets = await res.json();
+      ticketsDiv.innerHTML='';
+      tickets.forEach(ticket=>{
+        const div = document.createElement('div');
+        div.innerHTML=`
+          <p>Ticket #${ticket.id} | User: ${ticket.userName}</p>
+          <button onclick="resolveTicket(${ticket.id})">Mark as Resolved</button>
         `;
-      } else {
-        alert('Order already taken!');
-        card.remove();
-      }
-    }catch(e){ alert('Error accepting job'); }
-  }
-
-  function startNavigation(address){
-    if(navigator.geolocation){
-      navigator.geolocation.getCurrentPosition(pos=>{
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        window.open(`https://www.google.com/maps/dir/?api=1&origin=${lat},${lon}&destination=${encodeURIComponent(address)}`);
+        ticketsDiv.appendChild(div);
       });
-    }
+    }catch(e){ ticketsDiv.innerHTML='Failed to load tickets'; }
+  }
+  loadTickets();
+
+  async function resolveTicket(ticketId){
+    try{
+      await fetch(`${apiURL}/tickets/resolve/${ticketId}`,{
+        method:'POST',
+        headers:{'Authorization':`Bearer ${token}`}
+      });
+      alert('Ticket resolved');
+      loadTickets();
+    }catch(e){ alert('Failed to resolve'); }
   }
 
-  function contactCustomer(phone){
-    window.location.href=`tel:${phone}`;
+  // --- Editable Bank Details ---
+  async function loadBankDetails(){
+    try{
+      const res = await fetch(`${apiURL}/admin/bank-details`,{ headers:{'Authorization':`Bearer ${token}`}});
+      const data = await res.json();
+      document.getElementById('bank-name').value = data.bankName;
+      document.getElementById('account-number').value = data.accountNumber;
+    }catch(e){ console.log('Failed to fetch bank details'); }
   }
+  loadBankDetails();
+
+  document.getElementById('save-bank').addEventListener('click', async ()=>{
+    const bankName = document.getElementById('bank-name').value;
+    const accountNumber = document.getElementById('account-number').value;
+    try{
+      await fetch(`${apiURL}/admin/bank-details`,{
+        method:'PUT',
+        headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
+        body: JSON.stringify({bankName, accountNumber})
+      });
+      alert('Bank details updated');
+    }catch(e){ alert('Failed to update bank details'); }
+  });
 
   // --- Hamburger Menu ---
   const hamburger = document.getElementById('hamburger');
   const menu = document.getElementById('menu');
   let menuOpen = false;
-  hamburger.addEventListener('click',()=>{
-    menuOpen=!menuOpen;
-    menu.style.left = menuOpen?'0':'-300px';
-  });
+  hamburger.addEventListener('click',()=>{ menuOpen=!menuOpen; menu.style.left = menuOpen?'0':'-300px'; });
 
   const openOverlay = (id)=>{ document.getElementById(id).style.display='block'; menu.style.left='-300px'; menuOpen=false; }
   const closeOverlay = (id)=>{ document.getElementById(id).style.display='none'; }
-
   document.getElementById('aboutus-menu').addEventListener('click',()=>openOverlay('aboutus-overlay'));
   document.getElementById('mission-menu').addEventListener('click',()=>openOverlay('mission-overlay'));
   document.getElementById('faq-menu').addEventListener('click',()=>openOverlay('faq-overlay'));
+
+  // --- User Lookup ---
+  const searchInput = document.getElementById('user-search');
+  searchInput.addEventListener('input', async ()=>{
+    const query = searchInput.value.trim();
+    const resultsDiv = document.getElementById('search-results');
+    if(!query){ resultsDiv.innerHTML=''; return; }
+    try{
+      const res = await fetch(`${apiURL}/users/search?query=${query}`,{ headers:{'Authorization':`Bearer ${token}`} });
+      const users = await res.json();
+      resultsDiv.innerHTML='';
+      users.forEach(u=>{
+        const div = document.createElement('div');
+        div.innerHTML=`${u.name} (${u.role})`;
+        resultsDiv.appendChild(div);
+      });
+    }catch(e){ resultsDiv.innerHTML='Search failed'; }
+  });
 
   // --- Logout ---
   document.getElementById('logout').addEventListener('click',()=>{
@@ -204,4 +245,4 @@
   });
 </script>
 </body>
-</html>
+ </html>
