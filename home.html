@@ -3,202 +3,132 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SkyUltimate Home</title>
+<title>SkyUltimate Delivery - Home</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-  body, html { width: 100%; height: 100%; background-color: #C00000; }
+  /* --- Global Styles --- */
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
+  body, html { width:100%; height:100%; background:#C00000; }
+  a { text-decoration:none; color:inherit; }
+  button { cursor:pointer; border:none; outline:none; }
 
-  /* Container */
-  #container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    min-height: 100vh;
-    color: white;
-  }
+  /* --- Container --- */
+  #container { width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; }
 
-  /* Logo */
-  #logo { width: 160px; height: 160px; border-radius: 50%; margin-top: 40px; }
+  /* --- Logo & Welcome --- */
+  #logo { width:120px; height:120px; border-radius:50%; margin-bottom:20px; }
+  #welcome { font-size:1.5rem; color:white; margin-bottom:30px; text-align:center; }
 
-  /* Welcome message */
-  #welcome { font-size: 22px; margin: 20px 0; text-align: center; }
+  /* --- Main Action Button --- */
+  #main-btn { padding:15px 25px; border-radius:12px; background:white; color:#C00000; font-weight:bold; font-size:1rem; transition:0.3s; }
+  #main-btn:hover { background:#f0f0f0; }
 
-  /* Main button */
-  #main-action {
-    background: white;
-    color: #C00000;
-    padding: 15px 25px;
-    border: none;
-    border-radius: 12px;
-    font-size: 18px;
-    cursor: pointer;
-    margin: 20px 0;
-    width: 80%;
-    max-width: 300px;
-  }
+  /* --- Hamburger Menu --- */
+  #hamburger { position:absolute; top:20px; left:20px; width:30px; height:22px; cursor:pointer; display:flex; flex-direction:column; justify-content:space-between; }
+  .bar { width:100%; height:4px; background:white; border-radius:2px; }
 
-  /* Hamburger menu */
-  #hamburger {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    font-size: 30px;
-    cursor: pointer;
-  }
+  /* --- Menu Overlay --- */
+  #menu { position:fixed; top:0; left:-300px; width:250px; height:100%; background:white; color:#C00000; box-shadow:3px 0 10px rgba(0,0,0,0.3); transition:0.3s; display:flex; flex-direction:column; padding:20px; }
+  #menu h2 { margin-bottom:20px; font-size:1.2rem; }
+  .menu-item { margin:10px 0; cursor:pointer; font-weight:bold; }
 
-  /* Side menu */
-  #side-menu {
-    position: fixed;
-    top: 0;
-    left: -250px;
-    width: 250px;
-    height: 100%;
-    background: #fff;
-    color: #C00000;
-    box-shadow: 3px 0 10px rgba(0,0,0,0.3);
-    transition: 0.3s;
-    padding-top: 60px;
-    z-index: 100;
-  }
+  /* --- Overlay Pages --- */
+  .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); color:#C00000; padding:40px; overflow-y:auto; display:none; }
+  .overlay h2 { margin-bottom:15px; }
+  .overlay p { margin-bottom:10px; line-height:1.5; }
+  .close-overlay { position:absolute; top:20px; right:20px; font-weight:bold; cursor:pointer; font-size:1.2rem; }
 
-  #side-menu a {
-    display: block;
-    padding: 15px 20px;
-    text-decoration: none;
-    color: #C00000;
-    font-weight: bold;
-  }
-
-  #side-menu a:hover { background: #f0f0f0; }
-
-  /* Overlay content */
-  .overlay {
-    display: none;
-    position: fixed;
-    top:0; left:0;
-    width:100%; height:100%;
-    background: rgba(0,0,0,0.95);
-    color:white;
-    overflow-y: auto;
-    padding: 40px 20px;
-    z-index: 200;
-  }
-
-  .overlay h2 { text-align: center; margin-bottom: 20px; }
-  .overlay p { margin-bottom: 15px; line-height: 1.6; }
-  .overlay .close-btn {
-    position: absolute;
-    top: 20px;
-    right: 25px;
-    font-size: 30px;
-    cursor: pointer;
-  }
-
-  /* Logout */
-  #logout-btn {
-    margin-top: auto;
-    background: #fff;
-    color: #C00000;
-    padding: 12px;
-    border-radius: 10px;
-    width: 80%;
-    max-width: 200px;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    margin-bottom: 20px;
-  }
+  /* --- Logout Button --- */
+  #logout { position:absolute; top:20px; right:20px; background:white; color:#C00000; padding:8px 12px; border-radius:8px; font-weight:bold; transition:0.3s; }
+  #logout:hover { background:#f0f0f0; }
 
 </style>
 </head>
 <body>
-
-<div id="hamburger">&#9776;</div>
-
-<div id="side-menu">
-  <a href="#" onclick="showOverlay('about')">About Us</a>
-  <a href="#" onclick="showOverlay('mission')">Mission & Vision</a>
-  <a href="#" onclick="showOverlay('faq')">FAQ / Support</a>
-</div>
-
 <div id="container">
   <img id="logo" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="Logo">
   <div id="welcome">Welcome back!</div>
-  <button id="main-action"></button>
-  <button id="logout-btn" onclick="logout()">Logout</button>
-</div>
+  <button id="main-btn">Loading...</button>
 
-<!-- Overlays -->
-<div id="about" class="overlay">
-  <span class="close-btn" onclick="closeOverlay('about')">&times;</span>
-  <h2>About Us</h2>
-  <p>Welcome to SkyUltimate Delivery Service, where we're dedicated to taking your delivery experience to new heights! Founded in 2024, our company was born from a simple idea: to create a delivery service that's not just fast and reliable, but also puts the customer first. We understand the importance of your packages, whether it's a crucial document for your business or a thoughtful gift for a loved one. That's why our team of dedicated professionals works tirelessly to ensure every item is handled with the utmost care and delivered on time, every time. At SkyUltimate, we're more than just a delivery company; we're your trusted partner in logistics.</p>
-</div>
+  <div id="hamburger">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+  </div>
+  <div id="menu">
+    <h2>Menu</h2>
+    <div class="menu-item" id="aboutus-menu">About Us</div>
+    <div class="menu-item" id="mission-menu">Mission & Vision</div>
+    <div class="menu-item" id="faq-menu">FAQ / Support</div>
+  </div>
 
-<div id="mission" class="overlay">
-  <span class="close-btn" onclick="closeOverlay('mission')">&times;</span>
-  <h2>Mission & Vision</h2>
-  <h3>Our Mission</h3>
-  <p>Our mission at SkyUltimate Delivery Service is to provide a seamless, reliable, and efficient delivery experience that exceeds our customers' expectations. We are committed to leveraging innovative technology and exceptional customer service to simplify logistics for businesses and individuals alike. We strive to be the most trusted and preferred delivery service, one package at a time.</p>
-  <h3>Our Vision</h3>
-  <p>To be the industry leader in delivery services, known for our speed, reliability, and unwavering commitment to customer satisfaction. We envision a future where SkyUltimate Delivery Service is synonymous with excellence, setting the standard for logistics solutions and positively impacting the communities we serve.</p>
-</div>
+  <div class="overlay" id="aboutus-overlay">
+    <div class="close-overlay" onclick="closeOverlay('aboutus-overlay')">X</div>
+    <h2>About Us</h2>
+    <p>Welcome to SkyUltimate Delivery Service, where we're dedicated to taking your delivery experience to new heights! Founded in 2024, our company was born from a simple idea: to create a delivery service that's not just fast and reliable, but also puts the customer first...</p>
+  </div>
 
-<div id="faq" class="overlay">
-  <span class="close-btn" onclick="closeOverlay('faq')">&times;</span>
-  <h2>FAQ & Support</h2>
-  <p><strong>How do I track my package?</strong> You can track your package using the tracking number provided in your confirmation email. Enter the number on our tracking page.</p>
-  <p><strong>Delivery hours?</strong> 9:00 AM - 6:00 PM, Monday-Saturday. Special arrangements available on request.</p>
-  <p><strong>Items we deliver?</strong> Documents, parcels, general goods. No hazardous, illegal, or live animals.</p>
-  <p><strong>Lost or damaged package?</strong> Contact our support immediately at WhatsApp or phone: <a href="tel:09128884830">09128884830</a></p>
-  <p><strong>Contact support:</strong> WhatsApp / Call: <a href="tel:09128884830">09128884830</a> | Instagram: <span id="insta-placeholder">Your Instagram Link</span> | Facebook: <span id="fb-placeholder">Your Facebook Link</span></p>
+  <div class="overlay" id="mission-overlay">
+    <div class="close-overlay" onclick="closeOverlay('mission-overlay')">X</div>
+    <h2>Our Mission</h2>
+    <p>Our mission at SkyUltimate Delivery Service is to provide a seamless, reliable, and efficient delivery experience that exceeds our customers' expectations...</p>
+    <h2>Our Vision</h2>
+    <p>To be the industry leader in delivery services, known for our speed, reliability, and unwavering commitment to customer satisfaction...</p>
+  </div>
+
+  <div class="overlay" id="faq-overlay">
+    <div class="close-overlay" onclick="closeOverlay('faq-overlay')">X</div>
+    <h2>FAQ & Support</h2>
+    <p><strong>How do I track my package?</strong> You can track your package using the tracking number provided in your confirmation email...</p>
+    <p><strong>Delivery hours:</strong> 9:00 AM - 6:00 PM, Mon-Sat. Special arrangements possible.</p>
+    <p><strong>Contact us:</strong> WhatsApp / Phone: 09128884830</p>
+    <p><strong>Social:</strong> Instagram, Facebook (editable)</p>
+  </div>
+
+  <button id="logout">Logout</button>
 </div>
 
 <script>
-  // Get user info
-  const role = sessionStorage.getItem('role') || '';
-  const name = sessionStorage.getItem('fullname') || 'User';
-  document.getElementById('welcome').textContent = `Welcome back, ${name.split(' ')[0]}!`;
+  // --- Session Data ---
+  const name = sessionStorage.getItem('name') || 'User';
+  const role = sessionStorage.getItem('role') || 'customer';
+  const token = sessionStorage.getItem('token');
 
-  // Dynamic main action button
-  const mainBtn = document.getElementById('main-action');
-  const dashboardLinks = {
-    'Customer': '/customer-dashboard',
-    'Agent': '/agent-dashboard',
-    'Admin': '/admin-dashboard',
-    'Super-admin': '/super-admin-dashboard'
-  };
-  const dashboardText = {
-    'Customer': 'Go to My Dashboard',
-    'Agent': 'Go to Delivery Board',
-    'Admin': 'Go to Operations Hub',
-    'Super-admin': 'Go to Master Control Panel'
-  };
-  mainBtn.textContent = dashboardText[role] || 'Go to Dashboard';
-  mainBtn.onclick = () => {
-    window.location.href = dashboardLinks[role] || '/';
-  };
+  const welcome = document.getElementById('welcome');
+  const mainBtn = document.getElementById('main-btn');
 
-  // Hamburger menu toggle
-  const hamburger = document.getElementById('hamburger');
-  const sideMenu = document.getElementById('side-menu');
-  let menuOpen = false;
-  hamburger.onclick = () => {
-    sideMenu.style.left = menuOpen ? '-250px' : '0';
-    menuOpen = !menuOpen;
-  };
+  welcome.textContent = `Welcome back, ${name}!`;
 
-  // Overlay functions
-  function showOverlay(id) { document.getElementById(id).style.display = 'block'; }
-  function closeOverlay(id) { document.getElementById(id).style.display = 'none'; }
-
-  // Logout
-  function logout() {
-    sessionStorage.clear();
-    window.location.href = 'index.html';
+  // --- Set role-based main button ---
+  switch(role){
+      case 'customer': mainBtn.textContent='Go to My Dashboard'; mainBtn.onclick=()=>window.location.href='customer-dashboard.html'; break;
+      case 'agent': mainBtn.textContent='Go to Delivery Board'; mainBtn.onclick=()=>window.location.href='agent-dashboard.html'; break;
+      case 'admin': mainBtn.textContent='Go to Operations Hub'; mainBtn.onclick=()=>window.location.href='admin-dashboard.html'; break;
+      case 'superadmin': mainBtn.textContent='Go to Master Control Panel'; mainBtn.onclick=()=>window.location.href='super-admin-dashboard.html'; break;
+      default: mainBtn.textContent='Go to Dashboard'; mainBtn.onclick=()=>alert('Role not set.');
   }
-</script>
 
+  // --- Hamburger Menu ---
+  const hamburger = document.getElementById('hamburger');
+  const menu = document.getElementById('menu');
+  let menuOpen = false;
+  hamburger.addEventListener('click',()=>{
+    menuOpen=!menuOpen;
+    menu.style.left = menuOpen?'0':'-300px';
+  });
+
+  // --- Overlay Function ---
+  const openOverlay = (id)=>{ document.getElementById(id).style.display='block'; menu.style.left='-300px'; menuOpen=false; }
+  const closeOverlay = (id)=>{ document.getElementById(id).style.display='none'; }
+
+  document.getElementById('aboutus-menu').addEventListener('click',()=>openOverlay('aboutus-overlay'));
+  document.getElementById('mission-menu').addEventListener('click',()=>openOverlay('mission-overlay'));
+  document.getElementById('faq-menu').addEventListener('click',()=>openOverlay('faq-overlay'));
+
+  // --- Logout ---
+  document.getElementById('logout').addEventListener('click',()=>{
+    sessionStorage.clear();
+    window.location.href='index.html';
+  });
+</script>
 </body>
 </html>
