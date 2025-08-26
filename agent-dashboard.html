@@ -3,202 +3,205 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agent Dashboard</title>
+<title>SkyUltimate - Agent Dashboard</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-  body, html { min-height: 100vh; background-color: #C00000; color: white; }
-  #container { max-width: 900px; margin: auto; padding: 20px; }
-  #logo { width: 140px; height: 140px; border-radius: 50%; display: block; margin: 20px auto; }
-  h2 { text-align: center; margin-bottom: 20px; }
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
+  body, html { width:100%; height:100%; background:#C00000; }
+  button { cursor:pointer; border:none; outline:none; }
+  a { text-decoration:none; color:inherit; }
 
-  /* Toggle */
-  .toggle-container { display:flex; justify-content:center; align-items:center; margin-bottom:20px; }
-  .toggle-container label { margin:0 10px; font-weight:bold; }
+  #container { width:100%; min-height:100%; padding:20px; display:flex; flex-direction:column; align-items:center; position:relative; }
 
-  /* Job Card */
-  .job-card { background:white; color:#C00000; padding:20px; border-radius:12px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; }
-  .job-info { flex: 1; }
-  .job-btn { padding: 10px 15px; border:none; border-radius:8px; background:#C00000; color:white; cursor:pointer; }
+  #logo { width:100px; height:100px; border-radius:50%; margin-bottom:10px; }
+  #welcome { font-size:1.4rem; color:white; margin-bottom:20px; text-align:center; }
 
-  /* Hamburger menu */
-  #hamburger { position:absolute; top:20px; left:20px; font-size:30px; cursor:pointer; }
-  #side-menu { position:fixed; top:0; left:-250px; width:250px; height:100%; background:#fff; color:#C00000;
-    box-shadow:3px 0 10px rgba(0,0,0,0.3); transition:0.3s; padding-top:60px; z-index:100; }
-  #side-menu a { display:block; padding:15px 20px; text-decoration:none; color:#C00000; font-weight:bold; }
-  #side-menu a:hover { background:#f0f0f0; }
+  /* --- Toggle --- */
+  .toggle-container { display:flex; align-items:center; justify-content:center; margin-bottom:20px; }
+  .toggle-label { color:white; margin:0 10px; font-weight:bold; }
+  .toggle-btn { width:60px; height:30px; background:white; border-radius:15px; position:relative; cursor:pointer; }
+  .toggle-circle { width:26px; height:26px; background:#C00000; border-radius:50%; position:absolute; top:2px; left:2px; transition:0.3s; }
 
-  /* Modal */
-  .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:200;
-    color:white; justify-content:center; align-items:center; padding:20px; }
-  .modal-content { background:white; color:#C00000; padding:20px; border-radius:10px; max-width:400px; width:100%; }
-  .modal-content h3 { margin-bottom:15px; }
-  .modal-content button { margin-top:10px; }
+  /* --- Job Card --- */
+  .job-card { background:white; border-radius:12px; padding:15px; width:100%; max-width:500px; margin-bottom:15px; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+  .job-card h3 { color:#C00000; margin-bottom:10px; }
+  .job-card p { margin-bottom:8px; }
+  .job-card button { width:100%; padding:10px; border-radius:12px; background:#C00000; color:white; font-weight:bold; margin-top:10px; transition:0.3s; }
 
+  /* --- Action Buttons --- */
+  .action-btn { width:100%; padding:12px; border-radius:12px; background:white; color:#C00000; font-weight:bold; margin-bottom:10px; transition:0.3s; }
+  .action-btn:disabled { background:#ccc; color:#666; cursor:not-allowed; }
+
+  /* --- Hamburger Menu --- */
+  #hamburger { position:absolute; top:20px; left:20px; width:30px; height:22px; cursor:pointer; display:flex; flex-direction:column; justify-content:space-between; }
+  .bar { width:100%; height:4px; background:white; border-radius:2px; }
+
+  #menu { position:fixed; top:0; left:-300px; width:250px; height:100%; background:white; color:#C00000; box-shadow:3px 0 10px rgba(0,0,0,0.3); transition:0.3s; display:flex; flex-direction:column; padding:20px; }
+  #menu h2 { margin-bottom:20px; font-size:1.2rem; }
+  .menu-item { margin:10px 0; cursor:pointer; font-weight:bold; }
+
+  .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); color:#C00000; padding:40px; overflow-y:auto; display:none; }
+  .overlay h2 { margin-bottom:15px; }
+  .overlay p { margin-bottom:10px; line-height:1.5; }
+  .close-overlay { position:absolute; top:20px; right:20px; font-weight:bold; cursor:pointer; font-size:1.2rem; }
+
+  #logout { position:absolute; top:20px; right:20px; background:white; color:#C00000; padding:8px 12px; border-radius:8px; font-weight:bold; transition:0.3s; }
+  #logout:hover { background:#f0f0f0; }
 </style>
 </head>
 <body>
-
-<div id="hamburger">&#9776;</div>
-<div id="side-menu">
-  <a href="#" onclick="showOverlay('rate-customer')">Rate Customer</a>
-  <a href="#" onclick="showOverlay('report-customer')">Report Customer</a>
-  <a href="#" onclick="logout()">Logout</a>
-</div>
-
 <div id="container">
   <img id="logo" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="Logo">
-  <h2>Delivery Board</h2>
+  <div id="welcome">Welcome back!</div>
 
+  <!-- ONLINE / OFFLINE Toggle -->
   <div class="toggle-container">
-    <label for="status-toggle">Status:</label>
-    <select id="status-toggle">
-      <option value="offline">OFFLINE</option>
-      <option value="online">ONLINE</option>
-    </select>
+    <span class="toggle-label">OFFLINE</span>
+    <div class="toggle-btn" id="toggleBtn"><div class="toggle-circle"></div></div>
+    <span class="toggle-label">ONLINE</span>
   </div>
 
+  <!-- Job List -->
   <div id="job-list"></div>
-</div>
 
-<!-- Rate Customer Modal -->
-<div id="rate-customer" class="modal">
-  <div class="modal-content">
-    <h3>Rate Customer</h3>
-    <select id="customer-rating">
-      <option value="1">⭐</option>
-      <option value="2">⭐⭐</option>
-      <option value="3">⭐⭐⭐</option>
-      <option value="4">⭐⭐⭐⭐</option>
-      <option value="5">⭐⭐⭐⭐⭐</option>
-    </select>
-    <textarea id="customer-comment" placeholder="Comment (optional)" style="width:100%;margin-top:10px;"></textarea>
-    <button onclick="submitRating()">Submit Rating</button>
-    <button onclick="closeModal('rate-customer')">Close</button>
+  <div id="hamburger">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
   </div>
-</div>
+  <div id="menu">
+    <h2>Menu</h2>
+    <div class="menu-item" id="aboutus-menu">About Us</div>
+    <div class="menu-item" id="mission-menu">Mission & Vision</div>
+    <div class="menu-item" id="faq-menu">FAQ / Support</div>
+  </div>
 
-<!-- Report Customer Modal -->
-<div id="report-customer" class="modal">
-  <div class="modal-content">
-    <h3>Report Customer</h3>
-    <textarea id="report-comment" placeholder="Describe the issue" style="width:100%;margin-top:10px;"></textarea>
-    <button onclick="submitReport()">Submit Report</button>
-    <button onclick="closeModal('report-customer')">Close</button>
+  <div class="overlay" id="aboutus-overlay">
+    <div class="close-overlay" onclick="closeOverlay('aboutus-overlay')">X</div>
+    <h2>About Us</h2>
+    <p>SkyUltimate Delivery Service, founded in 2024, ensures your packages are handled safely and delivered on time...</p>
   </div>
+
+  <div class="overlay" id="mission-overlay">
+    <div class="close-overlay" onclick="closeOverlay('mission-overlay')">X</div>
+    <h2>Our Mission</h2>
+    <p>To provide a seamless, reliable, and efficient delivery experience exceeding customer expectations...</p>
+    <h2>Our Vision</h2>
+    <p>To be the leader in delivery services known for speed, reliability, and customer satisfaction...</p>
+  </div>
+
+  <div class="overlay" id="faq-overlay">
+    <div class="close-overlay" onclick="closeOverlay('faq-overlay')">X</div>
+    <h2>FAQ & Support</h2>
+    <p>Tracking: Use the tracking number provided in your email.</p>
+    <p>Delivery hours: 9:00 AM - 6:00 PM, Mon-Sat. Special arrangements possible.</p>
+    <p>WhatsApp / Phone: 09128884830</p>
+    <p>Social: Instagram, Facebook (editable)</p>
+  </div>
+
+  <button id="logout">Logout</button>
 </div>
 
 <script>
-  const API_BASE = 'https://skyultimate-backend-api-structure.onrender.com';
+  const name = sessionStorage.getItem('name') || 'Agent';
   const token = sessionStorage.getItem('token');
-  const jobList = document.getElementById('job-list');
+  const apiURL = 'https://skyultimate-backend-api-structure.onrender.com';
+  document.getElementById('welcome').textContent = `Welcome back, ${name}!`;
 
-  // Hamburger toggle
-  const hamburger = document.getElementById('hamburger');
-  const sideMenu = document.getElementById('side-menu');
-  let menuOpen = false;
-  hamburger.onclick = () => {
-    sideMenu.style.left = menuOpen ? '-250px' : '0';
-    menuOpen = !menuOpen;
-  };
-
-  // ONLINE/OFFLINE toggle
-  const statusToggle = document.getElementById('status-toggle');
+  // --- Toggle ONLINE / OFFLINE ---
+  const toggleBtn = document.getElementById('toggleBtn');
+  const toggleCircle = toggleBtn.querySelector('.toggle-circle');
   let online = false;
-  let jobPolling;
 
-  statusToggle.addEventListener('change', () => {
-    online = statusToggle.value === 'online';
-    if(online){
-      startPollingJobs();
-      console.log('Agent is ONLINE, location updates activated');
-    } else {
-      stopPollingJobs();
-      console.log('Agent is OFFLINE, location updates stopped');
-    }
+  toggleBtn.addEventListener('click',()=>{
+    online = !online;
+    toggleCircle.style.left = online?'32px':'2px';
+    alert(`Agent is now ${online?'ONLINE':'OFFLINE'}`);
+    if(online) startPollingJobs();
   });
 
-  function startPollingJobs(){
-    fetchJobs();
-    jobPolling = setInterval(fetchJobs, 5000);
-  }
-
-  function stopPollingJobs(){
-    clearInterval(jobPolling);
-    jobList.innerHTML = '';
-  }
-
-  async function fetchJobs(){
-    try {
-      const res = await fetch(`${API_BASE}/orders/available`,{
-        headers: {'Authorization':`Bearer ${token}`}
+  // --- Fetch Jobs ---
+  const jobList = document.getElementById('job-list');
+  async function startPollingJobs(){
+    jobList.innerHTML='';
+    try{
+      const res = await fetch(`${apiURL}/orders/available`,{
+        headers:{ 'Authorization':`Bearer ${token}` }
       });
       const jobs = await res.json();
-      jobList.innerHTML = '';
-      jobs.forEach(job => {
+      jobs.forEach(job=>{
         const card = document.createElement('div');
-        card.className = 'job-card';
-        card.innerHTML = `<div class="job-info">
-          <strong>${job.itemType}</strong> - ${job.weight}kg<br>
-          Pickup: ${job.pickup}<br>
-          Delivery: ${job.delivery}
-        </div>`;
-        const btn = document.createElement('button');
-        btn.className='job-btn';
-        btn.textContent='ACCEPT ORDER';
-        btn.onclick = () => acceptOrder(job.id, card);
-        card.appendChild(btn);
+        card.className='job-card';
+        card.innerHTML=`
+          <h3>Order #${job.id}</h3>
+          <p>Pickup: ${job.pickup}</p>
+          <p>Delivery: ${job.delivery}</p>
+          <p>Weight: ${job.weight}kg</p>
+          <p>Type: ${job.itemType}</p>
+          <button class="accept-btn">ACCEPT ORDER</button>
+        `;
+        card.querySelector('.accept-btn').addEventListener('click',()=>acceptJob(job.id,card));
         jobList.appendChild(card);
       });
-    } catch(err){ console.error(err); }
+    }catch(err){ console.log('Error fetching jobs', err); }
   }
 
-  async function acceptOrder(orderId, card){
-    try {
-      const res = await fetch(`${API_BASE}/orders/claim/${orderId}`,{
+  async function acceptJob(jobId, card){
+    try{
+      const res = await fetch(`${apiURL}/orders/accept/${jobId}`,{
         method:'POST',
         headers:{ 'Authorization':`Bearer ${token}` }
       });
-      const data = await res.json();
-      if(res.ok){
-        alert('Order accepted! Switching to Active Delivery state...');
-        card.innerHTML = `
-          <div class="job-info">
-            <strong>${data.itemType}</strong> - ${data.weight}kg<br>
-            Pickup: ${data.pickup}<br>
-            Delivery: ${data.delivery}
-          </div>
-          <button class="job-btn" onclick="startNavigation('${data.pickup}')">Start Navigation</button>
-          <button class="job-btn" onclick="contactCustomer('${data.customerPhone}')">Contact Customer</button>
+      const result = await res.json();
+      if(result.success){
+        alert('Order Accepted! Active Delivery Mode Enabled.');
+        card.innerHTML=`
+          <h3>Order #${jobId}</h3>
+          <button class="action-btn" onclick="startNavigation('${result.pickup}')">Start Navigation</button>
+          <button class="action-btn" onclick="contactCustomer('${result.customerPhone}')">Contact Customer</button>
+          <p>Expected Income: ₦${result.agentPayout}</p>
         `;
       } else {
-        alert(data.message || 'Job already taken');
+        alert('Order already taken!');
         card.remove();
       }
-    } catch(err){ console.error(err); }
+    }catch(e){ alert('Error accepting job'); }
   }
 
   function startNavigation(address){
-    navigator.geolocation.getCurrentPosition(pos => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      window.open(`https://www.google.com/maps/dir/?api=1&origin=${lat},${lng}&destination=${encodeURIComponent(address)}`,'_blank');
-    });
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(pos=>{
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        window.open(`https://www.google.com/maps/dir/?api=1&origin=${lat},${lon}&destination=${encodeURIComponent(address)}`);
+      });
+    }
   }
 
   function contactCustomer(phone){
-    window.location.href = `tel:${phone}`;
+    window.location.href=`tel:${phone}`;
   }
 
-  // Modal helpers
-  function showOverlay(id){ document.getElementById(id).style.display='flex'; }
-  function closeModal(id){ document.getElementById(id).style.display='none'; }
-  function submitRating(){ alert('Rating submitted'); closeModal('rate-customer'); }
-  function submitReport(){ alert('Report submitted'); closeModal('report-customer'); }
+  // --- Hamburger Menu ---
+  const hamburger = document.getElementById('hamburger');
+  const menu = document.getElementById('menu');
+  let menuOpen = false;
+  hamburger.addEventListener('click',()=>{
+    menuOpen=!menuOpen;
+    menu.style.left = menuOpen?'0':'-300px';
+  });
 
-  function logout(){
+  const openOverlay = (id)=>{ document.getElementById(id).style.display='block'; menu.style.left='-300px'; menuOpen=false; }
+  const closeOverlay = (id)=>{ document.getElementById(id).style.display='none'; }
+
+  document.getElementById('aboutus-menu').addEventListener('click',()=>openOverlay('aboutus-overlay'));
+  document.getElementById('mission-menu').addEventListener('click',()=>openOverlay('mission-overlay'));
+  document.getElementById('faq-menu').addEventListener('click',()=>openOverlay('faq-overlay'));
+
+  // --- Logout ---
+  document.getElementById('logout').addEventListener('click',()=>{
     sessionStorage.clear();
-    window.location.href='home.html';
-  }
+    window.location.href='index.html';
+  });
 </script>
 </body>
-                                     </html>
+</html>
