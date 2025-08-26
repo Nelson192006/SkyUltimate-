@@ -8,7 +8,7 @@
   :root{ --red:#C00000; --muted:#6b7280; --soft:#f8fafc; }
   *{box-sizing:border-box}
   body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--soft);color:#111827;}
-  header{background:var(--red);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+  header{background:var(--red);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
   .brand{font-weight:900}
   .pill{background:#fff1;border:1px solid #ffffff33;color:#fff;border-radius:10px;padding:8px 10px;cursor:pointer}
   .wrap{max-width:1000px;margin:22px auto;padding:0 16px}
@@ -30,6 +30,7 @@
 </style>
 </head>
 <body>
+
 <header>
   <div class="brand">Customer Dashboard</div>
   <div>
@@ -118,11 +119,9 @@
 
 <script>
 const API = "https://33vhk4-50000.csb.app";
-// ===== Auth guard =====
 const token = localStorage.getItem("token");
 if(!token) location.href="index.html";
 
-// ===== Helpers =====
 const $ = id => document.getElementById(id);
 const auth = ()=>({ Authorization:`Bearer ${token}`, "Content-Type":"application/json" });
 function currency(n){ n=Number(n||0); return "$"+n.toFixed(2); }
@@ -130,13 +129,13 @@ function escapeHtml(s=""){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','
 function logout(){ localStorage.clear(); location.href="index.html"; }
 function openMenu(){ alert("Use Home drawer for About/Mission/FAQ. This page focuses on orders."); }
 
-// ===== Load profile, ensure role =====
+// Load profile and ensure role
 (async function init(){
   try{
-    const meRes = await fetch(`${API}/auth/me`,{ headers:{ Authorization:`Bearer ${token}` }});
+    const meRes = await fetch(`${API}/auth/me`, { headers:{ Authorization:`Bearer ${token}` }});
     if(!meRes.ok) throw 0;
     const me = await meRes.json();
-    if(me.role!=="customer"){ // route away
+    if(me.role!=="customer"){
       if(me.role==="agent") return location.href="agent-dashboard.html";
       if(me.role==="admin") return location.href="admin-dashboard.html";
       if(me.role==="superadmin") return location.href="superadmin.html";
@@ -147,19 +146,20 @@ function openMenu(){ alert("Use Home drawer for About/Mission/FAQ. This page foc
   }catch{ logout(); }
 })();
 
-// ===== Place order flow =====
+// Bind order form events
 function bindPlaceOrderUI(){
   const required = ["itemType","itemDesc","weight","pickup","dropoff"].map(id=>$(id));
   required.forEach(el=> el.addEventListener("input", ()=>{
     const ok = required.every(f=>f.value && f.value.trim().length>0);
     $("quoteBtn").disabled = !ok;
-    // a tiny client-side estimate (optional); final comes from API
-    const base = 8, w = $("weight").value.includes("10")? 5: $("weight").value.includes("5-10")? 4: $("weight").value.includes("1-5")? 2: 1;
-    $("estPrice").textContent = currency(base + w);
+    // tiny client-side estimate
+    const base = 8, w = $("weight").value.includes("10")?5:$("weight").value.includes("5-10")?4:$("weight").value.includes("1-5")?2:1;
+    $("estPrice").textContent = currency(base+w);
   }));
   $("quoteBtn").addEventListener("click", getFinalPrice);
 }
 
+// Get quote and create order
 let pendingOrderCache = null;
 async function getFinalPrice(){
   const payload = {
@@ -169,7 +169,6 @@ async function getFinalPrice(){
     pickup: $("pickup").value,
     dropoff: $("dropoff").value
   };
-  // Get quote from backend; then create pending order with status "pending_payment"
   try{
     const q = await fetch(`${API}/orders/quote`, { method:"POST", headers: auth(), body: JSON.stringify(payload) });
     const quote = await q.json();
@@ -180,7 +179,6 @@ async function getFinalPrice(){
     if(!create.ok) return alert(order.message||"Unable to create order");
 
     pendingOrderCache = order;
-    // Load bank details from settings
     const sres = await fetch(`${API}/settings/payment`, { headers: { Authorization:`Bearer ${token}` }});
     const settings = await sres.json();
     $("finalTotal").textContent = currency(order.total || quote.total);
@@ -189,12 +187,9 @@ async function getFinalPrice(){
       <div><b>Account Name:</b> ${escapeHtml(settings.accountName||"—")}</div>
       <div><b>Account Number:</b> ${escapeHtml(settings.accountNumber||"—")}</div>
     `;
-    // Toggle modal-ish view
     $("placeOrder").classList.add("hidden");
     $("confirmPay").classList.remove("hidden");
-  }catch(e){
-    alert("Network error.");
-  }
+  }catch(e){ alert("Network error."); }
 }
 
 $("goToOrders").addEventListener("click", ()=>{
@@ -203,7 +198,7 @@ $("goToOrders").addEventListener("click", ()=>{
   loadOrders();
 });
 
-// ===== Orders list + live tracking switch =====
+// Orders list + live tracking
 async function loadOrders(){
   try{
     const res = await fetch(`${API}/orders/my`, { headers:{ Authorization:`Bearer ${token}` }});
@@ -218,7 +213,7 @@ async function loadOrders(){
       const d = document.createElement("div");
       d.className = "job";
       d.innerHTML = `
-        <div class="row" style="justify-content:space-between;display:flex;">
+        <div style="display:flex;justify-content:space-between;">
           <div class="tag">${escapeHtml(o.status)}</div>
           <div><b class="muted">#${o.id || o._id || ""}</b></div>
         </div>
@@ -233,9 +228,7 @@ async function loadOrders(){
     });
 
     if(active){ showLive(active); } else { hideLive(); }
-  }catch(e){
-    $("orders").textContent = "Error loading orders.";
-  }
+  }catch(e){ $("orders").textContent = "Error loading orders."; }
 }
 
 function hideLive(){
@@ -253,7 +246,6 @@ function showLive(order){
   $("agentLine").textContent = agent.firstName ? `Agent ${agent.firstName} is handling your delivery.` : "Waiting for agent...";
   $("liveMap").src = `https://maps.google.com/maps?q=${encodeURIComponent(order.pickup)}&z=12&output=embed`;
 
-  // Buttons logic
   const picked = ["picked_up","enroute_delivery"].includes(order.status.toLowerCase());
   const canPick = ["agent_assigned","enroute_pickup"].includes(order.status.toLowerCase());
   $("confirmPickup").classList.toggle("hidden", !canPick);
@@ -280,4 +272,4 @@ async function confirmDelivered(id){
 }
 </script>
 </body>
-</html>
+                                                                             </html>
