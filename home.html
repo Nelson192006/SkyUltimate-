@@ -46,7 +46,7 @@
 <body>
 <div id="container">
   <img id="logo" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="Logo">
-  <div id="welcome">Welcome back!</div>
+  <div id="welcome">Checking session...</div>
   <button id="main-btn">Loading...</button>
 
   <div id="hamburger">
@@ -88,24 +88,49 @@
 </div>
 
 <script>
-  // --- Session Data ---
-  const name = sessionStorage.getItem('name') || 'User';
-  const role = sessionStorage.getItem('role') || 'customer';
-  const token = sessionStorage.getItem('token');
+  const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
 
   const welcome = document.getElementById('welcome');
   const mainBtn = document.getElementById('main-btn');
+  const token = sessionStorage.getItem('token');
 
-  welcome.textContent = `Welcome back, ${name}!`;
+  // --- Validate Session ---
+  async function validateSession(){
+    if(!token){
+      sessionStorage.clear();
+      window.location.href="index.html";
+      return;
+    }
+    try{
+      const res = await fetch(`${API_BASE}/auth/me`,{
+        method:"GET",
+        headers:{ "Authorization":`Bearer ${token}` }
+      });
+      const data = await res.json();
+      if(res.ok){
+        const name = data.fullName || "User";
+        const role = data.role || "customer";
+        welcome.textContent = `Welcome back, ${name}!`;
 
-  // --- Set role-based main button ---
-  switch(role){
-      case 'customer': mainBtn.textContent='Go to My Dashboard'; mainBtn.onclick=()=>window.location.href='customer-dashboard.html'; break;
-      case 'agent': mainBtn.textContent='Go to Delivery Board'; mainBtn.onclick=()=>window.location.href='agent-dashboard.html'; break;
-      case 'admin': mainBtn.textContent='Go to Operations Hub'; mainBtn.onclick=()=>window.location.href='admin-dashboard.html'; break;
-      case 'superadmin': mainBtn.textContent='Go to Master Control Panel'; mainBtn.onclick=()=>window.location.href='super-admin-dashboard.html'; break;
-      default: mainBtn.textContent='Go to Dashboard'; mainBtn.onclick=()=>alert('Role not set.');
+        // Role-based dashboard
+        switch(role){
+          case 'customer': mainBtn.textContent='Go to My Dashboard'; mainBtn.onclick=()=>window.location.href='customer-dashboard.html'; break;
+          case 'agent': mainBtn.textContent='Go to Delivery Board'; mainBtn.onclick=()=>window.location.href='agent-dashboard.html'; break;
+          case 'admin': mainBtn.textContent='Go to Operations Hub'; mainBtn.onclick=()=>window.location.href='admin-dashboard.html'; break;
+          case 'superadmin': mainBtn.textContent='Go to Master Control Panel'; mainBtn.onclick=()=>window.location.href='super-admin-dashboard.html'; break;
+          default: mainBtn.textContent='Go to Dashboard'; mainBtn.onclick=()=>alert('Role not recognized.');
+        }
+      }else{
+        sessionStorage.clear();
+        window.location.href="index.html";
+      }
+    }catch(err){
+      console.error(err);
+      sessionStorage.clear();
+      window.location.href="index.html";
+    }
   }
+  validateSession();
 
   // --- Hamburger Menu ---
   const hamburger = document.getElementById('hamburger');
@@ -116,7 +141,7 @@
     menu.style.left = menuOpen?'0':'-300px';
   });
 
-  // --- Overlay Function ---
+  // --- Overlay Functions ---
   const openOverlay = (id)=>{ document.getElementById(id).style.display='block'; menu.style.left='-300px'; menuOpen=false; }
   const closeOverlay = (id)=>{ document.getElementById(id).style.display='none'; }
 
@@ -125,10 +150,16 @@
   document.getElementById('faq-menu').addEventListener('click',()=>openOverlay('faq-overlay'));
 
   // --- Logout ---
-  document.getElementById('logout').addEventListener('click',()=>{
+  document.getElementById('logout').addEventListener('click', async ()=>{
+    try{
+      await fetch(`${API_BASE}/auth/logout`,{
+        method:"POST",
+        headers:{ "Authorization":`Bearer ${token}` }
+      });
+    }catch(e){ console.warn("Logout request failed, clearing session anyway."); }
     sessionStorage.clear();
     window.location.href='index.html';
   });
 </script>
 </body>
-</html>
+  </html>
