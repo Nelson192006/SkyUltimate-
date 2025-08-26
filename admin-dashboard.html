@@ -189,8 +189,8 @@
     try{
       const res = await fetch(`${apiURL}/admin/bank-details`,{ headers:{'Authorization':`Bearer ${token}`}});
       const data = await res.json();
-      document.getElementById('bank-name').value = data.bankName;
-      document.getElementById('account-number').value = data.accountNumber;
+      document.getElementById('bank-name').value = data.bankName || '';
+      document.getElementById('account-number').value = data.accountNumber || '';
     }catch(e){ console.log('Failed to fetch bank details'); }
   }
   loadBankDetails();
@@ -245,4 +245,4 @@
   });
 </script>
 </body>
- </html>
+</html>
