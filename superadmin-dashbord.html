@@ -1,233 +1,291 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Super Admin Dashboard</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
-  body, html { min-height:100vh; background-color:#C00000; color:white; }
-  #container { max-width:1200px; margin:auto; padding:20px; }
-  #logo { width:140px; height:140px; border-radius:50%; display:block; margin:20px auto; }
-  h2 { text-align:center; margin-bottom:20px; }
-
-  .section { background: rgba(255,255,255,0.95); color: #C00000; padding:20px; border-radius:12px; margin-bottom:20px; }
-  input, select, textarea { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ccc; }
-  button { padding:10px 15px; border:none; border-radius:8px; background:#C00000; color:white; cursor:pointer; margin-right:5px; }
-  button:disabled { background: grey; cursor:not-allowed; }
-  .list-item { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #ccc; }
-  #hamburger { position:absolute; top:20px; left:20px; font-size:30px; cursor:pointer; }
-  #side-menu { position:fixed; top:0; left:-250px; width:250px; height:100%; background:#fff; color:#C00000;
-    box-shadow:3px 0 10px rgba(0,0,0,0.3); transition:0.3s; padding-top:60px; z-index:100; }
-  #side-menu a { display:block; padding:15px 20px; text-decoration:none; color:#C00000; font-weight:bold; }
-  #side-menu a:hover { background:#f0f0f0; }
-
-  /* Modal */
-  .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:200;
-    color:white; justify-content:center; align-items:center; padding:20px; overflow:auto; }
-  .modal-content { background:white; color:#C00000; padding:20px; border-radius:10px; max-width:500px; width:100%; }
-  .modal-content h3 { margin-bottom:15px; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Super Admin Dashboard - SkyUltimate</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: #f5f5f5;
+      color: #333;
+    }
+    header {
+      background: #C00000;
+      color: #fff;
+      padding: 15px;
+      text-align: center;
+    }
+    .dashboard {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      min-height: 100vh;
+    }
+    nav {
+      background: #fff;
+      border-right: 1px solid #ddd;
+      padding: 20px;
+    }
+    nav ul {
+      list-style: none;
+      padding: 0;
+    }
+    nav ul li {
+      margin-bottom: 15px;
+    }
+    nav ul li button {
+      background: #C00000;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    nav ul li button:hover {
+      background: #900000;
+    }
+    main {
+      padding: 20px;
+    }
+    section {
+      display: none;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    section.active {
+      display: block;
+    }
+    h2 {
+      margin-top: 0;
+      color: #C00000;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    table th {
+      background: #f2f2f2;
+    }
+    .btn {
+      background: #C00000;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #900000;
+    }
+    .announcement-form {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .announcement-form input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .announcement {
+      background: #fff4f4;
+      padding: 10px;
+      margin: 8px 0;
+      border-left: 4px solid #C00000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .announcement button {
+      background: transparent;
+      border: none;
+      color: #C00000;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <h1>Super Admin Dashboard</h1>
+  </header>
+  <div class="dashboard">
+    <nav>
+      <ul>
+        <li><button onclick="showSection('orders')">Orders</button></li>
+        <li><button onclick="showSection('users')">Users</button></li>
+        <li><button onclick="showSection('settings')">Settings</button></li>
+        <li><button onclick="showSection('announcements')">Announcements</button></li>
+      </ul>
+    </nav>
+    <main>
+      <section id="orders" class="active">
+        <h2>Orders Management</h2>
+        <table id="ordersTable">
+          <thead>
+            <tr>
+              <th>ID</th><th>Customer</th><th>Status</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Orders will load dynamically -->
+          </tbody>
+        </table>
+      </section>
 
-<div id="hamburger">&#9776;</div>
-<div id="side-menu">
-  <a href="#" onclick="showSection('user-management')">User Management</a>
-  <a href="#" onclick="showSection('admin-queue')">Admin Request Queue</a>
-  <a href="#" onclick="showSection('financials')">Financials & Payouts</a>
-  <a href="#" onclick="showSection('platform-settings')">Platform Settings</a>
-  <a href="#" onclick="logout()">Logout</a>
-</div>
+      <section id="users">
+        <h2>Users Management</h2>
+        <table id="usersTable">
+          <thead>
+            <tr>
+              <th>ID</th><th>Name</th><th>Role</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Users will load dynamically -->
+          </tbody>
+        </table>
+      </section>
 
-<div id="container">
-  <img id="logo" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="Logo">
-  <h2>Master Control Panel</h2>
+      <section id="settings">
+        <h2>System Settings</h2>
+        <p>Manage price ranges, bank details, and platform configuration.</p>
+        <button class="btn" onclick="updateSettings()">Update Settings</button>
+      </section>
 
-  <!-- Sections -->
-  <div id="user-management" class="section">
-    <h3>User Management</h3>
-    <div id="user-list"></div>
+      <section id="announcements">
+        <h2>Announcements</h2>
+        <form class="announcement-form" onsubmit="postAnnouncement(event)">
+          <input type="text" id="announcementInput" placeholder="Type new announcement..." required/>
+          <button type="submit" class="btn">Post</button>
+        </form>
+        <div id="announcementsList"></div>
+      </section>
+    </main>
   </div>
 
-  <div id="admin-queue" class="section" style="display:none;">
-    <h3>Admin Request Queue</h3>
-    <div id="admin-requests"></div>
-  </div>
+  <script>
+    const API_BASE = "https://skyultimate-backend-api-structure.onrender.com"; 
 
-  <div id="financials" class="section" style="display:none;">
-    <h3>Financials & Payouts</h3>
-    <div id="agents-list"></div>
-    <button onclick="processPayouts()">Process Selected Payouts</button>
-  </div>
+    function showSection(id) {
+      document.querySelectorAll("main section").forEach(sec => sec.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
 
-  <div id="platform-settings" class="section" style="display:none;">
-    <h3>Platform Settings</h3>
-    <label>Commission Rate (%)</label>
-    <input type="number" id="commission-rate" placeholder="Enter commission rate">
-    <label>Company Bank Details</label>
-    <input type="text" id="bank-details" placeholder="Bank info">
-    <button onclick="saveSettings()">Save Settings</button>
-  </div>
-</div>
+    // Fetch orders
+    async function loadOrders() {
+      try {
+        const res = await fetch(`${API_BASE}/orders`);
+        const orders = await res.json();
+        const tbody = document.querySelector("#ordersTable tbody");
+        tbody.innerHTML = "";
+        orders.forEach(o => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${o._id}</td>
+              <td>${o.customerName}</td>
+              <td>${o.status}</td>
+              <td><button class="btn" onclick="deleteOrder('${o._id}')">Delete</button></td>
+            </tr>`;
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
 
-<!-- Confirm Modal -->
-<div id="confirm-modal" class="modal">
-  <div class="modal-content">
-    <h3>Confirm Action</h3>
-    <p id="confirm-text"></p>
-    <button id="confirm-yes">Yes</button>
-    <button onclick="closeModal('confirm-modal')">No</button>
-  </div>
-</div>
+    // Delete order
+    async function deleteOrder(id) {
+      if(!confirm("Delete this order?")) return;
+      await fetch(`${API_BASE}/orders/${id}`, { method: "DELETE" });
+      loadOrders();
+    }
 
-<script>
-const API_BASE = 'https://skyultimate-backend-api-structure.onrender.com/api';
-const token = sessionStorage.getItem('token');
-let selectedUsers = [];
-let confirmCallback=null;
+    // Fetch users
+    async function loadUsers() {
+      try {
+        const res = await fetch(`${API_BASE}/users`);
+        const users = await res.json();
+        const tbody = document.querySelector("#usersTable tbody");
+        tbody.innerHTML = "";
+        users.forEach(u => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${u._id}</td>
+              <td>${u.name}</td>
+              <td>${u.role}</td>
+              <td><button class="btn" onclick="deleteUser('${u._id}')">Delete</button></td>
+            </tr>`;
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
 
-// Hamburger toggle
-const hamburger = document.getElementById('hamburger');
-const sideMenu = document.getElementById('side-menu');
-let menuOpen = false;
-hamburger.onclick = () => {
-  sideMenu.style.left = menuOpen ? '-250px' : '0';
-  menuOpen = !menuOpen;
-};
+    // Delete user
+    async function deleteUser(id) {
+      if(!confirm("Delete this user?")) return;
+      await fetch(`${API_BASE}/users/${id}`, { method: "DELETE" });
+      loadUsers();
+    }
 
-// Section switch
-function showSection(id){
-  ['user-management','admin-queue','financials','platform-settings'].forEach(sec=>{
-    document.getElementById(sec).style.display = sec===id?'block':'none';
-  });
-  if(id==='user-management') fetchUsers();
-  if(id==='admin-queue') fetchAdminQueue();
-  if(id==='financials') fetchAgents();
-}
+    // Update settings (stub)
+    async function updateSettings() {
+      alert("Settings update triggered. (Connect backend endpoint here)");
+    }
 
-// Fetch users for management
-async function fetchUsers(){
-  try{
-    const res = await fetch(`${API_BASE}/auths/users`,{headers:{'Authorization':`Bearer ${token}`}});
-    const users = await res.json();
-    const list = document.getElementById('user-list');
-    list.innerHTML='';
-    users.forEach(user=>{
-      const div = document.createElement('div');
-      div.className='list-item';
-      div.innerHTML=`<span>${user.fullName} (${user.role})</span>`;
-      const suspendBtn = document.createElement('button');
-      suspendBtn.textContent='Suspend';
-      suspendBtn.onclick=()=> confirmAction(`Suspend ${user.fullName}?`, async ()=>{
-        await fetch(`${API_BASE}/auths/users/${user._id}/suspend`,{method:'PATCH',headers:{'Authorization':`Bearer ${token}`}});
-        fetchUsers();
+    // Announcements
+    async function loadAnnouncements() {
+      try {
+        const res = await fetch(`${API_BASE}/announcements`);
+        const anns = await res.json();
+        const list = document.getElementById("announcementsList");
+        list.innerHTML = "";
+        anns.forEach(a => {
+          list.innerHTML += `
+            <div class="announcement">
+              <span>${a.message}</span>
+              <button onclick="deleteAnnouncement('${a._id}')">✕</button>
+            </div>`;
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function postAnnouncement(e) {
+      e.preventDefault();
+      const message = document.getElementById("announcementInput").value;
+      await fetch(`${API_BASE}/announcements`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
       });
-      const deleteBtn = document.createElement('button');
-      deleteBtn.textContent='DELETE USER';
-      deleteBtn.onclick=()=> confirmAction(`DELETE ${user.fullName}? This cannot be undone.`, async ()=>{
-        await fetch(`${API_BASE}/auths/users/${user._id}`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});
-        fetchUsers();
-      });
-      div.appendChild(suspendBtn);
-      div.appendChild(deleteBtn);
-      list.appendChild(div);
-    });
-  } catch(err){ console.error(err); }
-}
+      document.getElementById("announcementInput").value = "";
+      loadAnnouncements();
+    }
 
-// Fetch Admin Request Queue
-async function fetchAdminQueue(){
-  try{
-    const res = await fetch(`${API_BASE}/admin/requests`,{headers:{'Authorization':`Bearer ${token}`}});
-    const requests = await res.json();
-    const list = document.getElementById('admin-requests');
-    list.innerHTML='';
-    requests.forEach(req=>{
-      const div = document.createElement('div');
-      div.className='list-item';
-      div.innerHTML=`<span>${req.userName} requested ${req.action}</span>`;
-      const approve = document.createElement('button');
-      approve.textContent='Approve';
-      approve.onclick=async ()=> {await fetch(`${API_BASE}/admin/requests/${req._id}/approve`,{method:'POST',headers:{'Authorization':`Bearer ${token}`}}); fetchAdminQueue();};
-      const deny = document.createElement('button');
-      deny.textContent='Deny';
-      deny.onclick=async ()=> {await fetch(`${API_BASE}/admin/requests/${req._id}/deny`,{method:'POST',headers:{'Authorization':`Bearer ${token}`}}); fetchAdminQueue();};
-      div.appendChild(approve);
-      div.appendChild(deny);
-      list.appendChild(div);
-    });
-  } catch(err){ console.error(err); }
-}
+    async function deleteAnnouncement(id) {
+      if(!confirm("Delete this announcement?")) return;
+      await fetch(`${API_BASE}/announcements/${id}`, { method: "DELETE" });
+      loadAnnouncements();
+    }
 
-// Financials
-async function fetchAgents(){
-  try{
-    const res = await fetch(`${API_BASE}/agents`,{headers:{'Authorization':`Bearer ${token}`}});
-    const agents = await res.json();
-    const list = document.getElementById('agents-list');
-    list.innerHTML='';
-    agents.forEach(agent=>{
-      const div = document.createElement('div');
-      div.className='list-item';
-      div.innerHTML=`<span>${agent.fullName} - Pending: ${agent.pendingPayout}</span>`;
-      const checkbox = document.createElement('input');
-      checkbox.type='checkbox';
-      checkbox.onchange=(e)=>{
-        if(e.target.checked) selectedUsers.push(agent._id);
-        else selectedUsers = selectedUsers.filter(id=>id!==agent._id);
-      };
-      div.appendChild(checkbox);
-      list.appendChild(div);
-    });
-  } catch(err){ console.error(err); }
-}
-
-async function processPayouts(){
-  if(selectedUsers.length===0){ alert('Select agents first'); return; }
-  try{
-    await fetch(`${API_BASE}/payouts`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
-      body: JSON.stringify({agentIds:selectedUsers})
-    });
-    alert('Payouts processed');
-    selectedUsers=[];
-    fetchAgents();
-  } catch(err){ console.error(err); }
-}
-
-// Platform Settings
-async function saveSettings(){
-  const rate = document.getElementById('commission-rate').value;
-  const bank = document.getElementById('bank-details').value;
-  if(!rate || !bank){ alert('Fill all fields'); return; }
-  try{
-    await fetch(`${API_BASE}/settings`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
-      body: JSON.stringify({commissionRate:rate,bankDetails:bank})
-    });
-    alert('Settings saved');
-  } catch(err){ console.error(err); }
-}
-
-// Confirm modal
-function confirmAction(msg, callback){
-  document.getElementById('confirm-text').innerText = msg;
-  confirmCallback=callback;
-  document.getElementById('confirm-yes').onclick = async ()=>{
-    await confirmCallback();
-    closeModal('confirm-modal');
-  };
-  document.getElementById('confirm-modal').style.display='flex';
-}
-function closeModal(id){ document.getElementById(id).style.display='none'; }
-
-function logout(){
-  sessionStorage.clear();
-  window.location.href='home.html';
-}
-</script>
+    // Initial loads
+    loadOrders();
+    loadUsers();
+    loadAnnouncements();
+  </script>
 </body>
-    </html>
+</html>
