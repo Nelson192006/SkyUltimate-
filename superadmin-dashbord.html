@@ -1,291 +1,405 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Super Admin Dashboard - SkyUltimate</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0; padding: 0;
-      background: #f5f5f5;
-      color: #333;
-    }
-    header {
-      background: #C00000;
-      color: #fff;
-      padding: 15px;
-      text-align: center;
-    }
-    .dashboard {
-      display: grid;
-      grid-template-columns: 250px 1fr;
-      min-height: 100vh;
-    }
-    nav {
-      background: #fff;
-      border-right: 1px solid #ddd;
-      padding: 20px;
-    }
-    nav ul {
-      list-style: none;
-      padding: 0;
-    }
-    nav ul li {
-      margin-bottom: 15px;
-    }
-    nav ul li button {
-      background: #C00000;
-      color: #fff;
-      border: none;
-      padding: 10px;
-      width: 100%;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    nav ul li button:hover {
-      background: #900000;
-    }
-    main {
-      padding: 20px;
-    }
-    section {
-      display: none;
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    section.active {
-      display: block;
-    }
-    h2 {
-      margin-top: 0;
-      color: #C00000;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    table th, table td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: left;
-    }
-    table th {
-      background: #f2f2f2;
-    }
-    .btn {
-      background: #C00000;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .btn:hover {
-      background: #900000;
-    }
-    .announcement-form {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-    }
-    .announcement-form input {
-      flex: 1;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    .announcement {
-      background: #fff4f4;
-      padding: 10px;
-      margin: 8px 0;
-      border-left: 4px solid #C00000;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .announcement button {
-      background: transparent;
-      border: none;
-      color: #C00000;
-      cursor: pointer;
-      font-weight: bold;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SkyUltimate — Master Control Panel (Super Admin)</title>
+<style>
+  :root{
+    --brand:#C00000;
+    --muted:#666;
+    --card-bg:#fff;
+    --surface:#f7f7f8;
+    --danger:#c0392b;
+    --success:#27ae60;
+  }
+  *{box-sizing:border-box;font-family:Inter,Arial,Helvetica,sans-serif}
+  body{margin:0;background:linear-gradient(180deg,#fff,#f5f5f7);color:#222}
+  header{background:var(--brand);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+  header h1{font-size:20px;margin:0}
+  .wrap{max-width:1200px;margin:20px auto;padding:18px}
+  .layout{display:grid;grid-template-columns:320px 1fr;gap:18px}
+  nav.card{background:var(--card-bg);padding:14px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.06)}
+  nav .nav-item{display:block;padding:10px 12px;border-radius:8px;color:var(--brand);font-weight:700;margin-bottom:8px;cursor:pointer}
+  nav .nav-item:hover{background:#fff0f0}
+  main{min-height:70vh}
+  .panel{background:var(--card-bg);padding:14px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.05);margin-bottom:16px}
+  h2{color:var(--brand);margin:0 0 8px 0}
+  .row{display:flex;gap:10px;align-items:center}
+  input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd}
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{padding:10px;border:1px solid #eee;text-align:left}
+  th{background:var(--surface);color:var(--muted)}
+  .btn{background:var(--brand);color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+  .btn.secondary{background:#eee;color:var(--brand)}
+  .btn.warn{background:var(--danger)}
+  .small{font-size:13px;color:var(--muted)}
+  .muted{color:var(--muted)}
+  .flex{display:flex;gap:10px;align-items:center}
+  .actions button{margin-right:8px}
+  .banner{background:#fff4f4;border-left:4px solid var(--brand);padding:12px;border-radius:8px;margin-bottom:12px}
+  .success{background:#e8fff0;border-left:4px solid var(--success);padding:10px;border-radius:8px}
+  .search{display:flex;gap:8px;margin-top:8px;margin-bottom:8px}
+  .chip{display:inline-block;padding:6px 10px;border-radius:999px;background:#fff;border:1px solid #eee;color:var(--muted);font-weight:700}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:980px){.layout{grid-template-columns:1fr;}.grid-3{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-  <header>
-    <h1>Super Admin Dashboard</h1>
-  </header>
-  <div class="dashboard">
-    <nav>
-      <ul>
-        <li><button onclick="showSection('orders')">Orders</button></li>
-        <li><button onclick="showSection('users')">Users</button></li>
-        <li><button onclick="showSection('settings')">Settings</button></li>
-        <li><button onclick="showSection('announcements')">Announcements</button></li>
-      </ul>
+<header>
+  <h1>SkyUltimate — Master Control Panel</h1>
+  <div style="display:flex;gap:12px;align-items:center">
+    <div id="healthDot" class="chip">Checking...</div>
+    <button class="btn" id="logoutBtn">Logout</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="layout">
+    <nav class="card" aria-label="SuperAdmin nav">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="logo" style="width:56px;height:56px;border-radius:50%">
+        <div>
+          <div style="font-weight:800" id="saName">Super Admin</div>
+          <div class="small" id="saEmail">admin@example.com</div>
+        </div>
+      </div>
+
+      <div class="small muted">Navigation</div>
+      <div style="margin-top:8px">
+        <div class="nav-item" onclick="showPanel('dashboardPanel')">Dashboard</div>
+        <div class="nav-item" onclick="showPanel('usersPanel')">User Management</div>
+        <div class="nav-item" onclick="showPanel('requestsPanel')">Admin Request Queue</div>
+        <div class="nav-item" onclick="showPanel('financialPanel')">Financials & Payouts</div>
+        <div class="nav-item" onclick="showPanel('settingsPanel')">Platform Settings</div>
+        <div class="nav-item" onclick="showPanel('announcementsPanel')">Announcements</div>
+        <div class="nav-item" onclick="showPanel('referralsPanel')">Referrals</div>
+        <div class="nav-item" onclick="showPanel('feedbackPanel')">Feedback & Tickets</div>
+        <div class="nav-item" onclick="showPanel('logsPanel')">Logs & Export</div>
+        <div class="nav-item" onclick="showPanel('uptimePanel')">Uptime / Health</div>
+        <div class="nav-item" onclick="showPanel('notificationsPanel')">Send Notification</div>
+      </div>
+
+      <div style="margin-top:16px">
+        <div class="small muted">Quick actions</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+          <button class="btn" onclick="loadAll()">Refresh All</button>
+          <button class="btn secondary" onclick="openBlacklistHelper()">Blacklist helper</button>
+        </div>
+      </div>
+
     </nav>
+
     <main>
-      <section id="orders" class="active">
-        <h2>Orders Management</h2>
-        <table id="ordersTable">
-          <thead>
-            <tr>
-              <th>ID</th><th>Customer</th><th>Status</th><th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Orders will load dynamically -->
-          </tbody>
+      <!-- Dashboard -->
+      <section id="dashboardPanel" class="panel active">
+        <h2>Live Summary</h2>
+        <div class="grid-3">
+          <div class="panel" style="padding:12px">
+            <div class="small muted">Total Users</div>
+            <div style="font-size:22px;font-weight:800" id="statUsers">—</div>
+            <div class="small">Admins, Agents, Customers</div>
+          </div>
+          <div class="panel" style="padding:12px">
+            <div class="small muted">Active Orders</div>
+            <div style="font-size:22px;font-weight:800" id="statOrders">—</div>
+            <div class="small">Pending / In-transit</div>
+          </div>
+          <div class="panel" style="padding:12px">
+            <div class="small muted">Pending Payouts</div>
+            <div style="font-size:22px;font-weight:800" id="statPayouts">—</div>
+            <div class="small">Awaiting processing</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px">
+          <h3 style="margin-bottom:8px;color:var(--muted)">Recent Actions</h3>
+          <div id="recentActions" class="small muted">Loading recent actions...</div>
+        </div>
+      </section>
+
+      <!-- Users -->
+      <section id="usersPanel" class="panel" aria-live="polite">
+        <h2>User Management</h2>
+        <div class="search">
+          <input id="userSearch" placeholder="Search by name or email..." oninput="searchUsers()"/>
+          <button class="btn secondary" onclick="loadUsers()">Clear / Refresh</button>
+        </div>
+        <table id="usersTable" aria-describedby="userSearch">
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody></tbody>
         </table>
       </section>
 
-      <section id="users">
-        <h2>Users Management</h2>
-        <table id="usersTable">
-          <thead>
-            <tr>
-              <th>ID</th><th>Name</th><th>Role</th><th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Users will load dynamically -->
-          </tbody>
+      <!-- Admin Requests -->
+      <section id="requestsPanel" class="panel">
+        <h2>Admin Request Queue</h2>
+        <div id="adminRequestsList">Loading admin requests...</div>
+      </section>
+
+      <!-- Financials -->
+      <section id="financialPanel" class="panel">
+        <h2>Financials & Payouts</h2>
+        <div class="small muted">Agents with pending payouts</div>
+        <table id="agentsPayoutTable">
+          <thead><tr><th><input type="checkbox" id="selectAllAgents" onchange="toggleSelectAllAgents(this)"/></th><th>Agent</th><th>Pending (₦)</th><th>Bank</th></tr></thead>
+          <tbody></tbody>
         </table>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="btn" onclick="processSelectedPayouts()">Process Selected Payouts</button>
+        </div>
       </section>
 
-      <section id="settings">
-        <h2>System Settings</h2>
-        <p>Manage price ranges, bank details, and platform configuration.</p>
-        <button class="btn" onclick="updateSettings()">Update Settings</button>
+      <!-- Settings -->
+      <section id="settingsPanel" class="panel">
+        <h2>Platform Settings</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label>Commission rate (%)</label>
+            <input id="commissionRate" type="number" min="0" max="100"/>
+          </div>
+          <div>
+            <label>Company bank details</label>
+            <input id="companyBank" type="text" placeholder="Bank, Account number, Name"/>
+          </div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn" onclick="saveSettings()">Save Settings</button>
+          <button class="btn secondary" onclick="toggleAdminRegistration()">Toggle Admin Registration</button>
+        </div>
+        <div id="settingsMsg" class="small muted" style="margin-top:10px"></div>
       </section>
 
-      <section id="announcements">
+      <!-- Announcements -->
+      <section id="announcementsPanel" class="panel">
         <h2>Announcements</h2>
-        <form class="announcement-form" onsubmit="postAnnouncement(event)">
-          <input type="text" id="announcementInput" placeholder="Type new announcement..." required/>
-          <button type="submit" class="btn">Post</button>
-        </form>
-        <div id="announcementsList"></div>
+        <div class="small muted">Post a message that appears on all users' home pages</div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input id="announcementInput" placeholder="Type announcement message..."/>
+          <button class="btn" onclick="postAnnouncement()">Post</button>
+        </div>
+        <div id="announcementList" style="margin-top:12px"></div>
       </section>
+
+      <!-- Referrals -->
+      <section id="referralsPanel" class="panel">
+        <h2>Referral Codes & Rewards</h2>
+        <div style="display:flex;gap:8px">
+          <input id="refCode" placeholder="New referral code (e.g. WELCOME10)"/>
+          <input id="refReward" placeholder="Reward (e.g. 500)" type="number"/>
+          <button class="btn" onclick="createReferral()">Create</button>
+        </div>
+        <div id="referralList" style="margin-top:12px"></div>
+      </section>
+
+      <!-- Feedback / Tickets -->
+      <section id="feedbackPanel" class="panel">
+        <h2>Feedback & Tickets</h2>
+        <div class="small muted">View user ratings and open tickets</div>
+        <div id="feedbackList" style="margin-top:10px">Loading...</div>
+      </section>
+
+      <!-- Logs & Export -->
+      <section id="logsPanel" class="panel">
+        <h2>System Logs & Export</h2>
+        <div class="small muted">View system logs and export CSV for auditing</div>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <input id="logsFilter" placeholder="Filter by keyword (optional)"/>
+          <button class="btn" onclick="loadLogs()">Load</button>
+          <button class="btn secondary" onclick="exportLogsCSV()">Export as CSV</button>
+        </div>
+        <div id="logsContainer" style="margin-top:12px;max-height:320px;overflow:auto"></div>
+      </section>
+
+      <!-- Uptime / Health -->
+      <section id="uptimePanel" class="panel">
+        <h2>Uptime & Health</h2>
+        <div class="small muted">Ping API and optionally wake backend workers</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn" onclick="checkHealth()">Ping API</button>
+          <button class="btn secondary" onclick="attemptWake()">Wake API (if supported)</button>
+          <div id="healthMsg" class="small muted" style="margin-left:12px"></div>
+        </div>
+      </section>
+
+      <!-- Notifications -->
+      <section id="notificationsPanel" class="panel">
+        <h2>Send Notification</h2>
+        <div class="small muted">Send system notification (email/push/sms depending on backend)</div>
+        <div style="margin-top:8px;display:grid;grid-template-columns:1fr 220px;gap:8px">
+          <input id="notifyTarget" placeholder="target (all / admins / agents / user:email@example.com)"/>
+          <select id="notifyType"><option value="broadcast">Broadcast</option><option value="email">Email</option><option value="sms">SMS</option></select>
+        </div>
+        <div style="margin-top:8px">
+          <textarea id="notifyMessage" rows="4" placeholder="Your message here..."></textarea>
+        </div>
+        <div style="margin-top:8px">
+          <button class="btn" onclick="sendNotification()">Send</button>
+          <div id="notifyResult" class="small muted" style="margin-top:8px"></div>
+        </div>
+      </section>
+
     </main>
   </div>
+</div>
 
-  <script>
-    const API_BASE = "https://skyultimate-backend-api-structure.onrender.com"; 
+<!-- Blacklist helper modal (simple) -->
+<div id="blacklistModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center">
+  <div style="background:#fff;padding:16px;border-radius:12px;max-width:480px;width:92%;box-shadow:0 8px 24px rgba(0,0,0,.3)">
+    <h3 style="color:var(--brand)">Blacklist helper</h3>
+    <p class="small muted">Add email to server blacklist (if supported).</p>
+    <input id="blackEmail" placeholder="user@example.com"/>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn" onclick="addToBlacklist()">Add</button>
+      <button class="btn secondary" onclick="closeBlacklistHelper()">Close</button>
+    </div>
+    <div id="blackMsg" style="margin-top:8px" class="small muted"></div>
+  </div>
+</div>
 
-    function showSection(id) {
-      document.querySelectorAll("main section").forEach(sec => sec.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
-    }
+<script>
+/* ================= Configuration ================= */
+const API_BASE = 'https://skyultimate-backend-api-structure.onrender.com';
+const token = sessionStorage.getItem('token') || localStorage.getItem('token') || ''; // token may be in sessionStorage
+const headersAuth = token ? { 'Authorization': 'Bearer ' + token } : {};
+// Helper to attach JSON header + auth
+function jsonOptions(data, method='POST'){ return { method, headers: {...headersAuth, 'Content-Type':'application/json'}, body: JSON.stringify(data) }; }
 
-    // Fetch orders
-    async function loadOrders() {
-      try {
-        const res = await fetch(`${API_BASE}/orders`);
-        const orders = await res.json();
-        const tbody = document.querySelector("#ordersTable tbody");
-        tbody.innerHTML = "";
-        orders.forEach(o => {
-          tbody.innerHTML += `
-            <tr>
-              <td>${o._id}</td>
-              <td>${o.customerName}</td>
-              <td>${o.status}</td>
-              <td><button class="btn" onclick="deleteOrder('${o._id}')">Delete</button></td>
-            </tr>`;
-        });
-      } catch (err) {
-        console.error(err);
-      }
-    }
+/* ================= UI helpers ================= */
+function showPanel(id){
+  document.querySelectorAll('main section').forEach(s=>s.classList.remove('active'));
+  const target = document.getElementById(id);
+  if(target) target.classList.add('active');
+}
 
-    // Delete order
-    async function deleteOrder(id) {
-      if(!confirm("Delete this order?")) return;
-      await fetch(`${API_BASE}/orders/${id}`, { method: "DELETE" });
-      loadOrders();
-    }
+// Guard: require token
+if(!token){
+  alert('No token found. Please login as Super Admin first.');
+  window.location.href = 'index.html';
+}
 
-    // Fetch users
-    async function loadUsers() {
-      try {
-        const res = await fetch(`${API_BASE}/users`);
-        const users = await res.json();
-        const tbody = document.querySelector("#usersTable tbody");
-        tbody.innerHTML = "";
-        users.forEach(u => {
-          tbody.innerHTML += `
-            <tr>
-              <td>${u._id}</td>
-              <td>${u.name}</td>
-              <td>${u.role}</td>
-              <td><button class="btn" onclick="deleteUser('${u._id}')">Delete</button></td>
-            </tr>`;
-        });
-      } catch (err) {
-        console.error(err);
-      }
-    }
+/* ================= Load initial data ================= */
+async function loadAll(){
+  try{
+    await Promise.all([ loadStats(), loadUsers(), loadAdminRequests(), loadAgentsPayouts(), loadSettings(), loadAnnouncements(), loadReferrals(), loadFeedbacks(), loadLogs(), checkHealth() ]);
+  }catch(e){ console.error('Initial load error', e) }
+}
+loadAll();
 
-    // Delete user
-    async function deleteUser(id) {
-      if(!confirm("Delete this user?")) return;
-      await fetch(`${API_BASE}/users/${id}`, { method: "DELETE" });
+/* ================= LOGGED IN SUPERADMIN INFO ================= */
+async function loadStats(){
+  try{
+    const [uRes,oRes,pRes,recentRes] = await Promise.all([
+      fetch(`${API_BASE}/users`, { headers: headersAuth }),
+      fetch(`${API_BASE}/orders`, { headers: headersAuth }),
+      fetch(`${API_BASE}/agents/payouts`, { headers: headersAuth }),
+      fetch(`${API_BASE}/logs?limit=10`, { headers: headersAuth }),
+    ]);
+    const users = await (uRes.ok ? uRes.json() : []);
+    const orders = await (oRes.ok ? oRes.json() : []);
+    const payouts = await (pRes.ok ? pRes.json() : []);
+    const recent = await (recentRes.ok ? recentRes.json() : []);
+
+    document.getElementById('statUsers').textContent = Array.isArray(users)?users.length: '-';
+    document.getElementById('statOrders').textContent = Array.isArray(orders)?orders.filter(o=>o.status && o.status!=='completed').length : '-';
+    document.getElementById('statPayouts').textContent = Array.isArray(payouts) ? payouts.reduce((s,a)=>s + (a.pendingPayout||0),0) : '-';
+
+    // recent actions
+    const recentActions = document.getElementById('recentActions');
+    if(Array.isArray(recent) && recent.length){
+      recentActions.innerHTML = recent.slice(0,10).map(r=>`<div>${new Date(r.createdAt||Date.now()).toLocaleString()} — ${r.message || r.action || JSON.stringify(r)}</div>`).join('');
+    } else recentActions.textContent = 'No recent logs';
+  }catch(e){ console.error(e) }
+}
+
+/* ================= USERS: view, suspend, delete ================= */
+async function loadUsers(){
+  try{
+    const res = await fetch(`${API_BASE}/users`, { headers: headersAuth });
+    if(!res.ok) throw new Error('failed load users');
+    const users = await res.json();
+    const tbody = document.querySelector('#usersTable tbody');
+    tbody.innerHTML = '';
+    users.forEach(u=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${u.fullName || u.name || u.username || '-'}</td>
+        <td>${u.email || '-'}</td>
+        <td>${u.role || '-'}</td>
+        <td>${u.status || 'active'}</td>
+        <td class="actions">
+          <button class="btn secondary" onclick='viewUser("${u._id}")'>View</button>
+          <button class="btn" onclick='suspendUser("${u._id}")'>Suspend</button>
+          <button class="btn warn" onclick='deleteUser("${u._id}", "${u.email||''}")'>DELETE USER</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+    document.getElementById('saName').textContent = (users.find(x=>x.role==='superadmin')?.fullName) || sessionStorage.getItem('name') || 'Super Admin';
+    document.getElementById('saEmail').textContent = sessionStorage.getItem('email') || 'admin@company.com';
+  }catch(e){ console.error('loadUsers', e); document.querySelector('#usersTable tbody').innerHTML = '<tr><td colspan="5" class="small muted">Failed to load users</td></tr>';}
+}
+
+async function viewUser(userId){
+  try{
+    const res = await fetch(`${API_BASE}/users/${userId}`, { headers: headersAuth });
+    if(!res.ok) { alert('Failed to fetch user'); return; }
+    const u = await res.json();
+    alert(`User details:\n\nName: ${u.fullName||u.name}\nEmail: ${u.email}\nRole: ${u.role}\nStatus: ${u.status}`);
+  }catch(e){ alert('Error loading user') }
+}
+
+async function suspendUser(userId){
+  if(!confirm('Suspend this user?')) return;
+  try{
+    const res = await fetch(`${API_BASE}/users/suspend/${userId}`, { method:'POST', headers: headersAuth });
+    if(res.ok) { alert('User suspended'); loadUsers(); } else { alert('Failed to suspend'); }
+  }catch(e){ alert('Error'); }
+}
+
+async function deleteUser(userId, email){
+  if(!confirm(`DELETE this user (${email})? This cannot be undone.`)) return;
+  try{
+    const res = await fetch(`${API_BASE}/users/${userId}`, { method:'DELETE', headers: headersAuth });
+    if(res.ok){
+      // try to add to server blacklist if API supports it
+      try{ await fetch(`${API_BASE}/admin/blacklist`, jsonOptions({ email })); }catch(e){}
+      alert('User deleted');
       loadUsers();
-    }
+    } else { alert('Failed to delete user'); }
+  }catch(e){ alert('Error'); }
+}
 
-    // Update settings (stub)
-    async function updateSettings() {
-      alert("Settings update triggered. (Connect backend endpoint here)");
-    }
+/* ================= ADMIN REQUEST QUEUE ================= */
+async function loadAdminRequests(){
+  try{
+    const res = await fetch(`${API_BASE}/super-admin/requests?status=pending`, { headers: headersAuth });
+    if(!res.ok) { document.getElementById('adminRequestsList').textContent='No requests or failed to load'; return; }
+    const arr = await res.json();
+    if(!arr.length){ document.getElementById('adminRequestsList').textContent='No pending requests'; return; }
+    const html = arr.map(q=>`
+      <div style="padding:8px;border-bottom:1px solid #eee">
+        <div style="font-weight:700">${q.actionType || q.action || q.type} — ${q.targetUserName||q.targetUser}</div>
+        <div class="small muted">${q.reason||q.message||''}</div>
+        <div style="margin-top:6px">
+          <button class="btn" onclick="approveReq('${q._id}')">Approve</button>
+          <button class="btn secondary" onclick="denyReq('${q._id}')">Deny</button>
+        </div>
+      </div>`).join('');
+    document.getElementById('adminRequestsList').innerHTML = html;
+  }catch(e){ console.error(e); document.getElementById('adminRequestsList').textContent='Failed to load requests'; }
+}
 
-    // Announcements
-    async function loadAnnouncements() {
-      try {
-        const res = await fetch(`${API_BASE}/announcements`);
-        const anns = await res.json();
-        const list = document.getElementById("announcementsList");
-        list.innerHTML = "";
-        anns.forEach(a => {
-          list.innerHTML += `
-            <div class="announcement">
-              <span>${a.message}</span>
-              <button onclick="deleteAnnouncement('${a._id}')">✕</button>
-            </div>`;
-        });
-      } catch (err) {
-        console.error(err);
-      }
-    }
+async function approveReq(id){
+  if(!confirm('Approve request?')) return;
+  try{ const r = await fetch(`${API_BASE}/super-admin/requests/${id}/approve`, { method:'PATCH', headers: headersAuth }); if(r.ok){ alert('Approved'); loadAdminRequests(); } else alert('Failed'); }catch(e){alert('Error')}
+}
+async function denyReq(id){ if(!confirm('Deny request?')) return; try{ const r = await fetch(`${API_BASE}/super-admin/requests/${id}/deny`, { method:'PATCH', headers: headersAuth }); if(r.ok){ alert('Denied'); loadAdminRequests(); } else alert('Failed'); }catch(e){alert('Error')} }
 
-    async function postAnnouncement(e) {
-      e.preventDefault();
-      const message = document.getElementById("announcementInput").value;
-      await fetch(`${API_BASE}/announcements`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message })
-      });
-      document.getElementById("announcementInput").value = "";
-      loadAnnouncements();
-    }
-
-    async function deleteAnnouncement(id) {
-      if(!confirm("Delete this announcement?")) return;
-      await fetch(`${API_BASE}/announcements/${id}`, { method: "DELETE" });
-      loadAnnouncements();
-    }
-
-    // Initial loads
-    loadOrders();
-    loadUsers();
-    loadAnnouncements();
-  </script>
-</body>
-</html>
+/* ================= AGENTS PAYOUTS ================= */
+async function loadAgentsPayouts(){
+  try{
+    const res = await fetch(`${API_BASE}/agents/payouts`, { headers: headersAuth });
+    if(!res.ok) throw new Error('payouts fail');
+    const agents = await res.json();
+    const tbody = document.querySelector('#agentsPayoutTable tbody');
+    tbody.inne
