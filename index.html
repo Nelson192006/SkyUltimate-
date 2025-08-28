@@ -1,856 +1,124 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SkyUltimate — Fast & Reliable Delivery</title>
-<meta name="theme-color" content="#C00000" />
-
-<style>
-  /* --------------------- RESET / THEME --------------------- */
-  * { box-sizing:border-box; margin:0; padding:0; }
-  :root{
-    --brand:#C00000;
-    --brand-600:#a50000;
-    --ink:#1a1a1a;
-    --muted:#666;
-    --bg:#fff;
-    --card:#ffffff;
-    --shadow:0 10px 30px rgba(0,0,0,.15);
-    --radius:16px;
-    --ease:cubic-bezier(.22,.61,.36,1);
-  }
-  html,body{height:100%; background:var(--bg); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif; color:var(--ink);}
-
-  a{ color:inherit; text-decoration:none; }
-  button{ cursor:pointer; border:none; background:none; }
-
-  /* --------------------- SPLASH --------------------- */
-  .splash{
-    position:fixed; inset:0; background:var(--brand);
-    display:grid; place-items:center; z-index:9999; opacity:1; transition:opacity .6s var(--ease), visibility .6s var(--ease);
-  }
-  .splash--hidden{ opacity:0; visibility:hidden; }
-  .splash-logo{
-    width:min(160px,32vw); aspect-ratio:1/1; border-radius:50%;
-    background:#fff url("https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png") center/75% no-repeat;
-    box-shadow:0 20px 60px rgba(0,0,0,.35);
-    animation:popIn .9s var(--ease) both;
-  }
-  @keyframes popIn{ from{transform:scale(.8); opacity:0} to{transform:scale(1); opacity:1} }
-
-  /* --------------------- STICKY TOP / HAMBURGER --------------------- */
-  .top{
-    position:sticky; top:0; z-index:50; background:var(--brand);
-    display:flex; align-items:center; justify-content:space-between; padding:10px 14px;
-    box-shadow:0 6px 18px rgba(0,0,0,.15);
-  }
-  .brand{
-    display:flex; align-items:center; gap:10px; color:#fff; font-weight:700;
-  }
-  .brand img{ width:42px; height:42px; border-radius:50%; background:#fff; }
-  .role-badge{ font-size:.75rem; padding:3px 8px; border-radius:999px; background:rgba(255,255,255,.2); color:#fff; }
-
-  .top-actions{ display:flex; align-items:center; gap:8px; }
-  .btn{
-    padding:10px 14px; border-radius:12px; font-weight:700; transition:transform .12s var(--ease), background .2s var(--ease), color .2s var(--ease), box-shadow .2s var(--ease);
-  }
-  .btn:active{ transform:translateY(1px); }
-  .btn.white{ background:#fff; color:var(--brand); }
-  .btn.ghost{ background:transparent; color:#fff; border:1px solid rgba(255,255,255,.4); }
-  .btn.red{ background:var(--brand); color:#fff; box-shadow:0 10px 20px rgba(192,0,0,.25); }
-  .btn.red:hover{ background:var(--brand-600); }
-
-  .hamburger{
-    width:34px; height:24px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer;
-  }
-  .hamburger span{ height:3px; width:100%; background:#fff; border-radius:2px; transition:transform .25s var(--ease), opacity .25s var(--ease); }
-  .hamburger.active span:nth-child(1){ transform:translateY(10.5px) rotate(45deg); }
-  .hamburger.active span:nth-child(2){ opacity:0; }
-  .hamburger.active span:nth-child(3){ transform:translateY(-10.5px) rotate(-45deg); }
-
-  /* --------------------- DRAWER --------------------- */
-  .drawer{
-    position:fixed; inset:0 0 0 auto; width:min(300px,86vw);
-    transform:translateX(-110%); transition:transform .35s var(--ease);
-    z-index:60; display:flex;
-  }
-  .drawer.open{ transform:translateX(0); }
-  .drawer aside{
-    background:#fff; color:var(--brand); width:100%; height:100%; padding:18px;
-    box-shadow:var(--shadow); overflow:auto;
-  }
-  .drawer h3{ margin-bottom:12px; font-size:1.1rem; }
-  .menu-item{
-    padding:14px 10px; border-radius:10px; font-weight:700; cursor:pointer; margin-bottom:6px;
-    transition:background .2s var(--ease), color .2s var(--ease);
-  }
-  .menu-item:hover{ background:#ffe7e7; color:var(--brand-600); }
-  /* drawer click-away only closes drawer, not overlays */
-  .drawer-scrim{
-    content:""; position:fixed; inset:0; background:rgba(0,0,0,.15); z-index:55; display:none;
-  }
-  .drawer-scrim.show{ display:block; }
-
-  /* --------------------- HERO --------------------- */
-  .hero{
-    background:linear-gradient(180deg, #C00000 0%, #d31a1a 55%, #C00000 100%);
-    color:#fff; padding:48px 16px 28px;
-    text-align:center; position:relative; overflow:hidden;
-  }
-  .hero h1{ font-size:clamp(1.6rem, 4vw, 2.2rem); line-height:1.15; margin:6px auto 10px; max-width:780px; }
-  .hero p{ opacity:.95; max-width:720px; margin:0 auto 18px; }
-  .cta-wrap{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:8px; }
-  .cta-wrap .btn.white:hover{ background:#f3f3f3; }
-
-  /* --------------------- SECTIONS --------------------- */
-  .section{ padding:32px 16px; }
-  .section h2{ text-align:center; margin-bottom:6px; font-size:clamp(1.3rem,3.5vw,1.8rem); color:#b10000; }
-  .section p.lead{ text-align:center; color:var(--muted); margin-bottom:20px; }
-
-  .grid{ display:grid; gap:16px; grid-template-columns:repeat(12,1fr); max-width:1100px; margin:0 auto; }
-
-  .card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; }
-  .card h3{ color:var(--brand); margin-bottom:6px; }
-  .muted{ color:var(--muted); }
-
-  /* Services */
-  .services .card{ grid-column:span 12; display:flex; gap:12px; align-items:flex-start; }
-  .services .card .ico{ width:44px; height:44px; border-radius:12px; background:#ffe7e7; display:grid; place-items:center; font-size:22px; }
-  @media(min-width:700px){
-    .services .card{ grid-column:span 6; }
-  }
-  @media(min-width:980px){
-    .services .card{ grid-column:span 3; }
-  }
-
-  /* Why choose us */
-  .reasons .card{ grid-column:span 12; }
-  @media(min-width:800px){
-    .reasons .card{ grid-column:span 4; }
-  }
-
-  /* Price Estimator */
-  .estimator .card{ grid-column:span 12; }
-  .form{ display:grid; gap:10px; }
-  .form input, .form select{
-    border:1px solid #ddd; padding:12px 12px; border-radius:12px; font-size:1rem; width:100%;
-  }
-  .form .row{ display:grid; gap:10px; grid-template-columns:1fr; }
-  @media(min-width:720px){ .form .row{ grid-template-columns:1fr 1fr; } }
-  .est-result{ margin-top:10px; font-weight:700; color:var(--brand); min-height:24px; }
-
-  /* Contact */
-  .contact .card{ grid-column:span 12; }
-  .contact-list{ display:grid; gap:10px; }
-  .contact-item{ display:flex; gap:10px; align-items:center; padding:12px; border:1px dashed #ffd3d3; border-radius:12px; }
-  .contact-item b{ color:var(--brand); }
-
-  /* Main dashboard CTA */
-  .main-cta{
-    margin:26px auto 34px; display:flex; justify-content:center;
-  }
-  .big-red{
-    background:var(--brand); color:#fff; padding:18px 22px; border-radius:16px;
-    font-weight:800; font-size:1.05rem; letter-spacing:.2px; box-shadow:0 16px 30px rgba(192,0,0,.35);
-  }
-  .big-red[disabled]{ background:#bbb; color:#fff; box-shadow:none; cursor:not-allowed; }
-
-  /* --------------------- FULLSCREEN OVERLAYS --------------------- */
-  .overlay{
-    position:fixed; inset:0; background:rgba(255,255,255,.98); color:var(--brand);
-    display:none; z-index:80; padding:24px; overflow:auto;
-    animation:fadeIn .25s var(--ease) both;
-  }
-  @keyframes fadeIn{ from{opacity:.6; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
-  .overlay .close{ position:sticky; top:12px; float:right; font-weight:800; font-size:20px; padding:8px 12px; border-radius:12px; border:1px solid #f1b3b3; color:var(--brand); }
-  .overlay h2{ margin:8px 0 10px; }
-  .overlay p{ color:#7c0000; line-height:1.6; margin-bottom:10px; }
-
-  /* --------------------- MODALS (Login / Register / Reset) --------------------- */
-  .modal-scrim{
-    position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; place-items:center; z-index:90;
-  }
-  .modal{ width:min(520px,92vw); background:#fff; border-radius:16px; box-shadow:var(--shadow); padding:16px; }
-  .tabs{ display:flex; gap:10px; background:#fafafa; border-radius:12px; padding:6px; margin-bottom:12px; }
-  .tab{ flex:1; text-align:center; padding:10px; border-radius:10px; font-weight:800; color:#a10000; }
-  .tab.active{ background:#ffe7e7; color:#b10000; }
-  .inputs{ display:grid; gap:10px; }
-  .input{ position:relative; }
-  .input input, .input select{
-    width:100%; border:1px solid #ddd; border-radius:12px; padding:12px 40px 12px 12px; font-size:1rem;
-  }
-  .input .toggle-eye{ position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; color:#999; }
-  .error{ color:#b10000; font-size:.9rem; min-height:18px; }
-  .help{ color:#777; font-size:.9rem; }
-
-  /* --------------------- ANIMATIONS / SCROLL --------------------- */
-  .fade-up{ opacity:0; transform:translateY(14px); transition:opacity .6s var(--ease), transform .6s var(--ease); }
-  .fade-up.in{ opacity:1; transform:translateY(0); }
-
-  /* sticky active nav highlight (when we add section anchors) */
-  .section-marker{ position:relative; }
-  nav.sticky{ position:sticky; top:60px; }
-
-  /* --------------------- BACK TO TOP --------------------- */
-  .back-to-top{
-    position:fixed; right:14px; bottom:14px; z-index:40;
-    padding:10px 14px; background:#fff; color:var(--brand); border-radius:999px; border:1px solid #ffc4c4;
-    box-shadow:0 10px 24px rgba(0,0,0,.12); display:none;
-  }
-  .back-to-top.show{ display:block; }
-
-  /* --------------------- FOOTER --------------------- */
-  footer{ padding:26px 14px 40px; text-align:center; color:#9c9c9c; }
-</style>
-</head>
-<body>
-
-<!-- ------------- SPLASH ------------- -->
-<div class="splash" id="splash">
-  <div class="splash-logo" aria-label="SkyUltimate"></div>
-</div>
-
-<!-- ------------- TOP BAR ------------- -->
-<header class="top">
-  <div class="brand">
-    <img alt="SkyUltimate" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" />
-    <div>
-      <div style="font-size:1rem;line-height:1;">SkyUltimate</div>
-      <div id="roleBadge" class="role-badge" style="display:none;">Guest</div>
-    </div>
-  </div>
-
-  <div class="top-actions">
-    <button id="btnLogin" class="btn white">Login</button>
-    <button id="btnRegister" class="btn ghost">Register</button>
-    <button id="btnLogout" class="btn ghost" style="display:none;">Logout</button>
-    <div id="hamburger" class="hamburger" aria-label="Open menu" title="Menu">
-      <span></span><span></span><span></span>
-    </div>
-  </div>
-</header>
-
-<!-- ------------- DRAWER ------------- -->
-<div id="drawerScrim" class="drawer-scrim"></div>
-<div id="drawer" class="drawer" aria-hidden="true">
-  <aside>
-    <h3>Explore</h3>
-    <div class="menu-item" data-overlay="about">About Us</div>
-    <div class="menu-item" data-overlay="mission">Mission & Vision</div>
-    <div class="menu-item" data-overlay="faq">FAQ / Support</div>
-    <hr style="margin:10px 0; border:none; border-top:1px solid #ffd3d3;" />
-    <div class="menu-item" data-action="close">Close</div>
-  </aside>
-</div>
-
-<!-- ------------- HERO ------------- -->
-<section class="hero" id="hero">
-  <div class="fade-up in">
-    <h1>Move anything across town — fast, safe, and at the best price.</h1>
-    <p>From urgent documents to everyday parcels, SkyUltimate delivers with speed and care. Track live, pay securely, and get updates instantly.</p>
-    <div class="cta-wrap">
-      <button id="ctaEstimate" class="btn white">Quick Price Estimate</button>
-      <button id="ctaContact" class="btn ghost">Contact Support</button>
-    </div>
-  </div>
-</section>
-
-<!-- ------------- SERVICES ------------- -->
-<section class="section" id="services">
-  <h2>Services</h2>
-  <p class="lead">Select a service that fits your need today.</p>
-  <div class="grid services">
-    <article class="card fade-up"><div class="ico">📄</div><div><h3>Documents</h3><p class="muted">Secure pickup & delivery for contracts, transcripts, permits and more.</p></div></article>
-    <article class="card fade-up"><div class="ico">📦</div><div><h3>Parcels</h3><p class="muted">Door-to-door parcel delivery with status updates at every step.</p></div></article>
-    <article class="card fade-up"><div class="ico">🛒</div><div><h3>Groceries</h3><p class="muted">Send or receive groceries, medicine, or daily needs reliably.</p></div></article>
-    <article class="card fade-up"><div class="ico">🚚</div><div><h3>General Goods</h3><p class="muted">Bulk, fragile, or special-care items — we’ve got you covered.</p></div></article>
-  </div>
-</section>
-
-<!-- ------------- WHY CHOOSE US ------------- -->
-<section class="section" id="why">
-  <h2>Why Choose SkyUltimate</h2>
-  <p class="lead">What sets us apart every single day.</p>
-  <div class="grid reasons">
-    <article class="card fade-up"><h3>Live Tracking</h3><p class="muted">Follow your delivery in real time from pickup to drop-off.</p></article>
-    <article class="card fade-up"><h3>Fast Turnaround</h3><p class="muted">Optimized routing for the quickest possible deliveries.</p></article>
-    <article class="card fade-up"><h3>Reliable Support</h3><p class="muted">We’re here when you need us — on WhatsApp and phone.</p></article>
-  </div>
-</section>
-
-<!-- ------------- PRICE ESTIMATOR ------------- -->
-<section class="section estimator" id="estimator">
-  <h2>Quick Price Estimator</h2>
-  <p class="lead">Get an instant range. Exact price shows after login.</p>
-  <div class="grid">
-    <div class="card fade-up">
-      <form id="estimateForm" class="form" autocomplete="off">
-        <div class="row">
-          <select id="itemType" required>
-            <option value="">Item Type</option>
-            <option value="document">Document</option>
-            <option value="parcel">Parcel</option>
-            <option value="general">General Goods</option>
-          </select>
-          <input id="weight" type="number" min="0" step="0.1" placeholder="Weight (kg)" required />
-        </div>
-        <input id="fromAddr" type="text" placeholder="Pickup Address (City/Area)" required />
-        <input id="toAddr" type="text" placeholder="Delivery Address (City/Area)" required />
-        <button class="btn red" type="submit">Estimate</button>
-        <div id="estResult" class="est-result"></div>
-        <div class="help">For a precise quote & bank details, please <b>Login</b> and place an order.</div>
-      </form>
-    </div>
-  </div>
-</section>
-
-<!-- ------------- CONTACT ------------- -->
-<section class="section contact" id="contact">
-  <h2>Contact Support</h2>
-  <p class="lead">We usually respond within minutes during business hours.</p>
-  <div class="grid">
-    <div class="card fade-up">
-      <div class="contact-list">
-        <div class="contact-item"><b>WhatsApp:</b> <a href="https://wa.me/2349128884830" target="_blank" rel="noopener">09128884830</a></div>
-        <div class="contact-item"><b>Phone:</b> <a href="tel:09128884830">09128884830</a></div>
-        <div class="contact-item"><b>Email:</b> <a href="mailto:nelsongodspower24@gmail.com">nelsongodspower24@gmail.com</a></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ------------- BIG DASHBOARD CTA ------------- -->
-<div class="main-cta">
-  <button id="goDashboard" class="big-red" disabled title="Please login or register first">
-    Go to my dashboard
-  </button>
-</div>
-
-<!-- ------------- FOOTER ------------- -->
-<footer>© <span id="year"></span> SkyUltimate Delivery Service. All rights reserved.</footer>
-
-<!-- ------------- BACK TO TOP ------------- -->
-<button id="btnTop" class="back-to-top" aria-label="Back to Top">↑ Top</button>
-
-<!-- ------------- FULLSCREEN OVERLAYS (MENU-CONTROLLED) ------------- -->
-<!-- ABOUT -->
-<article id="ov-about" class="overlay" aria-hidden="true">
-  <button class="close" data-close="about">Close</button>
-  <h2>About Us</h2>
-  <p>Welcome to SkyUltimate Delivery Service, where we're dedicated to taking your delivery experience to new heights! Founded in 2024, our company was born from a simple idea: to create a delivery service that's not just fast and reliable, but also puts the customer first.</p>
-  <p>Whether it’s urgent documents, parcels, groceries, or general goods, our mission is to move them safely, quickly, and transparently. We’re building a platform that’s friendly to customers, rewarding to agents, and powerful for operations teams.</p>
-</article>
-
-<!-- MISSION & VISION -->
-<article id="ov-mission" class="overlay" aria-hidden="true">
-  <button class="close" data-close="mission">Close</button>
-  <h2>Our Mission</h2>
-  <p>To provide a seamless, reliable, and efficient delivery experience that exceeds our customers’ expectations through technology, transparency, and great people.</p>
-  <h2>Our Vision</h2>
-  <p>To be the industry leader in delivery services, known for our speed, reliability, and unwavering commitment to customer satisfaction.</p>
-</article>
-
-<!-- FAQ / SUPPORT -->
-<article id="ov-faq" class="overlay" aria-hidden="true">
-  <button class="close" data-close="faq">Close</button>
-  <h2>FAQ & Support</h2>
-  <p><b>How do I track my package?</b> You’ll receive a tracking number after placing an order. Use it in your dashboard to see live status.</p>
-  <p><b>Delivery hours:</b> 9:00 AM – 6:00 PM, Mon–Sat. Special arrangements are possible — contact support.</p>
-  <p><b>Contact:</b> WhatsApp / Phone: <a href="https://wa.me/2349128884830" target="_blank">09128884830</a> — Email: <a href="mailto:nelsongodspower24@gmail.com">nelsongodspower24@gmail.com</a></p>
-</article>
-
-<!-- ------------- AUTH MODALS ------------- -->
-<!-- Login/Register wrapper (tabs inside) -->
-<div id="authScrim" class="modal-scrim" role="dialog" aria-modal="true">
-  <div class="modal">
-    <div class="tabs">
-      <button id="tabLogin" class="tab active" type="button">Login</button>
-      <button id="tabRegister" class="tab" type="button">Register</button>
-    </div>
-
-    <!-- LOGIN -->
-    <div id="panelLogin">
-      <div class="inputs">
-        <div class="input">
-          <select id="loginRole">
-            <option value="">Select Role</option>
-            <option value="customer">Customer</option>
-            <option value="agent">Agent</option>
-            <option value="admin" class="opt-admin">Admin</option>
-            <option value="superadmin" class="opt-super">Super Admin</option>
-          </select>
-        </div>
-        <div class="input"><input id="loginEmail" type="email" placeholder="Email" /></div>
-        <div class="input">
-          <input id="loginPassword" type="password" placeholder="Password" />
-          <span class="toggle-eye" data-eye="#loginPassword">👁</span>
-        </div>
-        <div class="error" id="loginErr"></div>
-        <button id="btnDoLogin" class="btn red">Login</button>
-        <div class="help"><a href="#" id="linkForgot">Forgot password?</a></div>
-      </div>
-    </div>
-
-    <!-- REGISTER -->
-    <div id="panelRegister" style="display:none;">
-      <div class="inputs">
-        <div class="input">
-          <select id="regRole">
-            <option value="">Register as</option>
-            <option value="customer">Customer</option>
-            <option value="agent">Agent</option>
-            <option value="admin" class="opt-admin">Admin</option>
-            <option value="superadmin" class="opt-super">Super Admin</option>
-          </select>
-        </div>
-        <div class="input"><input id="regName" type="text" placeholder="Full Name" /></div>
-        <div class="input"><input id="regEmail" type="email" placeholder="Email" /></div>
-        <div class="input">
-          <input id="regPassword" type="password" placeholder="Password (min 6 chars)" />
-          <span class="toggle-eye" data-eye="#regPassword">👁</span>
-        </div>
-        <!-- Optional: agent bank fields (lightweight) -->
-        <div id="agentBankWrap" style="display:none;">
-          <div class="input"><input id="agentBankName" type="text" placeholder="Bank Name (Agents)" /></div>
-          <div class="input"><input id="agentBankNumber" type="text" placeholder="Account Number (Agents)" /></div>
-        </div>
-        <div class="error" id="regErr"></div>
-        <button id="btnDoRegister" class="btn red">Create Account</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Forgot Password -->
-<div id="resetScrim" class="modal-scrim" role="dialog" aria-modal="true">
-  <div class="modal">
-    <h3 style="margin-bottom:10px;color:var(--brand)">Reset your password</h3>
-    <div class="inputs">
-      <div class="input"><input id="fpEmail" type="email" placeholder="Your email" /></div>
-      <div class="error" id="fpErr"></div>
-      <button id="btnReset" class="btn red">Send reset link</button>
-      <div class="help">We’ll email you a link to create a new password.</div>
-    </div>
-  </div>
-</div>
-
 <script>
-/* =========================================================
-   CONFIG / STATE
-========================================================= */
-const API = 'https://skyultimate-backend-api-structure.onrender.com';
+const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
+let authToken = localStorage.getItem("authToken") || null;
 
-const $ = (sel, root=document) => root.querySelector(sel);
-const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
-
-const state = {
-  token: sessionStorage.getItem('token') || null,
-  role:  sessionStorage.getItem('role') || null,
-  name:  sessionStorage.getItem('name') || null,
-  adminRegEnabled: false,
-  superAdminAvailable: false, // true if first-time superadmin is allowed
-};
-
-/* =========================================================
-   SPLASH → HOME
-========================================================= */
-const splash = $('#splash');
-setTimeout(()=> splash.classList.add('splash--hidden'), 3000);
-
-/* =========================================================
-   YEAR
-========================================================= */
-$('#year').textContent = new Date().getFullYear();
-
-/* =========================================================
-   HAMBURGER + DRAWER (click-away closes drawer only)
-========================================================= */
-const drawer = $('#drawer');
-const drawerScrim = $('#drawerScrim');
-const hamburger = $('#hamburger');
-
-function openDrawer(){
-  drawer.classList.add('open');
-  drawerScrim.classList.add('show');
-  hamburger.classList.add('active');
-}
-function closeDrawer(){
-  drawer.classList.remove('open');
-  drawerScrim.classList.remove('show');
-  hamburger.classList.remove('active');
-}
-
-hamburger.addEventListener('click', ()=>{
-  if(drawer.classList.contains('open')) closeDrawer(); else openDrawer();
-});
-drawerScrim.addEventListener('click', closeDrawer);
-
-/* =========================================================
-   FULLSCREEN OVERLAYS (menu controls; outside click DOES NOT close)
-========================================================= */
-const overlays = {
-  about: $('#ov-about'),
-  mission: $('#ov-mission'),
-  faq: $('#ov-faq'),
-};
-function showOverlay(key){
-  Object.values(overlays).forEach(o=>o.style.display='none');
-  if(overlays[key]) overlays[key].style.display='block';
-}
-function hideOverlay(key){
-  if(overlays[key]) overlays[key].style.display='none';
-}
-
-$$('.menu-item').forEach(item=>{
-  const ov = item.getAttribute('data-overlay');
-  const act = item.getAttribute('data-action');
-  item.addEventListener('click', ()=>{
-    if(act==='close'){ closeDrawer(); return; }
-    if(ov){
-      // toggle if same overlay open
-      const isOpen = overlays[ov].style.display==='block';
-      Object.values(overlays).forEach(o=>o.style.display='none');
-      showOverlay(ov);
-      if(isOpen){ hideOverlay(ov); }
-      closeDrawer(); // close drawer after choosing overlay
-    }
-  });
-});
-
-$$('.overlay .close').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    const key = btn.getAttribute('data-close');
-    hideOverlay(key);
-  });
-});
-
-/* =========================================================
-   AUTH UI
-========================================================= */
-const roleBadge = $('#roleBadge');
-const btnLogin = $('#btnLogin');
-const btnRegister = $('#btnRegister');
-const btnLogout = $('#btnLogout');
-const goDashboard = $('#goDashboard');
-
-function syncAuthUI(){
-  const loggedIn = !!state.token;
-  btnLogin.style.display = loggedIn ? 'none' : 'inline-flex';
-  btnRegister.style.display = loggedIn ? 'none' : 'inline-flex';
-  btnLogout.style.display = loggedIn ? 'inline-flex' : 'none';
-  roleBadge.style.display = 'block';
-  roleBadge.textContent = loggedIn ? (state.role || 'User') : 'Guest';
-
-  if(loggedIn){
-    goDashboard.disabled = false;
-    goDashboard.removeAttribute('title');
-    goDashboard.textContent = dashboardCtaText(state.role);
-  }else{
-    goDashboard.disabled = true;
-    goDashboard.title = 'Please login or register first';
-    goDashboard.textContent = 'Go to my dashboard';
-  }
-}
-function dashboardCtaText(role){
-  switch((role||'').toLowerCase()){
-    case 'customer': return 'Go to My Dashboard';
-    case 'agent': return 'Go to Delivery Board';
-    case 'admin': return 'Go to Operations Hub';
-    case 'superadmin': return 'Go to Master Control Panel';
-    default: return 'Go to my dashboard';
-  }
-}
-syncAuthUI();
-
-/* =========================================================
-   DASHBOARD CTA (role-based redirects)
-========================================================= */
-goDashboard.addEventListener('click', ()=>{
-  if(!state.token){ // safety
-    $('#authScrim').style.display='grid';
-    return;
-  }
-  const r = (state.role||'').toLowerCase();
-  const map = {
-    customer: 'customer-dashboard.html',
-    agent: 'agent-dashboard.html',
-    admin: 'admin-dashboard.html',
-    superadmin: 'super-admin-dashboard.html',
-  };
-  window.location.href = map[r] || 'index.html';
-});
-
-/* =========================================================
-   AUTH MODALS + TABS
-========================================================= */
-const authScrim = $('#authScrim');
-const tabLogin = $('#tabLogin');
-const tabRegister = $('#tabRegister');
-const panelLogin = $('#panelLogin');
-const panelRegister = $('#panelRegister');
-
-btnLogin.addEventListener('click', ()=>{ authScrim.style.display='grid'; setTab('login'); });
-btnRegister.addEventListener('click', ()=>{ authScrim.style.display='grid'; setTab('register'); });
-
-function setTab(key){
-  const isLogin = key==='login';
-  tabLogin.classList.toggle('active', isLogin);
-  tabRegister.classList.toggle('active', !isLogin);
-  panelLogin.style.display = isLogin ? 'block':'none';
-  panelRegister.style.display = isLogin ? 'none':'block';
-}
-tabLogin.addEventListener('click', ()=>setTab('login'));
-tabRegister.addEventListener('click', ()=>setTab('register'));
-
-/* password visibility toggles */
-$$('.toggle-eye').forEach(eye=>{
-  eye.addEventListener('click', ()=>{
-    const target = eye.getAttribute('data-eye');
-    const input = $(target);
-    input.type = (input.type==='password') ? 'text':'password';
-  });
-});
-
-/* =========================================================
-   ADMIN/SUPERADMIN FLAGS (for role visibility)
-========================================================= */
-async function refreshRoleFlags(){
-  try{
-    // Check if Super Admin exists
-    // Backend should return { exists: boolean }
-    const r1 = await fetch(`${API}/auth/check-super-admin`);
-    const j1 = await r1.json();
-    state.superAdminAvailable = !j1.exists; // Only show option if none exists yet
-  }catch(e){
-    state.superAdminAvailable = false; // safe default
-  }
-  try{
-    // Check if Admin registration is enabled
-    // Backend should return { enabled: boolean }
-    const r2 = await fetch(`${API}/settings/admin-registration-enabled`);
-    const j2 = await r2.json();
-    state.adminRegEnabled = !!j2.enabled;
-  }catch(e){
-    state.adminRegEnabled = false;
-  }
-
-  // Toggle role options in selects
-  $$('.opt-admin').forEach(opt => opt.style.display = state.adminRegEnabled ? 'block':'none');
-  $$('.opt-super').forEach(opt => opt.style.display = state.superAdminAvailable ? 'block':'none');
-}
-refreshRoleFlags();
-
-/* =========================================================
-   LOGIN
-========================================================= */
-$('#btnDoLogin').addEventListener('click', async ()=>{
-  const role = $('#loginRole').value.trim().toLowerCase();
-  const email = $('#loginEmail').value.trim();
-  const password = $('#loginPassword').value;
-  const err = $('#loginErr');
-
-  if(!role || !email || !password){
-    err.textContent = 'Please fill in all fields.'; return;
-  }
-  err.textContent = 'Authenticating...';
-
-  try{
-    const res = await fetch(`${API}/auth/login`,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({role, email, password})
+// --- REGISTER ---
+async function registerUser(name, email, password, role = "Customer") {
+  try {
+    const res = await fetch(`${API_BASE}/users/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password, role }),
     });
     const data = await res.json();
-    if(!res.ok || !data.token){ err.textContent = data.message || 'Invalid credentials. Please check your role and login details.'; return; }
-
-    // Save session
-    state.token = data.token;
-    state.role = data.role || role;
-    state.name = data.name || 'User';
-    sessionStorage.setItem('token', state.token);
-    sessionStorage.setItem('role', state.role);
-    sessionStorage.setItem('name', state.name);
-
-    err.textContent = '';
-    authScrim.style.display='none';
-    syncAuthUI();
-  }catch(e){
-    err.textContent = 'Network error. Please try again.';
+    if (!res.ok) throw new Error(data.error || "Registration failed");
+    alert("Registration successful! Please log in.");
+    return data;
+  } catch (err) {
+    alert(err.message);
   }
-});
-
-/* =========================================================
-   REGISTER (with first-time Super Admin)
-========================================================= */
-const regRole = $('#regRole');
-const agentBankWrap = $('#agentBankWrap');
-
-regRole.addEventListener('change', ()=>{
-  const r = regRole.value;
-  agentBankWrap.style.display = (r==='agent') ? 'block' : 'none';
-});
-
-$('#btnDoRegister').addEventListener('click', async ()=>{
-  const role = $('#regRole').value.trim().toLowerCase();
-  const name = $('#regName').value.trim();
-  const email = $('#regEmail').value.trim();
-  const password = $('#regPassword').value;
-  const bankName = $('#agentBankName').value.trim();
-  const bankNumber = $('#agentBankNumber').value.trim();
-  const err = $('#regErr');
-
-  if(!role || !name || !email || !password){ err.textContent='Please fill in all fields.'; return; }
-  if(password.length < 6){ err.textContent='Password must be at least 6 characters.'; return; }
-  if(role==='admin' && !state.adminRegEnabled){ err.textContent='Admin registration is currently disabled.'; return; }
-  if(role==='superadmin' && !state.superAdminAvailable){ err.textContent='Super Admin already exists.'; return; }
-
-  const payload = { role, name, email, password };
-  if(role==='agent'){ payload.bankName = bankName; payload.accountNumber = bankNumber; }
-
-  err.textContent = 'Creating account...';
-  try{
-    const res = await fetch(`${API}/auth/register`,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if(!res.ok || !data.token){ err.textContent = data.message || 'Registration failed.'; return; }
-
-    // Save session and go back to homepage (already visible)
-    state.token = data.token;
-    state.role = data.role || role;
-    state.name = data.name || name;
-    sessionStorage.setItem('token', state.token);
-    sessionStorage.setItem('role', state.role);
-    sessionStorage.setItem('name', state.name);
-
-    err.textContent = '';
-    authScrim.style.display='none';
-    syncAuthUI();
-
-    // If someone just created Super Admin, hide that option going forward
-    if(role==='superadmin'){ state.superAdminAvailable = false; refreshRoleFlags(); }
-  }catch(e){
-    err.textContent = 'Network error. Please try again.';
-  }
-});
-
-/* =========================================================
-   LOGOUT
-========================================================= */
-btnLogout.addEventListener('click', ()=>{
-  sessionStorage.clear();
-  state.token = null; state.role = null; state.name = null;
-  syncAuthUI();
-});
-
-/* =========================================================
-   FORGOT PASSWORD
-========================================================= */
-const resetScrim = $('#resetScrim');
-$('#linkForgot').addEventListener('click', (e)=>{ e.preventDefault(); resetScrim.style.display='grid'; });
-$('#btnReset').addEventListener('click', async ()=>{
-  const email = $('#fpEmail').value.trim();
-  const err = $('#fpErr');
-  if(!email){ err.textContent='Please enter your email.'; return; }
-  err.textContent='Sending link...';
-  try{
-    const res = await fetch(`${API}/auth/request-password-reset`,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ email })
-    });
-    const data = await res.json();
-    if(!res.ok){ err.textContent = data.message || 'Could not send reset link.'; return; }
-    err.textContent = 'Reset link sent. Please check your email.';
-  }catch(e){
-    err.textContent='Network error. Please try again.';
-  }
-});
-// close reset modal by pressing ESC
-document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ resetScrim.style.display='none'; authScrim.style.display='none'; }});
-
-/* =========================================================
-   QUICK PRICE ESTIMATOR (anonymous; falls back to local calc)
-========================================================= */
-$('#estimateForm').addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  const itemType = $('#itemType').value;
-  const weight = parseFloat($('#weight').value||'0');
-  const pickup = $('#fromAddr').value.trim();
-  const delivery = $('#toAddr').value.trim();
-  const result = $('#estResult');
-
-  if(!itemType || !weight || !pickup || !delivery){ result.textContent='Please complete all fields.'; return; }
-
-  // Try backend calculator (no token); if it rejects, fallback to heuristic
-  try{
-    const res = await fetch(`${API}/orders/calculate`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ itemType, weight, pickup, delivery })
-    });
-    if(res.ok){
-      const data = await res.json();
-      if(typeof data.price !== 'undefined'){
-        result.textContent = `Estimated Price: ₦${data.price} (final amount shows after login)`;
-        return;
-      }
-    }
-    throw new Error('No backend estimate');
-  }catch(_){
-    // Fallback heuristic
-    const base = (itemType==='document') ? 1200 : (itemType==='parcel') ? 1500 : 2000;
-    const kg = Math.max(0, weight - 1);
-    const est = Math.round(base + kg * 250);
-    result.textContent = `Estimated Price: ₦${est} – ₦${est + 600} (approx)`;
-  }
-});
-
-/* =========================================================
-   CONTACT CTAS
-========================================================= */
-$('#ctaEstimate').addEventListener('click', ()=>{
-  window.scrollTo({ top: $('#estimator').offsetTop - 60, behavior:'smooth' });
-});
-$('#ctaContact').addEventListener('click', ()=>{
-  window.scrollTo({ top: $('#contact').offsetTop - 60, behavior:'smooth' });
-});
-
-/* =========================================================
-   SCROLL EFFECTS: fade-up reveal, back-to-top, sticky highlight
-========================================================= */
-const io = new IntersectionObserver((entries)=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting) e.target.classList.add('in');
-  });
-},{ threshold:.12 });
-$$('.fade-up').forEach(el=> io.observe(el));
-
-const btnTop = $('#btnTop');
-window.addEventListener('scroll', ()=>{
-  if(window.scrollY > 600) btnTop.classList.add('show'); else btnTop.classList.remove('show');
-});
-btnTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
-
-/* =========================================================
-   SMALL UX TOUCHES
-========================================================= */
-document.addEventListener('click', (e)=>{
-  // if a different overlay button is clicked, handled above; no outside-close for overlays by request
-  // close auth modals if user clicks scrim area
-  if(e.target===authScrim) authScrim.style.display='none';
-  if(e.target===resetScrim) resetScrim.style.display='none';
-});
-
-/* =========================================================
-   PAGE LOAD: if already logged in previously, greet & enable CTA
-========================================================= */
-if(state.name){
-  // Optionally personalize hero
-  const hero = $('#hero').querySelector('h1');
-  hero.innerHTML = `Hi ${state.name.split(' ')[0]} 👋 — ready to deliver something today?`;
 }
-syncAuthUI();
-</script>
-</body>
-</html>
+
+// --- LOGIN ---
+async function loginUser(email, password) {
+  try {
+    const res = await fetch(`${API_BASE}/users/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Login failed");
+
+    authToken = data.token;
+    localStorage.setItem("authToken", authToken);
+    alert("Login successful!");
+
+    document.querySelector("#dashboard-btn").disabled = false;
+    return data;
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+// --- LOGOUT ---
+function logoutUser() {
+  authToken = null;
+  localStorage.removeItem("authToken");
+  alert("You have logged out.");
+  document.querySelector("#dashboard-btn").disabled = true;
+}
+
+// --- FETCH DASHBOARD (Protected) ---
+async function fetchDashboard() {
+  if (!authToken) return alert("Please log in first.");
+  try {
+    const res = await fetch(`${API_BASE}/users/me`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to fetch dashboard");
+    console.log("Dashboard Data:", data);
+    alert(`Welcome ${data.name}, role: ${data.role}`);
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+// --- ESTIMATOR ---
+async function estimateOrder(pickup, dropoff, weight) {
+  try {
+    const res = await fetch(`${API_BASE}/orders/estimate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pickup, dropoff, weight }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to estimate order");
+    alert(`Estimated Price: ${data.price}`);
+    return data;
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+// --- UI HOOKUP ---
+document.addEventListener("DOMContentLoaded", () => {
+  // register
+  document.querySelector("#register-form")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = e.target.name.value;
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+    registerUser(name, email, password);
+  });
+
+  // login
+  document.querySelector("#login-form")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+    loginUser(email, password);
+  });
+
+  // logout
+  document.querySelector("#logout-btn")?.addEventListener("click", logoutUser);
+
+  // dashboard
+  document.querySelector("#dashboard-btn")?.addEventListener("click", fetchDashboard);
+
+  // estimator
+  document.querySelector("#estimator-form")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const pickup = e.target.pickup.value;
+    const dropoff = e.target.dropoff.value;
+    const weight = e.target.weight.value;
+    estimateOrder(pickup, dropoff, weight);
+  });
+
+  // disable dashboard if not logged in
+  if (!authToken) {
+    document.querySelector("#dashboard-btn").disabled = true;
+  }
+});
+    </script>
