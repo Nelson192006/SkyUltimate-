@@ -385,8 +385,7 @@ function show(el){ el.style.display=""; }
 function hide(el){ el.style.display="none"; }
 function setText(el, txt){ el.textContent = txt; }
 function toast(msg, err=false){
-  alert((err?"❌ ":"✅ ")+msg); // simple toast; replace with your custom UI if you like
-}
+  alert((err?"❌ ":"✅ ")+msg); // simple toast; 
 function getToken(){ return STORAGE.getItem("token") || null; }
 function setToken(t){ if(t) STORAGE.setItem("token", t); }
 function clearSession(){ STORAGE.clear(); }
@@ -420,4 +419,285 @@ async function apiJSON(path, method, body){
   const headers = { "Content-Type":"application/json" };
   if(token) headers.Authorization = `Bearer ${token}`;
   const res = await api(path, { method, headers, body: JSON.stringify(body||{}) });
-        
+  const data = await res.json().catch(()=> ({}));
+  if(!res.ok) throw new Error(data.error || data.message || `Request failed: ${res.status}`);
+  return data;
+}
+
+/* ============================================================
+   UI FLOW
+============================================================ */
+const splash = $("#splash");
+const authPage = $("#authPage");
+const homeHub = $("#homeHub");
+
+/** Splash → Auth Page */
+function boot(){
+  setTimeout(()=>{
+    splash.classList.add("splash--hidden");
+    show(authPage);
+  }, 3000);
+  $("#year").textContent = new Date().getFullYear();
+  $("#year2").textContent = new Date().getFullYear();
+
+  // If already logged in, jump to home hub
+  if(getToken() && getUser()){
+    enterHome();
+  }
+}
+document.addEventListener("DOMContentLoaded", boot);
+
+/* --------------------- Drawer --------------------- */
+function wireDrawer(rootId){
+  const root = $(rootId);
+  const panel = root.querySelector(".panel");
+  root.addEventListener("click", (e)=>{
+    const act = e.target.dataset.action;
+    if(act==="close"){ root.classList.remove("open"); return; }
+  });
+  return {
+    open: ()=> root.classList.add("open"),
+    close: ()=> root.classList.remove("open")
+  };
+}
+const drawer1 = wireDrawer("#drawer");
+const drawer2 = wireDrawer("#drawer2");
+
+$("#hamburger").addEventListener("click", ()=>{
+  $("#hamburger").classList.toggle("active");
+  drawer1.open();
+});
+$("#hamburger2").addEventListener("click", ()=>{
+  $("#hamburger2").classList.toggle("active");
+  drawer2.open();
+});
+
+/* --------------------- Overlays --------------------- */
+function openOverlay(key){ $(`#ov-${key}`).style.display="block"; }
+function closeOverlay(key){ $(`#ov-${key}`).style.display="none"; }
+document.querySelectorAll(".menu-item[data-overlay]").forEach(mi=>{
+  mi.addEventListener("click", ()=>{
+    const key = mi.dataset.overlay;
+    drawer1.close(); drawer2.close();
+    openOverlay(key);
+  });
+});
+document.querySelectorAll(".overlay .close").forEach(btn=>{
+  btn.addEventListener("click", ()=> closeOverlay(btn.dataset.close));
+});
+
+/* --------------------- Tabs / Eye toggles --------------------- */
+const tabLogin = $("#tabLogin");
+const tabRegister = $("#tabRegister");
+const panelLogin = $("#panelLogin");
+const panelRegister = $("#panelRegister");
+
+tabLogin.addEventListener("click", ()=>{
+  tabLogin.classList.add("active"); tabRegister.classList.remove("active");
+  show(panelLogin); hide(panelRegister);
+});
+tabRegister.addEventListener("click", ()=>{
+  tabRegister.classList.add("active"); tabLogin.classList.remove("active");
+  show(panelRegister); hide(panelLogin);
+});
+$("#btnOpenLogin").addEventListener("click", ()=> tabLogin.click());
+$("#btnOpenRegister").addEventListener("click", ()=> tabRegister.click());
+
+document.querySelectorAll(".toggle-eye").forEach(eye=>{
+  eye.addEventListener("click", ()=>{
+    const inp = document.querySelector(eye.dataset.eye);
+    if(!inp) return;
+    inp.type = (inp.type === "password") ? "text" : "password";
+  });
+});
+
+/* --------------------- Role-specific fields on Register --------------------- */
+const regRole = $("#regRole");
+const bankWrap = $("#bankWrap");
+regRole.addEventListener("change", ()=>{
+  const role = regRole.value;
+  if(role==="Agent" || role==="Admin"){ bankWrap.style.display="block"; }
+  else{ bankWrap.style.display="none"; }
+});
+
+/* ============================================================
+   SETTINGS + FLAGS (Admin registration toggle, SuperAdmin first-time)
+============================================================ */
+async function applyFlags(){
+  try{
+    // Try to read settings
+    const settings = await apiGET("/settings");
+    const adminEnabled = !!settings.adminRegistrationEnabled;
+    document.querySelectorAll(".opt-admin").forEach(o=> o.style.display = adminEnabled ? "" : "none");
+
+    // Company bank details (for home hub card)
+    if(settings.bankDetails || settings.companyBanks){
+      const list = settings.companyBanks || [settings.bankDetails];
+      renderCompanyBanks(list);
+    }else{
+      renderCompanyBanks(FALLBACK_BANKS);
+    }
+  }catch(e){
+    // Settings not available → keep Admin visible by default, use fallback banks
+    document.querySelectorAll(".opt-admin").forEach(o=> o.style.display = "");
+    renderCompanyBanks(FALLBACK_BANKS);
+  }
+
+  // SuperAdmin visibility: if backend provides a flag, use it; else leave visible
+  try{
+    const res = await apiGET("/users/can-register-superadmin");
+    const can = !!res.canRegister;
+    document.querySelectorAll(".opt-super").forEach(o=> o.style.display = can ? "" : "none");
+  }catch{ /* keep visible by default */ }
+}
+function renderCompanyBanks(banks){
+  const wrap = $("#companyBanks");
+  const lines = $("#bankLines");
+  lines.innerHTML = banks.map(b => `<div><b>${b.bankName}:</b> ${b.accountNumber} — <i>${b.accountHolderName}</i></div>`).join("");
+  show(wrap);
+}
+applyFlags();
+
+/* ============================================================
+   AUTH — Register / Login / Forgot
+============================================================ */
+const loginErr = $("#loginErr");
+const regErr = $("#regErr");
+
+async function doRegister(){
+  regErr.textContent = "";
+  const role = $("#regRole").value.trim();
+  const name = $("#regName").value.trim();
+  const email = $("#regEmail").value.trim();
+  const phone = $("#regPhone").value.trim();
+  const password = $("#regPassword").value;
+
+  if(!role || !name || !email || !password){
+    regErr.textContent = "Please fill all required fields.";
+    return;
+  }
+
+  const bankDetails = (role==="Agent" || role==="Admin") ? {
+    bankName: $("#bankName").value.trim(),
+    accountNumber: $("#bankNumber").value.trim(),
+    accountHolderName: $("#bankHolder").value.trim()
+  } : null;
+
+  try{
+    const payload = { name, email, password, role, phone };
+    if(bankDetails && (bankDetails.bankName || bankDetails.accountNumber || bankDetails.accountHolderName)){
+      payload.bankDetails = bankDetails;
+    }
+    const data = await apiJSON("/users/register", "POST", payload);
+    // Expect: token + user or similar
+    if(data.token) setToken(data.token);
+    if(data.user) setUser(data.user);
+    toast("Registration successful!");
+    enterHome();
+  }catch(e){
+    regErr.textContent = e.message;
+  }
+}
+$("#btnDoRegister").addEventListener("click", doRegister);
+
+async function doLogin(){
+  loginErr.textContent = "";
+  const role = $("#loginRole").value.trim(); // your logic requires role selection
+  const email = $("#loginEmail").value.trim();
+  const password = $("#loginPassword").value;
+
+  if(!role || !email || !password){
+    loginErr.textContent = "Please select role and enter credentials.";
+    return;
+  }
+  try{
+    const data = await apiJSON("/users/login", "POST", { email, password, role });
+    if(!data.token) throw new Error("No token returned.");
+    setToken(data.token);
+
+    // Fetch profile
+    const me = await apiGET("/users/me");
+    setUser(me);
+
+    toast("Login successful!");
+    enterHome();
+  }catch(e){
+    loginErr.textContent = e.message || "Invalid credentials. Please check your role and details.";
+  }
+}
+$("#btnDoLogin").addEventListener("click", doLogin);
+
+$("#linkForgot").addEventListener("click", async (e)=>{
+  e.preventDefault();
+  const email = prompt("Enter your account email for password reset:");
+  if(!email) return;
+  try{
+    await apiJSON("/users/forgot-password", "POST", { email });
+    toast("If the email exists, a reset link has been sent.");
+  }catch(err){
+    toast(err.message, true);
+  }
+});
+
+/* ============================================================
+   ESTIMATOR (public)
+============================================================ */
+$("#btnEstimate").addEventListener("click", async ()=>{
+  const itemType = $("#itItem").value;
+  const weight = parseFloat($("#itWeight").value || "0");
+  const from = $("#itFrom").value.trim();
+  const to = $("#itTo").value.trim();
+  const estResult = $("#estResult");
+
+  if(!itemType || !weight || !from || !to){
+    estResult.textContent = "Please fill all fields.";
+    return;
+  }
+  try{
+    const data = await apiJSON("/orders/estimate", "POST", { itemType, weight, from, to });
+    estResult.textContent = data && data.price ? `Estimated Price: ₦${Number(data.price).toLocaleString()}` : "Estimate ready.";
+  }catch(e){
+    estResult.textContent = e.message;
+  }
+});
+
+/* ============================================================
+   HOME HUB (post-login)
+============================================================ */
+function enterHome(){
+  hide(authPage);
+  show(homeHub);
+  const user = getUser();
+  const name = user?.name || "User";
+  const role = user?.role || "Customer";
+  $("#welcomeMsg").textContent = `Welcome back, ${name}!`;
+  $("#roleBadge").textContent = role;
+
+  const cta = $("#roleCTA");
+  // role-based target pages (change these if your filenames differ)
+  const map = {
+    Customer: { text:"Go to My Dashboard", href:"/customer-dashboard.html" },
+    Agent: { text:"Go to Delivery Board", href:"/agent-dashboard.html" },
+    Admin: { text:"Go to Operations Hub", href:"/admin-dashboard.html" },
+    SuperAdmin: { text:"Go to Master Control Panel", href:"/super-admin-dashboard.html" },
+  };
+  const target = map[role] || map.Customer;
+  cta.textContent = target.text;
+  cta.setAttribute("href", target.href);
+}
+
+// Logout from home hub
+$("#btnLogout").addEventListener("click", ()=>{
+  clearSession();
+  toast("Logged out.");
+  show(authPage);
+  hide(homeHub);
+});
+
+/* ============================================================
+   MISC
+============================================================ */
+</script>
+</body>
+</html>
+function
