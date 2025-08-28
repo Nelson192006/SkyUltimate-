@@ -1,1 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SkyUltimate — Fast & Reliable Delivery</title>
+<meta name="theme-color" content="#C00000" />
 
+<style>
+  /* --------------------- RESET / THEME --------------------- */
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root{
+    --brand:#C00000;
+    --brand-600:#a50000;
+    --ink:#1a1a1a;
+    --muted:#666;
+    --bg:#fff;
+    --card:#ffffff;
+    --shadow:0 10px 30px rgba(0,0,0,.15);
+    --radius:16px;
+    --ease:cubic-bezier(.22,.61,.36,1);
+  }
+  html,body{height:100%; background:var(--bg); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif; color:var(--ink);}
+
+  a{ color:inherit; text-decoration:none; }
+  button{ cursor:pointer; border:none; background:none; }
+
+  /* --------------------- SPLASH --------------------- */
+  .splash{
+    position:fixed; inset:0; background:var(--brand);
+    display:grid; place-items:center; z-index:9999; opacity:1; transition:opacity .6s var(--ease), visibility .6s var(--ease);
+  }
+  .splash--hidden{ opacity:0; visibility:hidden; }
+  .splash-logo{
+    width:min(190px,34vw); aspect-ratio:1/1; border-radius:50%;
+    background:#fff url("https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png") center/75% no-repeat;
+    box-shadow:0 20px 60px rgba(0,0,0,.35);
+    animation:popIn .9s var(--ease) both;
+  }
+  @keyframes popIn{ from{transform:scale(.8); opacity:0} to{transform:scale(1); opacity:1} }
+
+  /* --------------------- AUTH PAGE WRAPPER --------------------- */
+  .auth-page{
+    min-height:100vh; background:var(--brand);
+    display:flex; flex-direction:column;
+  }
+  .top{
+    position:sticky; top:0; z-index:50; background:transparent;
+    display:flex; align-items:center; justify-content:space-between; padding:14px 16px;
+  }
+  .brand{
+    display:flex; align-items:center; gap:12px; color:#fff; font-weight:800;
+  }
+  .brand img{ width:58px; height:58px; border-radius:50%; background:#fff; }
+  .brand .title{ font-size:1.35rem; line-height:1; }
+  .brand .tag{ font-size:.8rem; opacity:.85; }
+  .role-badge{ font-size:.75rem; padding:3px 8px; border-radius:999px; background:rgba(255,255,255,.2); color:#fff; }
+
+  .top-actions{ display:flex; align-items:center; gap:10px; }
+  .btn{
+    padding:10px 14px; border-radius:12px; font-weight:800; transition:transform .12s var(--ease), background .2s var(--ease), color .2s var(--ease), box-shadow .2s var(--ease);
+  }
+  .btn:active{ transform:translateY(1px); }
+  .btn.white{ background:#fff; color:var(--brand); }
+  .btn.ghost{ background:transparent; color:#fff; border:1px solid rgba(255,255,255,.5); }
+  .btn.red{ background:var(--brand); color:#fff; box-shadow:0 10px 20px rgba(192,0,0,.25); }
+  .btn.red:hover{ background:var(--brand-600); }
+
+  .hamburger{
+    width:36px; height:24px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer;
+  }
+  .hamburger span{ height:3px; width:100%; background:#fff; border-radius:2px; transition:transform .25s var(--ease), opacity .25s var(--ease); }
+  .hamburger.active span:nth-child(1){ transform:translateY(10.5px) rotate(45deg); }
+  .hamburger.active span:nth-child(2){ opacity:0; }
+  .hamburger.active span:nth-child(3){ transform:translateY(-10.5px) rotate(-45deg); }
+
+  /* --------------------- DRAWER --------------------- */
+  .drawer{ position:fixed; inset:0; z-index:60; pointer-events:none; }
+  .drawer .panel{
+    position:absolute; left:0; top:0; bottom:0; width:min(320px,86vw);
+    transform:translateX(-110%); transition:transform .35s var(--ease);
+    background:#fff; color:var(--brand); padding:18px; box-shadow:var(--shadow);
+  }
+  .drawer.open{ pointer-events:auto; }
+  .drawer.open .panel{ transform:translateX(0); }
+  .drawer .scrim{ position:absolute; inset:0; background:rgba(0,0,0,.15); opacity:0; transition:opacity .3s var(--ease); }
+  .drawer.open .scrim{ opacity:1; }
+
+  .menu-item{
+    padding:14px 10px; border-radius:10px; font-weight:700; cursor:pointer; margin-bottom:6px;
+    transition:background .2s var(--ease), color .2s var(--ease);
+  }
+  .menu-item:hover{ background:#ffe7e7; color:var(--brand-600); }
+
+  /* --------------------- AUTH CARD --------------------- */
+  .auth-wrap{
+    flex:1; display:grid; place-items:center; padding:16px;
+  }
+  .auth-card{
+    width:min(560px,94vw); background:#fff; border-radius:18px; box-shadow:var(--shadow); padding:18px;
+  }
+  .logo-on-card{
+    width:78px; height:78px; border-radius:50%; background:#fff;
+    background-image:url("https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png");
+    background-repeat:no-repeat; background-position:center; background-size:78%;
+    margin:-54px auto 8px; box-shadow:0 12px 28px rgba(0,0,0,.18);
+  }
+  .tabs{ display:flex; gap:10px; background:#fafafa; border-radius:12px; padding:6px; margin-bottom:12px; }
+  .tab{ flex:1; text-align:center; padding:12px; border-radius:10px; font-weight:800; color:#a10000; }
+  .tab.active{ background:#ffe7e7; color:#b10000; }
+  .inputs{ display:grid; gap:10px; }
+  .input{ position:relative; }
+  .input input, .input select{
+    width:100%; border:1px solid #ddd; border-radius:12px; padding:12px 42px 12px 12px; font-size:1rem;
+  }
+  .input .toggle-eye{ position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; color:#999; }
+  .help{ color:#777; font-size:.9rem; }
+  .error{ color:#b10000; font-weight:700; font-size:.92rem; min-height:18px; }
+  .note{ font-size:.9rem; color:#6f6f6f; margin-top:8px; }
+
+  /* --------------------- OVERLAYS --------------------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(255,255,255,.98); color:var(--brand);
+    display:none; z-index:80; padding:24px; overflow:auto;
+    animation:fadeIn .25s var(--ease) both;
+  }
+  @keyframes fadeIn{ from{opacity:.6; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
+  .overlay .close{ position:sticky; top:12px; float:right; font-weight:800; font-size:20px; padding:8px 12px; border-radius:12px; border:1px solid #f1b3b3; color:var(--brand); }
+  .overlay h2{ margin:8px 0 10px; }
+  .overlay p{ color:#7c0000; line-height:1.6; margin-bottom:10px; }
+
+  /* --------------------- HOME HUB (after login) --------------------- */
+  .home-hub{ display:none; min-height:100vh; background:linear-gradient(180deg, #C00000 0%, #d31a1a 55%, #C00000 100%); color:#fff; }
+  .home-inner{ max-width:960px; margin:0 auto; padding:26px 16px 40px; text-align:center; }
+  .home-inner h1{ font-size:clamp(1.6rem,4vw,2.4rem); margin:10px 0 8px; }
+  .main-cta{ margin:22px auto 0; display:flex; justify-content:center; }
+  .big-red{ background:#fff; color:var(--brand); padding:16px 22px; border-radius:16px; font-weight:900; font-size:1.05rem; letter-spacing:.2px; box-shadow:0 16px 30px rgba(0,0,0,.35); }
+  .bank-card{ background:#fff; color:#b10000; border-radius:16px; padding:16px; box-shadow:var(--shadow); margin:18px auto 0; max-width:560px; text-align:left; }
+  .bank-card h3{ margin-bottom:6px; }
+
+  footer{ padding:26px 14px 40px; text-align:center; color:#ffdede; }
+</style>
+</head>
+<body>
+
+<!-- ------------- SPLASH ------------- -->
+<div class="splash" id="splash">
+  <div class="splash-logo" aria-label="SkyUltimate"></div>
+</div>
+
+<!-- ------------- AUTH PAGE ------------- -->
+<div id="authPage" class="auth-page" style="display:none;">
+  <header class="top">
+    <div class="brand">
+      <img alt="SkyUltimate" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" />
+      <div>
+        <div class="title">SkyUltimate</div>
+        <div class="tag">Fast & Reliable Delivery</div>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <button id="btnOpenLogin" class="btn white">Login</button>
+      <button id="btnOpenRegister" class="btn ghost">Register</button>
+      <div id="hamburger" class="hamburger" aria-label="Open menu" title="Menu">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Drawer -->
+  <div id="drawer" class="drawer" aria-hidden="true">
+    <div class="panel">
+      <h3>Explore</h3>
+      <div class="menu-item" data-overlay="about">About Us</div>
+      <div class="menu-item" data-overlay="mission">Mission & Vision</div>
+      <div class="menu-item" data-overlay="faq">FAQ / Support</div>
+      <hr style="margin:10px 0; border:none; border-top:1px solid #ffd3d3;" />
+      <div class="menu-item" data-action="close">Close</div>
+    </div>
+    <div class="scrim" data-action="close"></div>
+  </div>
+
+  <main class="auth-wrap">
+    <section class="auth-card">
+      <div class="logo-on-card" aria-hidden="true"></div>
+
+      <div class="tabs">
+        <button id="tabLogin" class="tab active" type="button">Login</button>
+        <button id="tabRegister" class="tab" type="button">Register</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="panelLogin">
+        <div class="inputs">
+          <div class="input">
+            <select id="loginRole" required>
+              <option value="">Select Role</option>
+              <option value="Customer">Customer</option>
+              <option value="Agent">Agent</option>
+              <option value="Admin" class="opt-admin">Admin</option>
+              <option value="SuperAdmin" class="opt-super">Super Admin</option>
+            </select>
+          </div>
+          <div class="input"><input id="loginEmail" type="email" placeholder="Email" /></div>
+          <div class="input">
+            <input id="loginPassword" type="password" placeholder="Password" />
+            <span class="toggle-eye" data-eye="#loginPassword">👁</span>
+          </div>
+          <div class="error" id="loginErr"></div>
+          <button id="btnDoLogin" class="btn red" style="width:100%;">Login</button>
+          <div class="help" style="margin-top:6px;"><a href="#" id="linkForgot">Forgot password?</a></div>
+        </div>
+      </div>
+
+      <!-- REGISTER -->
+      <div id="panelRegister" style="display:none;">
+        <div class="inputs">
+          <div class="input">
+            <select id="regRole" required>
+              <option value="">Register as</option>
+              <option value="Customer">Customer</option>
+              <option value="Agent">Agent</option>
+              <option value="Admin" class="opt-admin">Admin</option>
+              <option value="SuperAdmin" class="opt-super">Super Admin</option>
+            </select>
+          </div>
+          <div class="input"><input id="regName" type="text" placeholder="Full Name" /></div>
+          <div class="input"><input id="regEmail" type="email" placeholder="Email" /></div>
+          <div class="input"><input id="regPhone" type="tel" placeholder="Phone (Optional)" /></div>
+          <div class="input">
+            <input id="regPassword" type="password" placeholder="Password (min 6 chars)" />
+            <span class="toggle-eye" data-eye="#regPassword">👁</span>
+          </div>
+
+          <!-- Agent/Admin bank details -->
+          <div id="bankWrap" style="display:none;">
+            <div class="note"><b>Bank Details (for payouts)</b></div>
+            <div class="input">
+              <select id="bankName">
+                <option value="">Select Bank</option>
+                <option>Moniepoint</option>
+                <option>Opay</option>
+                <option>Palmpay</option>
+                <option>UBA</option>
+                <option>GTBank</option>
+              </select>
+            </div>
+            <div class="input"><input id="bankNumber" type="text" placeholder="Account Number" /></div>
+            <div class="input"><input id="bankHolder" type="text" placeholder="Account Holder Name" /></div>
+          </div>
+
+          <div class="error" id="regErr"></div>
+          <button id="btnDoRegister" class="btn red" style="width:100%;">Create account</button>
+        </div>
+      </div>
+
+      <!-- QUICK ESTIMATOR (public) -->
+      <div style="margin-top:16px;">
+        <div class="note"><b>Quick Price Estimate</b> (exact price after login)</div>
+        <div class="inputs">
+          <div class="input">
+            <select id="itItem">
+              <option value="">Item Type</option>
+              <option value="document">Document</option>
+              <option value="parcel">Parcel</option>
+              <option value="general">General Goods</option>
+            </select>
+          </div>
+          <div class="input"><input id="itWeight" type="number" min="0" step="0.1" placeholder="Weight (kg)" /></div>
+          <div class="input"><input id="itFrom" type="text" placeholder="Pickup Address (City/Area)" /></div>
+          <div class="input"><input id="itTo" type="text" placeholder="Delivery Address (City/Area)" /></div>
+          <button id="btnEstimate" class="btn ghost" style="width:100%;">Estimate</button>
+          <div id="estResult" class="note"></div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <footer>© <span id="year"></span> SkyUltimate Delivery Service. All rights reserved.</footer>
+</div>
+
+<!-- ------------- HOME HUB (after login) ------------- -->
+<section id="homeHub" class="home-hub">
+  <header class="top">
+    <div class="brand">
+      <img alt="SkyUltimate" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" />
+      <div>
+        <div class="title">SkyUltimate</div>
+        <div class="tag">Welcome back!</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span id="roleBadge" class="role-badge">Guest</span>
+      <button id="btnLogout" class="btn ghost">Logout</button>
+      <div id="hamburger2" class="hamburger" aria-label="Open menu" title="Menu">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Drawer (home) -->
+  <div id="drawer2" class="drawer" aria-hidden="true">
+    <div class="panel">
+      <h3>Explore</h3>
+      <div class="menu-item" data-overlay="about">About Us</div>
+      <div class="menu-item" data-overlay="mission">Mission & Vision</div>
+      <div class="menu-item" data-overlay="faq">FAQ / Support</div>
+      <hr style="margin:10px 0; border:none; border-top:1px solid #ffd3d3;" />
+      <div class="menu-item" data-action="close">Close</div>
+    </div>
+    <div class="scrim" data-action="close"></div>
+  </div>
+
+  <div class="home-inner">
+    <h1 id="welcomeMsg">Welcome back!</h1>
+    <p style="opacity:.95; max-width:760px; margin:0 auto;">
+      Your account is ready. Choose your dashboard to continue.
+    </p>
+    <div class="main-cta">
+      <a id="roleCTA" href="#" class="big-red">Go to my dashboard</a>
+    </div>
+
+    <!-- Company bank details (from settings or fallback) -->
+    <div class="bank-card" id="companyBanks" style="display:none;">
+      <h3>Company Bank Details</h3>
+      <div id="bankLines" style="line-height:1.6;"></div>
+    </div>
+  </div>
+
+  <footer>© <span id="year2"></span> SkyUltimate Delivery Service. All rights reserved.</footer>
+</section>
+
+<!-- ------------- FULLSCREEN OVERLAYS ------------- -->
+<!-- ABOUT -->
+<article id="ov-about" class="overlay" aria-hidden="true">
+  <button class="close" data-close="about">Close</button>
+  <h2>About Us</h2>
+  <p>Welcome to SkyUltimate Delivery Service, where we're dedicated to taking your delivery experience to new heights! Founded in 2024, our company was born from a simple idea: to create a delivery service that's not just fast and reliable, but also puts the customer first.</p>
+  <p>Whether it’s urgent documents, parcels, groceries, or general goods, our mission is to move them safely, quickly, and transparently. We’re building a platform that’s friendly to customers, rewarding to agents, and powerful for operations teams.</p>
+</article>
+
+<!-- MISSION & VISION -->
+<article id="ov-mission" class="overlay" aria-hidden="true">
+  <button class="close" data-close="mission">Close</button>
+  <h2>Our Mission</h2>
+  <p>To provide a seamless, reliable, and efficient delivery experience that exceeds our customers’ expectations through technology, transparency, and great people.</p>
+  <h2>Our Vision</h2>
+  <p>To be the industry leader in delivery services, known for our speed, reliability, and unwavering commitment to customer satisfaction.</p>
+</article>
+
+<!-- FAQ / SUPPORT -->
+<article id="ov-faq" class="overlay" aria-hidden="true">
+  <button class="close" data-close="faq">Close</button>
+  <h2>FAQ & Support</h2>
+  <p><b>How do I track my package?</b> You’ll receive a tracking number after placing an order. Use it in your dashboard to see live status.</p>
+  <p><b>Delivery hours:</b> 9:00 AM – 6:00 PM, Mon–Sat. Special arrangements are possible — contact support.</p>
+  <p><b>Contact:</b> WhatsApp / Phone: <a href="https://wa.me/2349128884830" target="_blank" rel="noopener">09128884830</a> — Email: <a href="mailto:nelsongodspower24@gmail.com">nelsongodspower24@gmail.com</a></p>
+</article>
+
+<script>
+/* ============================================================
+   CONFIG
+============================================================ */
+const API_HOST = "https://skyultimate-backend-api-structure.onrender.com";
+const API_BASES = [API_HOST + "/api", API_HOST]; // tries /api first, then fallback
+const STORAGE = sessionStorage; // per your requirement earlier
+const LOGO_URL = "https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png";
+
+// Fallback company banks (used if /settings not available)
+const FALLBACK_BANKS = [
+  { bankName:"Moniepoint", accountNumber:"9128884830", accountHolderName:"Nelson Emmanuel Godspower" },
+  { bankName:"Opay",       accountNumber:"9128884830", accountHolderName:"Nelson Emmanuel Godspower" },
+  { bankName:"Palmpay",    accountNumber:"9128884830", accountHolderName:"Nelson Emmanuel Godspower" },
+  { bankName:"UBA",        accountNumber:"234 2 835 397", accountHolderName:"Nelson Emmanuel Godspower" },
+  { bankName:"GTBank",     accountNumber:"0734090626", accountHolderName:"Nelson Emmanuel Godspower" },
+];
+
+/* ============================================================
+   HELPERS
+============================================================ */
+const $ = sel => document.querySelector(sel);
+function show(el){ el.style.display=""; }
+function hide(el){ el.style.display="none"; }
+function setText(el, txt){ el.textContent = txt; }
+function toast(msg, err=false){
+  alert((err?"❌ ":"✅ ")+msg); // simple toast; replace with your custom UI if you like
+}
+function getToken(){ return STORAGE.getItem("token") || null; }
+function setToken(t){ if(t) STORAGE.setItem("token", t); }
+function clearSession(){ STORAGE.clear(); }
+function getUser(){ try{ return JSON.parse(STORAGE.getItem("user")||"null"); }catch{ return null; } }
+function setUser(u){ STORAGE.setItem("user", JSON.stringify(u)); }
+
+/** Try a path across possible bases (/api then fallback) */
+async function api(path, options={}){
+  for(const base of API_BASES){
+    try{
+      const res = await fetch(base + path, options);
+      if(res.status !== 404) return res; // use first non-404
+    }catch(e){ /* try next */ }
+  }
+  // last try (if both 404)
+  return fetch(API_BASES[0] + path, options);
+}
+
+/** Authorized GET */
+async function apiGET(path){
+  const token = getToken();
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const res = await api(path, { headers });
+  const data = await res.json().catch(()=> ({}));
+  if(!res.ok) throw new Error(data.error || data.message || `Request failed: ${res.status}`);
+  return data;
+}
+/** Authorized POST/PUT/PATCH/DELETE */
+async function apiJSON(path, method, body){
+  const token = getToken();
+  const headers = { "Content-Type":"application/json" };
+  if(token) headers.Authorization = `Bearer ${token}`;
+  const res = await api(path, { method, headers, body: JSON.stringify(body||{}) });
+        
