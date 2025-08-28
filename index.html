@@ -1,703 +1,446 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SkyUltimate — Fast & Reliable Delivery</title>
-<meta name="theme-color" content="#C00000" />
-
-<style>
-  /* --------------------- RESET / THEME --------------------- */
-  * { box-sizing:border-box; margin:0; padding:0; }
-  :root{
-    --brand:#C00000;
-    --brand-600:#a50000;
-    --ink:#1a1a1a;
-    --muted:#666;
-    --bg:#fff;
-    --card:#ffffff;
-    --shadow:0 10px 30px rgba(0,0,0,.15);
-    --radius:16px;
-    --ease:cubic-bezier(.22,.61,.36,1);
-  }
-  html,body{height:100%; background:var(--bg); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif; color:var(--ink);}
-
-  a{ color:inherit; text-decoration:none; }
-  button{ cursor:pointer; border:none; background:none; }
-
-  /* --------------------- SPLASH --------------------- */
-  .splash{
-    position:fixed; inset:0; background:var(--brand);
-    display:grid; place-items:center; z-index:9999; opacity:1; transition:opacity .6s var(--ease), visibility .6s var(--ease);
-  }
-  .splash--hidden{ opacity:0; visibility:hidden; }
-  .splash-logo{
-    width:min(190px,34vw); aspect-ratio:1/1; border-radius:50%;
-    background:#fff url("https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png") center/75% no-repeat;
-    box-shadow:0 20px 60px rgba(0,0,0,.35);
-    animation:popIn .9s var(--ease) both;
-  }
-  @keyframes popIn{ from{transform:scale(.8); opacity:0} to{transform:scale(1); opacity:1} }
-
-  /* --------------------- AUTH PAGE WRAPPER --------------------- */
-  .auth-page{
-    min-height:100vh; background:var(--brand);
-    display:flex; flex-direction:column;
-  }
-  .top{
-    position:sticky; top:0; z-index:50; background:transparent;
-    display:flex; align-items:center; justify-content:space-between; padding:14px 16px;
-  }
-  .brand{
-    display:flex; align-items:center; gap:12px; color:#fff; font-weight:800;
-  }
-  .brand img{ width:58px; height:58px; border-radius:50%; background:#fff; }
-  .brand .title{ font-size:1.35rem; line-height:1; }
-  .brand .tag{ font-size:.8rem; opacity:.85; }
-  .role-badge{ font-size:.75rem; padding:3px 8px; border-radius:999px; background:rgba(255,255,255,.2); color:#fff; }
-
-  .top-actions{ display:flex; align-items:center; gap:10px; }
-  .btn{
-    padding:10px 14px; border-radius:12px; font-weight:800; transition:transform .12s var(--ease), background .2s var(--ease), color .2s var(--ease), box-shadow .2s var(--ease);
-  }
-  .btn:active{ transform:translateY(1px); }
-  .btn.white{ background:#fff; color:var(--brand); }
-  .btn.ghost{ background:transparent; color:#fff; border:1px solid rgba(255,255,255,.5); }
-  .btn.red{ background:var(--brand); color:#fff; box-shadow:0 10px 20px rgba(192,0,0,.25); }
-  .btn.red:hover{ background:var(--brand-600); }
-
-  .hamburger{
-    width:36px; height:24px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer;
-  }
-  .hamburger span{ height:3px; width:100%; background:#fff; border-radius:2px; transition:transform .25s var(--ease), opacity .25s var(--ease); }
-  .hamburger.active span:nth-child(1){ transform:translateY(10.5px) rotate(45deg); }
-  .hamburger.active span:nth-child(2){ opacity:0; }
-  .hamburger.active span:nth-child(3){ transform:translateY(-10.5px) rotate(-45deg); }
-
-  /* --------------------- DRAWER --------------------- */
-  .drawer{ position:fixed; inset:0; z-index:60; pointer-events:none; }
-  .drawer .panel{
-    position:absolute; left:0; top:0; bottom:0; width:min(320px,86vw);
-    transform:translateX(-110%); transition:transform .35s var(--ease);
-    background:#fff; color:var(--brand); padding:18px; box-shadow:var(--shadow);
-  }
-  .drawer.open{ pointer-events:auto; }
-  .drawer.open .panel{ transform:translateX(0); }
-  .drawer .scrim{ position:absolute; inset:0; background:rgba(0,0,0,.15); opacity:0; transition:opacity .3s var(--ease); }
-  .drawer.open .scrim{ opacity:1; }
-
-  .menu-item{
-    padding:14px 10px; border-radius:10px; font-weight:700; cursor:pointer; margin-bottom:6px;
-    transition:background .2s var(--ease), color .2s var(--ease);
-  }
-  .menu-item:hover{ background:#ffe7e7; color:var(--brand-600); }
-
-  /* --------------------- AUTH CARD --------------------- */
-  .auth-wrap{
-    flex:1; display:grid; place-items:center; padding:16px;
-  }
-  .auth-card{
-    width:min(560px,94vw); background:#fff; border-radius:18px; box-shadow:var(--shadow); padding:18px;
-  }
-  .logo-on-card{
-    width:78px; height:78px; border-radius:50%; background:#fff;
-    background-image:url("https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png");
-    background-repeat:no-repeat; background-position:center; background-size:78%;
-    margin:-54px auto 8px; box-shadow:0 12px 28px rgba(0,0,0,.18);
-  }
-  .tabs{ display:flex; gap:10px; background:#fafafa; border-radius:12px; padding:6px; margin-bottom:12px; }
-  .tab{ flex:1; text-align:center; padding:12px; border-radius:10px; font-weight:800; color:#a10000; }
-  .tab.active{ background:#ffe7e7; color:#b10000; }
-  .inputs{ display:grid; gap:10px; }
-  .input{ position:relative; }
-  .input input, .input select{
-    width:100%; border:1px solid #ddd; border-radius:12px; padding:12px 42px 12px 12px; font-size:1rem;
-  }
-  .input .toggle-eye{ position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; color:#999; }
-  .help{ color:#777; font-size:.9rem; }
-  .error{ color:#b10000; font-weight:700; font-size:.92rem; min-height:18px; }
-  .note{ font-size:.9rem; color:#6f6f6f; margin-top:8px; }
-
-  /* --------------------- OVERLAYS --------------------- */
-  .overlay{
-    position:fixed; inset:0; background:rgba(255,255,255,.98); color:var(--brand);
-    display:none; z-index:80; padding:24px; overflow:auto;
-    animation:fadeIn .25s var(--ease) both;
-  }
-  @keyframes fadeIn{ from{opacity:.6; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
-  .overlay .close{ position:sticky; top:12px; float:right; font-weight:800; font-size:20px; padding:8px 12px; border-radius:12px; border:1px solid #f1b3b3; color:var(--brand); }
-  .overlay h2{ margin:8px 0 10px; }
-  .overlay p{ color:#7c0000; line-height:1.6; margin-bottom:10px; }
-
-  /* --------------------- HOME HUB (after login) --------------------- */
-  .home-hub{ display:none; min-height:100vh; background:linear-gradient(180deg, #C00000 0%, #d31a1a 55%, #C00000 100%); color:#fff; }
-  .home-inner{ max-width:960px; margin:0 auto; padding:26px 16px 40px; text-align:center; }
-  .home-inner h1{ font-size:clamp(1.6rem,4vw,2.4rem); margin:10px 0 8px; }
-  .main-cta{ margin:22px auto 0; display:flex; justify-content:center; }
-  .big-red{ background:#fff; color:var(--brand); padding:16px 22px; border-radius:16px; font-weight:900; font-size:1.05rem; letter-spacing:.2px; box-shadow:0 16px 30px rgba(0,0,0,.35); }
-  .bank-card{ background:#fff; color:#b10000; border-radius:16px; padding:16px; box-shadow:var(--shadow); margin:18px auto 0; max-width:560px; text-align:left; }
-  .bank-card h3{ margin-bottom:6px; }
-
-  footer{ padding:26px 14px 40px; text-align:center; color:#ffdede; }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SkyUltimate — Auth</title>
+  <meta name="theme-color" content="#C00000" />
+  <style>
+    /* ---------- THEME / RESET ---------- */
+    :root{
+      --brand:#C00000;
+      --brand-dark:#a00000;
+      --card-bg: rgba(255,255,255,0.95);
+      --glass: rgba(255,255,255,0.85);
+      --muted:#666;
+      --success:#0a9a48;
+      --danger:#d23;
+      --maxw:420px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--brand);color:#111}
+    a{color:inherit;text-decoration:none}
+    .center{display:flex;align-items:center;justify-content:center}
+    /* ---------- SPLASH ---------- */
+    .splash{
+      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+      background:var(--brand);z-index:40;transition:opacity .6s ease, visibility .6s ease;
+    }
+    .splash.hidden{opacity:0;visibility:hidden;pointer-events:none}
+    .logo{
+      width:124px;height:124px;border-radius:20px;background:white;display:flex;
+      align-items:center;justify-content:center;font-weight:800;color:var(--brand);
+      transform:translateY(0);opacity:0;animation:logoIn .5s forwards;
+      box-shadow:0 6px 20px rgba(0,0,0,.12)
+    }
+    @keyframes logoIn{to{opacity:1;transform:translateY(0)}}
+    .app{
+      min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px;
+      position:relative;overflow:auto;
+    }
+    /* ---------- CARD ---------- */
+    .cardWrap{width:100%;max-width:var(--maxw)}
+    .topLogo{display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+    .topLogo .logo-sm{width:78px;height:78px;border-radius:14px;background:white;display:flex;
+      align-items:center;justify-content:center;font-weight:700;color:var(--brand);box-shadow:0 6px 18px rgba(0,0,0,.12)}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.96));
+      border-radius:14px;padding:20px;box-shadow:0 10px 40px rgba(0,0,0,.14)
+    }
+    .tabs{display:flex;gap:8px;margin-bottom:12px}
+    .tab{
+      flex:1;padding:10px 14px;border-radius:10px;text-align:center;font-weight:600;cursor:pointer;
+      background:transparent;color:var(--muted);border:1px solid transparent;transition:all .22s
+    }
+    .tab.active{background:white;color:var(--brand);box-shadow:0 6px 18px rgba(0,0,0,.06)}
+    .form{transition:all .32s}
+    label{display:block;font-size:13px;margin-top:10px;color:#222;font-weight:600}
+    input, select, textarea{
+      width:100%;padding:10px 12px;border-radius:8px;border:1px solid #e6e6e6;margin-top:6px;font-size:14px;
+      outline:none;background:transparent;
+    }
+    .row{display:flex;gap:8px}
+    .btn{
+      width:100%;padding:12px;border-radius:10px;border:0;font-weight:700;background:var(--brand);
+      color:white;cursor:pointer;margin-top:12px;box-shadow:0 8px 22px rgba(192,0,0,.18)
+    }
+    .btn.ghost{background:transparent;color:var(--brand);border:1px solid rgba(0,0,0,.05)}
+    .muted{font-size:13px;color:var(--muted);margin-top:8px}
+    .error{color:var(--danger);font-size:13px;margin-top:8px}
+    .success{color:var(--success);font-size:13px;margin-top:8px}
+    .small{font-size:13px;color:#444}
+    .actionRow{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+    .pwToggle{position:relative;display:inline-flex;align-items:center}
+    .pwToggle button{position:absolute;right:8px;top:8px;border:0;background:none;cursor:pointer;font-size:14px}
+    /* form transitions */
+    .panel{overflow:hidden;transition:height .28s ease}
+    .hidden{display:none}
+    /* simple responsive */
+    @media (max-width:520px){:root{--maxw:420px};body{padding:6px}}
+  </style>
 </head>
 <body>
+  <!--
+    Single-file auth page for SkyUltimate.
+    API base (edit if needed): const API_BASE = "https://skyultimate-backend-api-structure.onrender.com/"
+    NOTE: If your backend uses different route names, update endpoints in the JS section below.
+  -->
 
-<!-- ------------- SPLASH ------------- -->
-<div class="splash" id="splash">
-  <div class="splash-logo" aria-label="SkyUltimate"></div>
-</div>
-
-<!-- ------------- AUTH PAGE ------------- -->
-<div id="authPage" class="auth-page" style="display:none;">
-  <header class="top">
-    <div class="brand">
-      <img alt="SkyUltimate" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" />
-      <div>
-        <div class="title">SkyUltimate</div>
-        <div class="tag">Fast & Reliable Delivery</div>
-      </div>
-    </div>
-
-    <div class="top-actions">
-      <button id="btnOpenLogin" class="btn white">Login</button>
-      <button id="btnOpenRegister" class="btn ghost">Register</button>
-      <div id="hamburger" class="hamburger" aria-label="Open menu" title="Menu">
-        <span></span><span></span><span></span>
-      </div>
-    </div>
-  </header>
-
-  <!-- Drawer -->
-  <div id="drawer" class="drawer" aria-hidden="true">
-    <div class="panel">
-      <h3>Explore</h3>
-      <div class="menu-item" data-overlay="about">About Us</div>
-      <div class="menu-item" data-overlay="mission">Mission & Vision</div>
-      <div class="menu-item" data-overlay="faq">FAQ / Support</div>
-      <hr style="margin:10px 0; border:none; border-top:1px solid #ffd3d3;" />
-      <div class="menu-item" data-action="close">Close</div>
-    </div>
-    <div class="scrim" data-action="close"></div>
+  <!-- SPLASH -->
+  <div id="splash" class="splash">
+    <div class="logo" aria-hidden="true">SU</div>
   </div>
 
-  <main class="auth-wrap">
-    <section class="auth-card">
-      <div class="logo-on-card" aria-hidden="true"></div>
-
-      <div class="tabs">
-        <button id="tabLogin" class="tab active" type="button">Login</button>
-        <button id="tabRegister" class="tab" type="button">Register</button>
+  <!-- MAIN APP -->
+  <div class="app">
+    <div class="cardWrap">
+      <div class="topLogo">
+        <div class="logo-sm" aria-hidden="true">SU</div>
       </div>
 
-      <!-- LOGIN -->
-      <div id="panelLogin">
-        <div class="inputs">
-          <div class="input">
-            <select id="loginRole" required>
-              <option value="">Select Role</option>
-              <option value="Customer">Customer</option>
-              <option value="Agent">Agent</option>
-              <option value="Admin" class="opt-admin">Admin</option>
-              <option value="SuperAdmin" class="opt-super">Super Admin</option>
-            </select>
-          </div>
-          <div class="input"><input id="loginEmail" type="email" placeholder="Email" /></div>
-          <div class="input">
-            <input id="loginPassword" type="password" placeholder="Password" />
-            <span class="toggle-eye" data-eye="#loginPassword">👁</span>
-          </div>
-          <div class="error" id="loginErr"></div>
-          <button id="btnDoLogin" class="btn red" style="width:100%;">Login</button>
-          <div class="help" style="margin-top:6px;"><a href="#" id="linkForgot">Forgot password?</a></div>
+      <div class="card" role="main" aria-labelledby="auth-heading">
+        <h2 id="auth-heading" style="text-align:center;margin:0 0 8px 0">Welcome to SkyUltimate</h2>
+
+        <div class="tabs" role="tablist" aria-label="Auth tabs">
+          <div id="tab-login" class="tab active" role="tab">Login</div>
+          <div id="tab-register" class="tab" role="tab">Register</div>
         </div>
-      </div>
 
-      <!-- REGISTER -->
-      <div id="panelRegister" style="display:none;">
-        <div class="inputs">
-          <div class="input">
-            <select id="regRole" required>
-              <option value="">Register as</option>
-              <option value="Customer">Customer</option>
-              <option value="Agent">Agent</option>
-              <option value="Admin" class="opt-admin">Admin</option>
-              <option value="SuperAdmin" class="opt-super">Super Admin</option>
+        <!-- Error / Success messages -->
+        <div id="msg" class="muted" aria-live="polite"></div>
+
+        <!-- Panels -->
+        <div id="panel" class="panel" style="height:auto">
+          <!-- LOGIN -->
+          <form id="loginForm" class="form" autocomplete="on">
+            <label for="login-role">Role</label>
+            <select id="login-role" name="role" required>
+              <!-- populated by JS -->
             </select>
-          </div>
-          <div class="input"><input id="regName" type="text" placeholder="Full Name" /></div>
-          <div class="input"><input id="regEmail" type="email" placeholder="Email" /></div>
-          <div class="input"><input id="regPhone" type="tel" placeholder="Phone (Optional)" /></div>
-          <div class="input">
-            <input id="regPassword" type="password" placeholder="Password (min 6 chars)" />
-            <span class="toggle-eye" data-eye="#regPassword">👁</span>
-          </div>
 
-          <!-- Agent/Admin bank details -->
-          <div id="bankWrap" style="display:none;">
-            <div class="note"><b>Bank Details (for payouts)</b></div>
-            <div class="input">
-              <select id="bankName">
-                <option value="">Select Bank</option>
-                <option>Moniepoint</option>
-                <option>Opay</option>
-                <option>Palmpay</option>
-                <option>UBA</option>
-                <option>GTBank</option>
-              </select>
+            <label for="login-email">Email</label>
+            <input id="login-email" name="email" type="email" placeholder="you@company.com" required />
+
+            <label for="login-password">Password</label>
+            <div style="position:relative">
+              <input id="login-password" name="password" type="password" placeholder="Enter password" required />
+              <button type="button" class="pwToggle" aria-label="Toggle password" title="Toggle" onclick="togglePassword('login-password')">
+                <span id="loginEye">👁️</span>
+              </button>
             </div>
-            <div class="input"><input id="bankNumber" type="text" placeholder="Account Number" /></div>
-            <div class="input"><input id="bankHolder" type="text" placeholder="Account Holder Name" /></div>
-          </div>
 
-          <div class="error" id="regErr"></div>
-          <button id="btnDoRegister" class="btn red" style="width:100%;">Create account</button>
+            <div class="actionRow">
+              <a href="#" id="forgotLink" class="small">Forgot password?</a>
+              <div class="small muted">Don't have an account? <a href="#" id="goRegister">Register</a></div>
+            </div>
+
+            <button id="loginBtn" class="btn" type="submit">Login</button>
+          </form>
+
+          <!-- REGISTER -->
+          <form id="registerForm" class="form hidden" autocomplete="on">
+            <label for="reg-role">Role</label>
+            <select id="reg-role" name="role" required></select>
+
+            <label for="reg-name">Full name</label>
+            <input id="reg-name" name="name" type="text" placeholder="Your full name" required />
+
+            <label for="reg-email">Email</label>
+            <input id="reg-email" name="email" type="email" placeholder="you@company.com" required />
+
+            <label for="reg-password">Password</label>
+            <div style="position:relative">
+              <input id="reg-password" name="password" type="password" placeholder="Create password" required />
+              <button type="button" class="pwToggle" aria-label="Toggle password" title="Toggle" onclick="togglePassword('reg-password')">
+                <span id="regEye">👁️</span>
+              </button>
+            </div>
+
+            <!-- dynamic container for role-specific fields -->
+            <div id="roleSpecific" style="margin-top:8px"></div>
+
+            <div class="muted small">By registering you agree to our <a href="#">terms</a>.</div>
+            <button id="registerBtn" class="btn" type="submit">Register</button>
+          </form>
+
+          <!-- FORGOT PASSWORD -->
+          <form id="forgotForm" class="form hidden">
+            <h3 style="margin-top:0">Reset password</h3>
+            <label for="forgot-email">Email</label>
+            <input id="forgot-email" name="email" type="email" placeholder="you@company.com" required />
+            <div class="muted small">We'll email you a link to reset your password.</div>
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button id="sendResetBtn" class="btn" type="submit">Send reset link</button>
+              <button id="backToLogin" type="button" class="btn ghost">Back</button>
+            </div>
+          </form>
         </div>
+
       </div>
-
-      <!-- QUICK ESTIMATOR (public) -->
-      <div style="margin-top:16px;">
-        <div class="note"><b>Quick Price Estimate</b> (exact price after login)</div>
-        <div class="inputs">
-          <div class="input">
-            <select id="itItem">
-              <option value="">Item Type</option>
-              <option value="document">Document</option>
-              <option value="parcel">Parcel</option>
-              <option value="general">General Goods</option>
-            </select>
-          </div>
-          <div class="input"><input id="itWeight" type="number" min="0" step="0.1" placeholder="Weight (kg)" /></div>
-          <div class="input"><input id="itFrom" type="text" placeholder="Pickup Address (City/Area)" /></div>
-          <div class="input"><input id="itTo" type="text" placeholder="Delivery Address (City/Area)" /></div>
-          <button id="btnEstimate" class="btn ghost" style="width:100%;">Estimate</button>
-          <div id="estResult" class="note"></div>
-        </div>
-      </div>
-
-    </section>
-  </main>
-
-  <footer>© <span id="year"></span> SkyUltimate Delivery Service. All rights reserved.</footer>
-</div>
-
-<!-- ------------- HOME HUB (after login) ------------- -->
-<section id="homeHub" class="home-hub">
-  <header class="top">
-    <div class="brand">
-      <img alt="SkyUltimate" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" />
-      <div>
-        <div class="title">SkyUltimate</div>
-        <div class="tag">Welcome back!</div>
-      </div>
-    </div>
-    <div class="top-actions">
-      <span id="roleBadge" class="role-badge">Guest</span>
-      <button id="btnLogout" class="btn ghost">Logout</button>
-      <div id="hamburger2" class="hamburger" aria-label="Open menu" title="Menu">
-        <span></span><span></span><span></span>
-      </div>
-    </div>
-  </header>
-
-  <!-- Drawer (home) -->
-  <div id="drawer2" class="drawer" aria-hidden="true">
-    <div class="panel">
-      <h3>Explore</h3>
-      <div class="menu-item" data-overlay="about">About Us</div>
-      <div class="menu-item" data-overlay="mission">Mission & Vision</div>
-      <div class="menu-item" data-overlay="faq">FAQ / Support</div>
-      <hr style="margin:10px 0; border:none; border-top:1px solid #ffd3d3;" />
-      <div class="menu-item" data-action="close">Close</div>
-    </div>
-    <div class="scrim" data-action="close"></div>
-  </div>
-
-  <div class="home-inner">
-    <h1 id="welcomeMsg">Welcome back!</h1>
-    <p style="opacity:.95; max-width:760px; margin:0 auto;">
-      Your account is ready. Choose your dashboard to continue.
-    </p>
-    <div class="main-cta">
-      <a id="roleCTA" href="#" class="big-red">Go to my dashboard</a>
-    </div>
-
-    <!-- Company bank details (from settings or fallback) -->
-    <div class="bank-card" id="companyBanks" style="display:none;">
-      <h3>Company Bank Details</h3>
-      <div id="bankLines" style="line-height:1.6;"></div>
     </div>
   </div>
 
-  <footer>© <span id="year2"></span> SkyUltimate Delivery Service. All rights reserved.</footer>
-</section>
+  <script>
+    /* ------------- CONFIG ------------- */
+    const API_BASE = "https://skyultimate-backend-api-structure.onrender.com".replace(/\/+$/, '');
+    // Default endpoints - edit if backend uses different paths
+    const ENDPOINTS = {
+      login: API_BASE + "/api/auth/login",
+      register: API_BASE + "/api/auth/register",
+      forgot: API_BASE + "/api/auth/forgot-password",
+      // optional endpoint that your backend may offer to inform UI about role availability
+      roleConfig: API_BASE + "/api/auth/roles" // may return JSON like { adminEnabled: true, superAdminAvailable: false }
+    };
 
-<!-- ------------- FULLSCREEN OVERLAYS ------------- -->
-<!-- ABOUT -->
-<article id="ov-about" class="overlay" aria-hidden="true">
-  <button class="close" data-close="about">Close</button>
-  <h2>About Us</h2>
-  <p>Welcome to SkyUltimate Delivery Service, where we're dedicated to taking your delivery experience to new heights! Founded in 2024, our company was born from a simple idea: to create a delivery service that's not just fast and reliable, but also puts the customer first.</p>
-  <p>Whether it’s urgent documents, parcels, groceries, or general goods, our mission is to move them safely, quickly, and transparently. We’re building a platform that’s friendly to customers, rewarding to agents, and powerful for operations teams.</p>
-</article>
-
-<!-- MISSION & VISION -->
-<article id="ov-mission" class="overlay" aria-hidden="true">
-  <button class="close" data-close="mission">Close</button>
-  <h2>Our Mission</h2>
-  <p>To provide a seamless, reliable, and efficient delivery experience that exceeds our customers’ expectations through technology, transparency, and great people.</p>
-  <h2>Our Vision</h2>
-  <p>To be the industry leader in delivery services, known for our speed, reliability, and unwavering commitment to customer satisfaction.</p>
-</article>
-
-<!-- FAQ / SUPPORT -->
-<article id="ov-faq" class="overlay" aria-hidden="true">
-  <button class="close" data-close="faq">Close</button>
-  <h2>FAQ & Support</h2>
-  <p><b>How do I track my package?</b> You’ll receive a tracking number after placing an order. Use it in your dashboard to see live status.</p>
-  <p><b>Delivery hours:</b> 9:00 AM – 6:00 PM, Mon–Sat. Special arrangements are possible — contact support.</p>
-  <p><b>Contact:</b> WhatsApp / Phone: <a href="https://wa.me/2349128884830" target="_blank" rel="noopener">09128884830</a> — Email: <a href="mailto:nelsongodspower24@gmail.com">nelsongodspower24@gmail.com</a></p>
-</article>
-
-<script>
-/* ============================================================
-   CONFIG
-============================================================ */
-const API_HOST = "https://skyultimate-backend-api-structure.onrender.com";
-const API_BASES = [API_HOST + "/api", API_HOST]; // tries /api first, then fallback
-const STORAGE = sessionStorage; // per your requirement earlier
-const LOGO_URL = "https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png";
-
-// Fallback company banks (used if /settings not available)
-const FALLBACK_BANKS = [
-  { bankName:"Moniepoint", accountNumber:"9128884830", accountHolderName:"Nelson Emmanuel Godspower" },
-  { bankName:"Opay",       accountNumber:"9128884830", accountHolderName:"Nelson Emmanuel Godspower" },
-  { bankName:"Palmpay",    accountNumber:"9128884830", accountHolderName:"Nelson Emmanuel Godspower" },
-  { bankName:"UBA",        accountNumber:"234 2 835 397", accountHolderName:"Nelson Emmanuel Godspower" },
-  { bankName:"GTBank",     accountNumber:"0734090626", accountHolderName:"Nelson Emmanuel Godspower" },
-];
-
-/* ============================================================
-   HELPERS
-============================================================ */
-const $ = sel => document.querySelector(sel);
-function show(el){ el.style.display=""; }
-function hide(el){ el.style.display="none"; }
-function setText(el, txt){ el.textContent = txt; }
-function toast(msg, err=false){
-  alert((err?"❌ ":"✅ ")+msg); // simple toast; 
-function getToken(){ return STORAGE.getItem("token") || null; }
-function setToken(t){ if(t) STORAGE.setItem("token", t); }
-function clearSession(){ STORAGE.clear(); }
-function getUser(){ try{ return JSON.parse(STORAGE.getItem("user")||"null"); }catch{ return null; } }
-function setUser(u){ STORAGE.setItem("user", JSON.stringify(u)); }
-
-/** Try a path across possible bases (/api then fallback) */
-async function api(path, options={}){
-  for(const base of API_BASES){
-    try{
-      const res = await fetch(base + path, options);
-      if(res.status !== 404) return res; // use first non-404
-    }catch(e){ /* try next */ }
-  }
-  // last try (if both 404)
-  return fetch(API_BASES[0] + path, options);
-}
-
-/** Authorized GET */
-async function apiGET(path){
-  const token = getToken();
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
-  const res = await api(path, { headers });
-  const data = await res.json().catch(()=> ({}));
-  if(!res.ok) throw new Error(data.error || data.message || `Request failed: ${res.status}`);
-  return data;
-}
-/** Authorized POST/PUT/PATCH/DELETE */
-async function apiJSON(path, method, body){
-  const token = getToken();
-  const headers = { "Content-Type":"application/json" };
-  if(token) headers.Authorization = `Bearer ${token}`;
-  const res = await api(path, { method, headers, body: JSON.stringify(body||{}) });
-  const data = await res.json().catch(()=> ({}));
-  if(!res.ok) throw new Error(data.error || data.message || `Request failed: ${res.status}`);
-  return data;
-}
-
-/* ============================================================
-   UI FLOW
-============================================================ */
-const splash = $("#splash");
-const authPage = $("#authPage");
-const homeHub = $("#homeHub");
-
-/** Splash → Auth Page */
-function boot(){
-  setTimeout(()=>{
-    splash.classList.add("splash--hidden");
-    show(authPage);
-  }, 3000);
-  $("#year").textContent = new Date().getFullYear();
-  $("#year2").textContent = new Date().getFullYear();
-
-  // If already logged in, jump to home hub
-  if(getToken() && getUser()){
-    enterHome();
-  }
-}
-document.addEventListener("DOMContentLoaded", boot);
-
-/* --------------------- Drawer --------------------- */
-function wireDrawer(rootId){
-  const root = $(rootId);
-  const panel = root.querySelector(".panel");
-  root.addEventListener("click", (e)=>{
-    const act = e.target.dataset.action;
-    if(act==="close"){ root.classList.remove("open"); return; }
-  });
-  return {
-    open: ()=> root.classList.add("open"),
-    close: ()=> root.classList.remove("open")
-  };
-}
-const drawer1 = wireDrawer("#drawer");
-const drawer2 = wireDrawer("#drawer2");
-
-$("#hamburger").addEventListener("click", ()=>{
-  $("#hamburger").classList.toggle("active");
-  drawer1.open();
-});
-$("#hamburger2").addEventListener("click", ()=>{
-  $("#hamburger2").classList.toggle("active");
-  drawer2.open();
-});
-
-/* --------------------- Overlays --------------------- */
-function openOverlay(key){ $(`#ov-${key}`).style.display="block"; }
-function closeOverlay(key){ $(`#ov-${key}`).style.display="none"; }
-document.querySelectorAll(".menu-item[data-overlay]").forEach(mi=>{
-  mi.addEventListener("click", ()=>{
-    const key = mi.dataset.overlay;
-    drawer1.close(); drawer2.close();
-    openOverlay(key);
-  });
-});
-document.querySelectorAll(".overlay .close").forEach(btn=>{
-  btn.addEventListener("click", ()=> closeOverlay(btn.dataset.close));
-});
-
-/* --------------------- Tabs / Eye toggles --------------------- */
-const tabLogin = $("#tabLogin");
-const tabRegister = $("#tabRegister");
-const panelLogin = $("#panelLogin");
-const panelRegister = $("#panelRegister");
-
-tabLogin.addEventListener("click", ()=>{
-  tabLogin.classList.add("active"); tabRegister.classList.remove("active");
-  show(panelLogin); hide(panelRegister);
-});
-tabRegister.addEventListener("click", ()=>{
-  tabRegister.classList.add("active"); tabLogin.classList.remove("active");
-  show(panelRegister); hide(panelLogin);
-});
-$("#btnOpenLogin").addEventListener("click", ()=> tabLogin.click());
-$("#btnOpenRegister").addEventListener("click", ()=> tabRegister.click());
-
-document.querySelectorAll(".toggle-eye").forEach(eye=>{
-  eye.addEventListener("click", ()=>{
-    const inp = document.querySelector(eye.dataset.eye);
-    if(!inp) return;
-    inp.type = (inp.type === "password") ? "text" : "password";
-  });
-});
-
-/* --------------------- Role-specific fields on Register --------------------- */
-const regRole = $("#regRole");
-const bankWrap = $("#bankWrap");
-regRole.addEventListener("change", ()=>{
-  const role = regRole.value;
-  if(role==="Agent" || role==="Admin"){ bankWrap.style.display="block"; }
-  else{ bankWrap.style.display="none"; }
-});
-
-/* ============================================================
-   SETTINGS + FLAGS (Admin registration toggle, SuperAdmin first-time)
-============================================================ */
-async function applyFlags(){
-  try{
-    // Try to read settings
-    const settings = await apiGET("/settings");
-    const adminEnabled = !!settings.adminRegistrationEnabled;
-    document.querySelectorAll(".opt-admin").forEach(o=> o.style.display = adminEnabled ? "" : "none");
-
-    // Company bank details (for home hub card)
-    if(settings.bankDetails || settings.companyBanks){
-      const list = settings.companyBanks || [settings.bankDetails];
-      renderCompanyBanks(list);
-    }else{
-      renderCompanyBanks(FALLBACK_BANKS);
+    /* ------------- UTILITIES ------------- */
+    function el(id){return document.getElementById(id)}
+    function show(selector){ selector.classList.remove('hidden'); selector.style.display = ''; }
+    function hide(selector){ selector.classList.add('hidden'); selector.style.display = 'none'; }
+    function setMsg(text, type='muted'){ const m = el('msg'); m.className = type; m.textContent = text; if(!text) m.className='muted' }
+    function togglePassword(id){
+      const ip = el(id); if(!ip) return;
+      ip.type = ip.type === 'password' ? 'text' : 'password';
     }
-  }catch(e){
-    // Settings not available → keep Admin visible by default, use fallback banks
-    document.querySelectorAll(".opt-admin").forEach(o=> o.style.display = "");
-    renderCompanyBanks(FALLBACK_BANKS);
-  }
+    function sleep(ms){ return new Promise(res=>setTimeout(res,ms)) }
 
-  // SuperAdmin visibility: if backend provides a flag, use it; else leave visible
-  try{
-    const res = await apiGET("/users/can-register-superadmin");
-    const can = !!res.canRegister;
-    document.querySelectorAll(".opt-super").forEach(o=> o.style.display = can ? "" : "none");
-  }catch{ /* keep visible by default */ }
-}
-function renderCompanyBanks(banks){
-  const wrap = $("#companyBanks");
-  const lines = $("#bankLines");
-  lines.innerHTML = banks.map(b => `<div><b>${b.bankName}:</b> ${b.accountNumber} — <i>${b.accountHolderName}</i></div>`).join("");
-  show(wrap);
-}
-applyFlags();
+    /* ------------- ROLE CONFIG (UI) ------------- */
+    // default UI options (will fetch server config if available)
+    let roleConfig = {
+      adminEnabled: false, // Admin registration/selection only available if enabled
+      superAdminAvailable: !localStorage.getItem('superAdminUsed'), // UI fallback
+      rolesOrder: ['Customer','Agent Admin','Super Admin']
+    };
 
-/* ============================================================
-   AUTH — Register / Login / Forgot
-============================================================ */
-const loginErr = $("#loginErr");
-const regErr = $("#regErr");
-
-async function doRegister(){
-  regErr.textContent = "";
-  const role = $("#regRole").value.trim();
-  const name = $("#regName").value.trim();
-  const email = $("#regEmail").value.trim();
-  const phone = $("#regPhone").value.trim();
-  const password = $("#regPassword").value;
-
-  if(!role || !name || !email || !password){
-    regErr.textContent = "Please fill all required fields.";
-    return;
-  }
-
-  const bankDetails = (role==="Agent" || role==="Admin") ? {
-    bankName: $("#bankName").value.trim(),
-    accountNumber: $("#bankNumber").value.trim(),
-    accountHolderName: $("#bankHolder").value.trim()
-  } : null;
-
-  try{
-    const payload = { name, email, password, role, phone };
-    if(bankDetails && (bankDetails.bankName || bankDetails.accountNumber || bankDetails.accountHolderName)){
-      payload.bankDetails = bankDetails;
+    // Attempt to fetch server-provided role config; fail silently if backend doesn't provide it.
+    async function fetchRoleConfig(){
+      try{
+        const r = await fetch(ENDPOINTS.roleConfig, { method:'GET', headers:{'Accept':'application/json'} });
+        if(!r.ok) return;
+        const j = await r.json();
+        // Expect j to include adminEnabled and superAdminAvailable booleans; merge safely
+        if(typeof j.adminEnabled === 'boolean') roleConfig.adminEnabled = j.adminEnabled;
+        if(typeof j.superAdminAvailable === 'boolean') roleConfig.superAdminAvailable = j.superAdminAvailable;
+        if(Array.isArray(j.rolesOrder)) roleConfig.rolesOrder = j.rolesOrder;
+      }catch(e){
+        // console.warn("role config fetch failed:", e)
+      }
     }
-    const data = await apiJSON("/users/register", "POST", payload);
-    // Expect: token + user or similar
-    if(data.token) setToken(data.token);
-    if(data.user) setUser(data.user);
-    toast("Registration successful!");
-    enterHome();
-  }catch(e){
-    regErr.textContent = e.message;
-  }
-}
-$("#btnDoRegister").addEventListener("click", doRegister);
 
-async function doLogin(){
-  loginErr.textContent = "";
-  const role = $("#loginRole").value.trim(); // your logic requires role selection
-  const email = $("#loginEmail").value.trim();
-  const password = $("#loginPassword").value;
+    function buildRoleOptions(selectEl, includeSuper=true){
+      // Clear
+      selectEl.innerHTML='';
+      const addOpt = (r, disabled=false) => {
+        const opt = document.createElement('option');
+        opt.value = r; opt.textContent = r;
+        if(disabled) opt.disabled = true;
+        selectEl.appendChild(opt);
+      };
+      // Determine if Admin is visible
+      const adminVisible = roleConfig.adminEnabled;
+      for(const r of roleConfig.rolesOrder){
+        if(r === 'Agent Admin') addOpt(r, false);
+        else if(r === 'Customer') addOpt(r, false);
+        else if(r === 'Super Admin'){
+          if(roleConfig.superAdminAvailable) addOpt(r,false);
+          else addOpt(r,true);
+        }
+        else if(r === 'Admin'){
+          if(adminVisible) addOpt(r,false);
+          else addOpt(r,true);
+        } else {
+          addOpt(r,false);
+        }
+      }
+    }
 
-  if(!role || !email || !password){
-    loginErr.textContent = "Please select role and enter credentials.";
-    return;
-  }
-  try{
-    const data = await apiJSON("/users/login", "POST", { email, password, role });
-    if(!data.token) throw new Error("No token returned.");
-    setToken(data.token);
+    /* ------------- UI LIFECYCLE ------------- */
+    window.addEventListener('DOMContentLoaded', async ()=>{
+      // Splash logic: show for 3s then cross-fade
+      const splash = el('splash');
+      await sleep(3000);
+      splash.classList.add('hidden');
 
-    // Fetch profile
-    const me = await apiGET("/users/me");
-    setUser(me);
+      // Load role config then populate selects
+      await fetchRoleConfig();
+      buildRoleOptions(el('login-role'));
+      buildRoleOptions(el('reg-role'));
 
-    toast("Login successful!");
-    enterHome();
-  }catch(e){
-    loginErr.textContent = e.message || "Invalid credentials. Please check your role and details.";
-  }
-}
-$("#btnDoLogin").addEventListener("click", doLogin);
+      // wire tab toggles
+      setupTabs();
 
-$("#linkForgot").addEventListener("click", async (e)=>{
-  e.preventDefault();
-  const email = prompt("Enter your account email for password reset:");
-  if(!email) return;
-  try{
-    await apiJSON("/users/forgot-password", "POST", { email });
-    toast("If the email exists, a reset link has been sent.");
-  }catch(err){
-    toast(err.message, true);
-  }
-});
+      // wire forms
+      setupForms();
+    });
 
-/* ============================================================
-   ESTIMATOR (public)
-============================================================ */
-$("#btnEstimate").addEventListener("click", async ()=>{
-  const itemType = $("#itItem").value;
-  const weight = parseFloat($("#itWeight").value || "0");
-  const from = $("#itFrom").value.trim();
-  const to = $("#itTo").value.trim();
-  const estResult = $("#estResult");
+    /* ---------- TABS / NAV ---------- */
+    function setupTabs(){
+      const tabLogin = el('tab-login'), tabReg = el('tab-register');
+      const loginForm = el('loginForm'), registerForm = el('registerForm'), forgotForm = el('forgotForm');
+      const goRegister = el('goRegister');
+      tabLogin.addEventListener('click', ()=>{ setActiveTab('login') });
+      tabReg.addEventListener('click', ()=>{ setActiveTab('register') });
+      goRegister.addEventListener('click', (e)=>{ e.preventDefault(); setActiveTab('register') });
 
-  if(!itemType || !weight || !from || !to){
-    estResult.textContent = "Please fill all fields.";
-    return;
-  }
-  try{
-    const data = await apiJSON("/orders/estimate", "POST", { itemType, weight, from, to });
-    estResult.textContent = data && data.price ? `Estimated Price: ₦${Number(data.price).toLocaleString()}` : "Estimate ready.";
-  }catch(e){
-    estResult.textContent = e.message;
-  }
-});
+      el('forgotLink').addEventListener('click', (e)=>{ e.preventDefault(); showForgot() });
+      el('backToLogin').addEventListener('click', ()=>{ setActiveTab('login') });
 
-/* ============================================================
-   HOME HUB (post-login)
-============================================================ */
-function enterHome(){
-  hide(authPage);
-  show(homeHub);
-  const user = getUser();
-  const name = user?.name || "User";
-  const role = user?.role || "Customer";
-  $("#welcomeMsg").textContent = `Welcome back, ${name}!`;
-  $("#roleBadge").textContent = role;
+      function setActiveTab(which){
+        if(which === 'login'){
+          tabLogin.classList.add('active'); tabReg.classList.remove('active');
+          show(el('loginForm')); hide(el('registerForm')); hide(el('forgotForm'));
+          setMsg('');
+        } else {
+          tabReg.classList.add('active'); tabLogin.classList.remove('active');
+          hide(el('loginForm')); show(el('registerForm')); hide(el('forgotForm'));
+          setMsg('');
+        }
+      }
 
-  const cta = $("#roleCTA");
-  // role-based target pages (change these if your filenames differ)
-  const map = {
-    Customer: { text:"Go to My Dashboard", href:"/customer-dashboard.html" },
-    Agent: { text:"Go to Delivery Board", href:"/agent-dashboard.html" },
-    Admin: { text:"Go to Operations Hub", href:"/admin-dashboard.html" },
-    SuperAdmin: { text:"Go to Master Control Panel", href:"/super-admin-dashboard.html" },
-  };
-  const target = map[role] || map.Customer;
-  cta.textContent = target.text;
-  cta.setAttribute("href", target.href);
-}
+      function showForgot(){
+        hide(el('loginForm')); hide(el('registerForm')); show(el('forgotForm'));
+        setMsg('');
+      }
 
-// Logout from home hub
-$("#btnLogout").addEventListener("click", ()=>{
-  clearSession();
-  toast("Logged out.");
-  show(authPage);
-  hide(homeHub);
-});
+      // update role-specific fields when register role changes
+      el('reg-role').addEventListener('change', renderRoleSpecific);
+      renderRoleSpecific();
+    }
 
-/* ============================================================
-   MISC
-============================================================ */
-</script>
-</body>
-</html>
-  
+    /* ---------- DYNAMIC FIELDS ---------- */
+    function renderRoleSpecific(){
+      const role = el('reg-role').value || 'Customer';
+      const container = el('roleSpecific');
+      container.innerHTML = '';
+      if(role === 'Agent Admin' || role.toLowerCase().includes('agent')){
+        container.innerHTML = `
+          <label for="bank-name">Bank name</label>
+          <input id="bank-name" name="bankName" type="text" placeholder="Bank name" required />
+          <label for="bank-account">Account number</label>
+          <input id="bank-account" name="bankAccount" type="text" placeholder="Account number" required />
+        `;
+      } else {
+        // no extra fields
+      }
+    }
+
+    /* ---------- FORMS ---------- */
+    function setupForms(){
+      // Login
+      el('loginForm').addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        setMsg('');
+        const role = el('login-role').value.trim();
+        const email = el('login-email').value.trim();
+        const password = el('login-password').value;
+        if(!role || !email || !password){ setMsg('Please fill all fields.', 'error'); return; }
+
+        el('loginBtn').disabled = true; el('loginBtn').textContent = 'Signing in...';
+        try{
+          const resp = await fetch(ENDPOINTS.login, {
+            method:'POST',
+            headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
+            body: JSON.stringify({ role, email, password })
+          });
+          const dataText = await resp.text();
+          let data;
+          try{ data = JSON.parse(dataText); } catch(e){ data = { message: dataText } }
+          if(resp.ok){
+            // expected token + user in response e.g. { token, user: { id, email, role, ... } }
+            const token = data.token || data.accessToken;
+            const user = data.user || data;
+            if(token){
+              localStorage.setItem('su_token', token);
+              localStorage.setItem('su_user', JSON.stringify(user));
+              setMsg('Login successful. Redirecting...', 'success');
+              // If server returned role info about super admin, update local flag
+              if(user && user.role && user.role.toLowerCase().includes('super')) {
+                localStorage.setItem('superAdminUsed','1');
+              }
+              // Redirect stub: replace with your real universal home page
+              setTimeout(()=>{ window.location.href = '/home.html'; }, 900);
+            } else {
+              // If no token, still store user and show message
+              localStorage.setItem('su_user', JSON.stringify(user||{}));
+              setMsg('Logged in (no token received).', 'success');
+            }
+          } else {
+            const err = data && (data.message || data.error) ? (data.message || data.error) : `Login failed (${resp.status}).`;
+            setMsg(err, 'error');
+          }
+        } catch(err){
+          setMsg('Network error: could not reach the auth server.', 'error');
+        } finally {
+          el('loginBtn').disabled = false; el('loginBtn').textContent = 'Login';
+        }
+      });
+
+      // Register
+      el('registerForm').addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        setMsg('');
+        const role = el('reg-role').value.trim();
+        const name = el('reg-name').value.trim();
+        const email = el('reg-email').value.trim();
+        const password = el('reg-password').value;
+        if(!role || !name || !email || !password){ setMsg('Please fill all required fields.', 'error'); return; }
+
+        // collect role-specific
+        const payload = { role, name, email, password };
+        if(role === 'Agent Admin' || role.toLowerCase().includes('agent')){
+          payload.bankName = el('bank-name') ? el('bank-name').value.trim() : '';
+          payload.bankAccount = el('bank-account') ? el('bank-account').value.trim() : '';
+          if(!payload.bankName || !payload.bankAccount){
+            setMsg('Please provide bank name and account number for Agent Admins.', 'error'); return;
+          }
+        }
+
+        el('registerBtn').disabled = true; el('registerBtn').textContent = 'Registering...';
+        try{
+          const resp = await fetch(ENDPOINTS.register, {
+            method:'POST',
+            headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const dataText = await resp.text();
+          let data;
+          try{ data = JSON.parse(dataText); } catch(e){ data = { message: dataText } }
+          if(resp.ok){
+            setMsg('Registration successful. Please log in.', 'success');
+            // If the user created Super Admin, set local flag to disable UI option afterwards
+            if(role.toLowerCase().includes('super')){
+              localStorage.setItem('superAdminUsed','1');
+              roleConfig.superAdminAvailable = false;
+              buildRoleOptions(el('login-role')); buildRoleOptions(el('reg-role'));
+            }
+            // switch to login after short delay
+            setTimeout(()=>{ document.getElementById('tab-login').click(); }, 900);
+          } else {
+            const err = data && (data.message || data.error) ? (data.message || data.error) : `Registration failed (${resp.status}).`;
+            setMsg(err, 'error');
+          }
+        } catch(err){
+          setMsg('Network error: could not reach the auth server.', 'error');
+        } finally {
+          el('registerBtn').disabled = false; el('registerBtn').textContent = 'Register';
+        }
+      });
+
+      // Forgot password
+      el('forgotForm').addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        setMsg('');
+        const email = el('forgot-email').value.trim();
+        if(!email){ setMsg('Please enter your email.', 'error'); return; }
+        el('sendResetBtn').disabled = true; el('sendResetBtn').textContent = 'Sending...';
+        try{
+          const resp = await fetch(ENDPOINTS.forgot, {
+            method:'POST',
+            headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
+            body: JSON.stringify({ email })
+          });
+          const dataText = await resp.text();
+          let data;
+          try{ data = JSON.parse(dataText); } catch(e){ data = { message: dataText } }
+          if(resp.ok){
+            setMsg('A password reset link has been sent to your email.', 'su
