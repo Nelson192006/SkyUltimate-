@@ -1,446 +1,381 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SkyUltimate — Auth</title>
-  <meta name="theme-color" content="#C00000" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkyUltimate Auth</title>
   <style>
-    /* ---------- THEME / RESET ---------- */
-    :root{
-      --brand:#C00000;
-      --brand-dark:#a00000;
-      --card-bg: rgba(255,255,255,0.95);
-      --glass: rgba(255,255,255,0.85);
-      --muted:#666;
-      --success:#0a9a48;
-      --danger:#d23;
-      --maxw:420px;
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    /* ----------- GLOBAL THEME ----------- */
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #C00000;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:var(--brand);color:#111}
-    a{color:inherit;text-decoration:none}
-    .center{display:flex;align-items:center;justify-content:center}
-    /* ---------- SPLASH ---------- */
-    .splash{
-      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-      background:var(--brand);z-index:40;transition:opacity .6s ease, visibility .6s ease;
+    .hidden { display: none; }
+    .center {
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-    .splash.hidden{opacity:0;visibility:hidden;pointer-events:none}
-    .logo{
-      width:124px;height:124px;border-radius:20px;background:white;display:flex;
-      align-items:center;justify-content:center;font-weight:800;color:var(--brand);
-      transform:translateY(0);opacity:0;animation:logoIn .5s forwards;
-      box-shadow:0 6px 20px rgba(0,0,0,.12)
+
+    /* ----------- SPLASH ----------- */
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: #C00000;
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 1;
+      transition: opacity 1s ease;
     }
-    @keyframes logoIn{to{opacity:1;transform:translateY(0)}}
-    .app{
-      min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px;
-      position:relative;overflow:auto;
+    #splash.fade-out {
+      opacity: 0;
+      pointer-events: none;
     }
-    /* ---------- CARD ---------- */
-    .cardWrap{width:100%;max-width:var(--maxw)}
-    .topLogo{display:flex;align-items:center;justify-content:center;margin-bottom:18px}
-    .topLogo .logo-sm{width:78px;height:78px;border-radius:14px;background:white;display:flex;
-      align-items:center;justify-content:center;font-weight:700;color:var(--brand);box-shadow:0 6px 18px rgba(0,0,0,.12)}
-    .card{
-      background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.96));
-      border-radius:14px;padding:20px;box-shadow:0 10px 40px rgba(0,0,0,.14)
+    #splash img {
+      width: 200px;
+      height: auto;
+      animation: fadeIn 0.8s ease-in-out forwards;
+      filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.6));
     }
-    .tabs{display:flex;gap:8px;margin-bottom:12px}
-    .tab{
-      flex:1;padding:10px 14px;border-radius:10px;text-align:center;font-weight:600;cursor:pointer;
-      background:transparent;color:var(--muted);border:1px solid transparent;transition:all .22s
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
     }
-    .tab.active{background:white;color:var(--brand);box-shadow:0 6px 18px rgba(0,0,0,.06)}
-    .form{transition:all .32s}
-    label{display:block;font-size:13px;margin-top:10px;color:#222;font-weight:600}
-    input, select, textarea{
-      width:100%;padding:10px 12px;border-radius:8px;border:1px solid #e6e6e6;margin-top:6px;font-size:14px;
-      outline:none;background:transparent;
+
+    /* ----------- AUTH CARD ----------- */
+    #auth-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      height: 100vh;
+      padding-top: 60px;
     }
-    .row{display:flex;gap:8px}
-    .btn{
-      width:100%;padding:12px;border-radius:10px;border:0;font-weight:700;background:var(--brand);
-      color:white;cursor:pointer;margin-top:12px;box-shadow:0 8px 22px rgba(192,0,0,.18)
+    .auth-card {
+      width: 350px;
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      padding: 20px;
+      animation: fadeIn 1s ease-in-out;
     }
-    .btn.ghost{background:transparent;color:var(--brand);border:1px solid rgba(0,0,0,.05)}
-    .muted{font-size:13px;color:var(--muted);margin-top:8px}
-    .error{color:var(--danger);font-size:13px;margin-top:8px}
-    .success{color:var(--success);font-size:13px;margin-top:8px}
-    .small{font-size:13px;color:#444}
-    .actionRow{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
-    .pwToggle{position:relative;display:inline-flex;align-items:center}
-    .pwToggle button{position:absolute;right:8px;top:8px;border:0;background:none;cursor:pointer;font-size:14px}
-    /* form transitions */
-    .panel{overflow:hidden;transition:height .28s ease}
-    .hidden{display:none}
-    /* simple responsive */
-    @media (max-width:520px){:root{--maxw:420px};body{padding:6px}}
+    .logo {
+      display: block;
+      margin: 0 auto 20px;
+      width: 120px;
+    }
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #ddd;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #C00000;
+    }
+    .tab.active {
+      border-bottom: 3px solid #C00000;
+    }
+    .form-group {
+      margin: 12px 0;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 35px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #555;
+    }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: #C00000;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 15px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .btn:hover { background: #a00000; }
+    .link {
+      color: #C00000;
+      font-size: 14px;
+      cursor: pointer;
+      text-align: center;
+      display: block;
+      margin-top: 10px;
+    }
+    .error {
+      color: red;
+      font-size: 13px;
+      margin-top: 5px;
+    }
+    .success {
+      color: green;
+      font-size: 13px;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
-  <!--
-    Single-file auth page for SkyUltimate.
-    API base (edit if needed): const API_BASE = "https://skyultimate-backend-api-structure.onrender.com/"
-    NOTE: If your backend uses different route names, update endpoints in the JS section below.
-  -->
 
-  <!-- SPLASH -->
-  <div id="splash" class="splash">
-    <div class="logo" aria-hidden="true">SU</div>
+  <!-- Splash Screen -->
+  <div id="splash">
+    <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/a5f786dcce3129d2108de5e2bc660f0f11b6a7c8/logo.png" alt="SkyUltimate Logo"/>
   </div>
 
-  <!-- MAIN APP -->
-  <div class="app">
-    <div class="cardWrap">
-      <div class="topLogo">
-        <div class="logo-sm" aria-hidden="true">SU</div>
+  <!-- Auth Container -->
+  <div id="auth-container" class="hidden">
+    <div class="auth-card">
+      <img class="logo" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/a5f786dcce3129d2108de5e2bc660f0f11b6a7c8/logo.png" alt="SkyUltimate Logo"/>
+      <div class="tabs">
+        <div id="login-tab" class="tab active">Login</div>
+        <div id="register-tab" class="tab">Register</div>
       </div>
 
-      <div class="card" role="main" aria-labelledby="auth-heading">
-        <h2 id="auth-heading" style="text-align:center;margin:0 0 8px 0">Welcome to SkyUltimate</h2>
-
-        <div class="tabs" role="tablist" aria-label="Auth tabs">
-          <div id="tab-login" class="tab active" role="tab">Login</div>
-          <div id="tab-register" class="tab" role="tab">Register</div>
+      <!-- Login Form -->
+      <div id="login-form">
+        <div class="form-group">
+          <label>Role</label>
+          <select id="login-role">
+            <option value="Customer">Customer</option>
+            <option value="Agent Admin">Agent Admin</option>
+            <option value="Super Admin">Super Admin</option>
+          </select>
         </div>
-
-        <!-- Error / Success messages -->
-        <div id="msg" class="muted" aria-live="polite"></div>
-
-        <!-- Panels -->
-        <div id="panel" class="panel" style="height:auto">
-          <!-- LOGIN -->
-          <form id="loginForm" class="form" autocomplete="on">
-            <label for="login-role">Role</label>
-            <select id="login-role" name="role" required>
-              <!-- populated by JS -->
-            </select>
-
-            <label for="login-email">Email</label>
-            <input id="login-email" name="email" type="email" placeholder="you@company.com" required />
-
-            <label for="login-password">Password</label>
-            <div style="position:relative">
-              <input id="login-password" name="password" type="password" placeholder="Enter password" required />
-              <button type="button" class="pwToggle" aria-label="Toggle password" title="Toggle" onclick="togglePassword('login-password')">
-                <span id="loginEye">👁️</span>
-              </button>
-            </div>
-
-            <div class="actionRow">
-              <a href="#" id="forgotLink" class="small">Forgot password?</a>
-              <div class="small muted">Don't have an account? <a href="#" id="goRegister">Register</a></div>
-            </div>
-
-            <button id="loginBtn" class="btn" type="submit">Login</button>
-          </form>
-
-          <!-- REGISTER -->
-          <form id="registerForm" class="form hidden" autocomplete="on">
-            <label for="reg-role">Role</label>
-            <select id="reg-role" name="role" required></select>
-
-            <label for="reg-name">Full name</label>
-            <input id="reg-name" name="name" type="text" placeholder="Your full name" required />
-
-            <label for="reg-email">Email</label>
-            <input id="reg-email" name="email" type="email" placeholder="you@company.com" required />
-
-            <label for="reg-password">Password</label>
-            <div style="position:relative">
-              <input id="reg-password" name="password" type="password" placeholder="Create password" required />
-              <button type="button" class="pwToggle" aria-label="Toggle password" title="Toggle" onclick="togglePassword('reg-password')">
-                <span id="regEye">👁️</span>
-              </button>
-            </div>
-
-            <!-- dynamic container for role-specific fields -->
-            <div id="roleSpecific" style="margin-top:8px"></div>
-
-            <div class="muted small">By registering you agree to our <a href="#">terms</a>.</div>
-            <button id="registerBtn" class="btn" type="submit">Register</button>
-          </form>
-
-          <!-- FORGOT PASSWORD -->
-          <form id="forgotForm" class="form hidden">
-            <h3 style="margin-top:0">Reset password</h3>
-            <label for="forgot-email">Email</label>
-            <input id="forgot-email" name="email" type="email" placeholder="you@company.com" required />
-            <div class="muted small">We'll email you a link to reset your password.</div>
-            <div style="display:flex;gap:8px;margin-top:10px">
-              <button id="sendResetBtn" class="btn" type="submit">Send reset link</button>
-              <button id="backToLogin" type="button" class="btn ghost">Back</button>
-            </div>
-          </form>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="login-email" required />
         </div>
+        <div class="form-group" style="position: relative;">
+          <label>Password</label>
+          <input type="password" id="login-password" required />
+          <span class="password-toggle" onclick="togglePassword('login-password')">👁</span>
+        </div>
+        <div id="login-error" class="error"></div>
+        <button class="btn" onclick="login()">Login</button>
+        <span class="link" onclick="showForgotPassword()">Forgot Password?</span>
+      </div>
 
+      <!-- Register Form -->
+      <div id="register-form" class="hidden">
+        <div class="form-group">
+          <label>Role</label>
+          <select id="register-role" onchange="updateRegisterFields()">
+            <option value="Customer">Customer</option>
+            <option value="Agent Admin">Agent Admin</option>
+            <option value="Super Admin">Super Admin</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="register-email" required />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="register-password" required />
+          <span class="password-toggle" onclick="togglePassword('register-password')">👁</span>
+        </div>
+        <div id="extra-fields"></div>
+        <div id="register-error" class="error"></div>
+        <div id="register-success" class="success"></div>
+        <button class="btn" onclick="register()">Register</button>
+      </div>
+
+      <!-- Forgot Password Form -->
+      <div id="forgot-form" class="hidden">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="forgot-email" required />
+        </div>
+        <div id="forgot-msg" class="success"></div>
+        <div id="forgot-error" class="error"></div>
+        <button class="btn" onclick="forgotPassword()">Send Reset Link</button>
+        <span class="link" onclick="backToLogin()">Back to Login</span>
       </div>
     </div>
   </div>
 
   <script>
-    /* ------------- CONFIG ------------- */
-    const API_BASE = "https://skyultimate-backend-api-structure.onrender.com".replace(/\/+$/, '');
-    // Default endpoints - edit if backend uses different paths
+    const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
     const ENDPOINTS = {
       login: API_BASE + "/api/auth/login",
       register: API_BASE + "/api/auth/register",
-      forgot: API_BASE + "/api/auth/forgot-password",
-      // optional endpoint that your backend may offer to inform UI about role availability
-      roleConfig: API_BASE + "/api/auth/roles" // may return JSON like { adminEnabled: true, superAdminAvailable: false }
+      forgot: API_BASE + "/api/auth/forgot-password"
     };
 
-    /* ------------- UTILITIES ------------- */
-    function el(id){return document.getElementById(id)}
-    function show(selector){ selector.classList.remove('hidden'); selector.style.display = ''; }
-    function hide(selector){ selector.classList.add('hidden'); selector.style.display = 'none'; }
-    function setMsg(text, type='muted'){ const m = el('msg'); m.className = type; m.textContent = text; if(!text) m.className='muted' }
-    function togglePassword(id){
-      const ip = el(id); if(!ip) return;
-      ip.type = ip.type === 'password' ? 'text' : 'password';
-    }
-    function sleep(ms){ return new Promise(res=>setTimeout(res,ms)) }
-
-    /* ------------- ROLE CONFIG (UI) ------------- */
-    // default UI options (will fetch server config if available)
-    let roleConfig = {
-      adminEnabled: false, // Admin registration/selection only available if enabled
-      superAdminAvailable: !localStorage.getItem('superAdminUsed'), // UI fallback
-      rolesOrder: ['Customer','Agent Admin','Super Admin']
-    };
-
-    // Attempt to fetch server-provided role config; fail silently if backend doesn't provide it.
-    async function fetchRoleConfig(){
-      try{
-        const r = await fetch(ENDPOINTS.roleConfig, { method:'GET', headers:{'Accept':'application/json'} });
-        if(!r.ok) return;
-        const j = await r.json();
-        // Expect j to include adminEnabled and superAdminAvailable booleans; merge safely
-        if(typeof j.adminEnabled === 'boolean') roleConfig.adminEnabled = j.adminEnabled;
-        if(typeof j.superAdminAvailable === 'boolean') roleConfig.superAdminAvailable = j.superAdminAvailable;
-        if(Array.isArray(j.rolesOrder)) roleConfig.rolesOrder = j.rolesOrder;
-      }catch(e){
-        // console.warn("role config fetch failed:", e)
-      }
-    }
-
-    function buildRoleOptions(selectEl, includeSuper=true){
-      // Clear
-      selectEl.innerHTML='';
-      const addOpt = (r, disabled=false) => {
-        const opt = document.createElement('option');
-        opt.value = r; opt.textContent = r;
-        if(disabled) opt.disabled = true;
-        selectEl.appendChild(opt);
-      };
-      // Determine if Admin is visible
-      const adminVisible = roleConfig.adminEnabled;
-      for(const r of roleConfig.rolesOrder){
-        if(r === 'Agent Admin') addOpt(r, false);
-        else if(r === 'Customer') addOpt(r, false);
-        else if(r === 'Super Admin'){
-          if(roleConfig.superAdminAvailable) addOpt(r,false);
-          else addOpt(r,true);
-        }
-        else if(r === 'Admin'){
-          if(adminVisible) addOpt(r,false);
-          else addOpt(r,true);
-        } else {
-          addOpt(r,false);
-        }
-      }
-    }
-
-    /* ------------- UI LIFECYCLE ------------- */
-    window.addEventListener('DOMContentLoaded', async ()=>{
-      // Splash logic: show for 3s then cross-fade
-      const splash = el('splash');
-      await sleep(3000);
-      splash.classList.add('hidden');
-
-      // Load role config then populate selects
-      await fetchRoleConfig();
-      buildRoleOptions(el('login-role'));
-      buildRoleOptions(el('reg-role'));
-
-      // wire tab toggles
-      setupTabs();
-
-      // wire forms
-      setupForms();
+    // -------- Splash Screen Logic --------
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        document.getElementById("splash").classList.add("fade-out");
+        setTimeout(() => {
+          document.getElementById("splash").style.display = "none";
+          document.getElementById("auth-container").classList.remove("hidden");
+        }, 1000);
+      }, 3000);
     });
 
-    /* ---------- TABS / NAV ---------- */
-    function setupTabs(){
-      const tabLogin = el('tab-login'), tabReg = el('tab-register');
-      const loginForm = el('loginForm'), registerForm = el('registerForm'), forgotForm = el('forgotForm');
-      const goRegister = el('goRegister');
-      tabLogin.addEventListener('click', ()=>{ setActiveTab('login') });
-      tabReg.addEventListener('click', ()=>{ setActiveTab('register') });
-      goRegister.addEventListener('click', (e)=>{ e.preventDefault(); setActiveTab('register') });
+    // -------- Tab Switch --------
+    document.getElementById("login-tab").onclick = () => {
+      document.getElementById("login-form").classList.remove("hidden");
+      document.getElementById("register-form").classList.add("hidden");
+      document.getElementById("forgot-form").classList.add("hidden");
+      document.getElementById("login-tab").classList.add("active");
+      document.getElementById("register-tab").classList.remove("active");
+    };
+    document.getElementById("register-tab").onclick = () => {
+      document.getElementById("register-form").classList.remove("hidden");
+      document.getElementById("login-form").classList.add("hidden");
+      document.getElementById("forgot-form").classList.add("hidden");
+      document.getElementById("register-tab").classList.add("active");
+      document.getElementById("login-tab").classList.remove("active");
+    };
 
-      el('forgotLink').addEventListener('click', (e)=>{ e.preventDefault(); showForgot() });
-      el('backToLogin').addEventListener('click', ()=>{ setActiveTab('login') });
-
-      function setActiveTab(which){
-        if(which === 'login'){
-          tabLogin.classList.add('active'); tabReg.classList.remove('active');
-          show(el('loginForm')); hide(el('registerForm')); hide(el('forgotForm'));
-          setMsg('');
-        } else {
-          tabReg.classList.add('active'); tabLogin.classList.remove('active');
-          hide(el('loginForm')); show(el('registerForm')); hide(el('forgotForm'));
-          setMsg('');
-        }
-      }
-
-      function showForgot(){
-        hide(el('loginForm')); hide(el('registerForm')); show(el('forgotForm'));
-        setMsg('');
-      }
-
-      // update role-specific fields when register role changes
-      el('reg-role').addEventListener('change', renderRoleSpecific);
-      renderRoleSpecific();
+    // -------- Password Toggle --------
+    function togglePassword(id) {
+      const input = document.getElementById(id);
+      input.type = input.type === "password" ? "text" : "password";
     }
 
-    /* ---------- DYNAMIC FIELDS ---------- */
-    function renderRoleSpecific(){
-      const role = el('reg-role').value || 'Customer';
-      const container = el('roleSpecific');
-      container.innerHTML = '';
-      if(role === 'Agent Admin' || role.toLowerCase().includes('agent')){
-        container.innerHTML = `
-          <label for="bank-name">Bank name</label>
-          <input id="bank-name" name="bankName" type="text" placeholder="Bank name" required />
-          <label for="bank-account">Account number</label>
-          <input id="bank-account" name="bankAccount" type="text" placeholder="Account number" required />
+    // -------- Extra Register Fields --------
+    function updateRegisterFields() {
+      const role = document.getElementById("register-role").value;
+      const extra = document.getElementById("extra-fields");
+      extra.innerHTML = "";
+      if (role === "Agent Admin") {
+        extra.innerHTML = `
+          <div class="form-group">
+            <label>Bank Account</label>
+            <input type="text" id="register-bank" required />
+          </div>
         `;
-      } else {
-        // no extra fields
       }
     }
 
-    /* ---------- FORMS ---------- */
-    function setupForms(){
-      // Login
-      el('loginForm').addEventListener('submit', async (e)=>{
-        e.preventDefault();
-        setMsg('');
-        const role = el('login-role').value.trim();
-        const email = el('login-email').value.trim();
-        const password = el('login-password').value;
-        if(!role || !email || !password){ setMsg('Please fill all fields.', 'error'); return; }
+    // -------- Auth Logic --------
+    async function login() {
+      const role = document.getElementById("login-role").value;
+      const email = document.getElementById("login-email").value;
+      const password = document.getElementById("login-password").value;
+      const error = document.getElementById("login-error");
+      error.textContent = "";
 
-        el('loginBtn').disabled = true; el('loginBtn').textContent = 'Signing in...';
-        try{
-          const resp = await fetch(ENDPOINTS.login, {
-            method:'POST',
-            headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
-            body: JSON.stringify({ role, email, password })
-          });
-          const dataText = await resp.text();
-          let data;
-          try{ data = JSON.parse(dataText); } catch(e){ data = { message: dataText } }
-          if(resp.ok){
-            // expected token + user in response e.g. { token, user: { id, email, role, ... } }
-            const token = data.token || data.accessToken;
-            const user = data.user || data;
-            if(token){
-              localStorage.setItem('su_token', token);
-              localStorage.setItem('su_user', JSON.stringify(user));
-              setMsg('Login successful. Redirecting...', 'success');
-              // If server returned role info about super admin, update local flag
-              if(user && user.role && user.role.toLowerCase().includes('super')) {
-                localStorage.setItem('superAdminUsed','1');
-              }
-              // Redirect stub: replace with your real universal home page
-              setTimeout(()=>{ window.location.href = '/home.html'; }, 900);
-            } else {
-              // If no token, still store user and show message
-              localStorage.setItem('su_user', JSON.stringify(user||{}));
-              setMsg('Logged in (no token received).', 'success');
-            }
-          } else {
-            const err = data && (data.message || data.error) ? (data.message || data.error) : `Login failed (${resp.status}).`;
-            setMsg(err, 'error');
-          }
-        } catch(err){
-          setMsg('Network error: could not reach the auth server.', 'error');
-        } finally {
-          el('loginBtn').disabled = false; el('loginBtn').textContent = 'Login';
-        }
-      });
+      if (!email || !password) {
+        error.textContent = "Please fill all fields.";
+        return;
+      }
 
-      // Register
-      el('registerForm').addEventListener('submit', async (e)=>{
-        e.preventDefault();
-        setMsg('');
-        const role = el('reg-role').value.trim();
-        const name = el('reg-name').value.trim();
-        const email = el('reg-email').value.trim();
-        const password = el('reg-password').value;
-        if(!role || !name || !email || !password){ setMsg('Please fill all required fields.', 'error'); return; }
+      try {
+        const res = await fetch(ENDPOINTS.login, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ role, email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Login failed");
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        window.location.href = "home.html";
+      } catch (err) {
+        error.textContent = err.message;
+      }
+    }
 
-        // collect role-specific
-        const payload = { role, name, email, password };
-        if(role === 'Agent Admin' || role.toLowerCase().includes('agent')){
-          payload.bankName = el('bank-name') ? el('bank-name').value.trim() : '';
-          payload.bankAccount = el('bank-account') ? el('bank-account').value.trim() : '';
-          if(!payload.bankName || !payload.bankAccount){
-            setMsg('Please provide bank name and account number for Agent Admins.', 'error'); return;
-          }
-        }
+    async function register() {
+      const role = document.getElementById("register-role").value;
+      const email = document.getElementById("register-email").value;
+      const password = document.getElementById("register-password").value;
+      const error = document.getElementById("register-error");
+      const success = document.getElementById("register-success");
+      error.textContent = "";
+      success.textContent = "";
 
-        el('registerBtn').disabled = true; el('registerBtn').textContent = 'Registering...';
-        try{
-          const resp = await fetch(ENDPOINTS.register, {
-            method:'POST',
-            headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
-            body: JSON.stringify(payload)
-          });
-          const dataText = await resp.text();
-          let data;
-          try{ data = JSON.parse(dataText); } catch(e){ data = { message: dataText } }
-          if(resp.ok){
-            setMsg('Registration successful. Please log in.', 'success');
-            // If the user created Super Admin, set local flag to disable UI option afterwards
-            if(role.toLowerCase().includes('super')){
-              localStorage.setItem('superAdminUsed','1');
-              roleConfig.superAdminAvailable = false;
-              buildRoleOptions(el('login-role')); buildRoleOptions(el('reg-role'));
-            }
-            // switch to login after short delay
-            setTimeout(()=>{ document.getElementById('tab-login').click(); }, 900);
-          } else {
-            const err = data && (data.message || data.error) ? (data.message || data.error) : `Registration failed (${resp.status}).`;
-            setMsg(err, 'error');
-          }
-        } catch(err){
-          setMsg('Network error: could not reach the auth server.', 'error');
-        } finally {
-          el('registerBtn').disabled = false; el('registerBtn').textContent = 'Register';
-        }
-      });
+      if (!email || !password) {
+        error.textContent = "Please fill all required fields.";
+        return;
+      }
 
-      // Forgot password
-      el('forgotForm').addEventListener('submit', async (e)=>{
-        e.preventDefault();
-        setMsg('');
-        const email = el('forgot-email').value.trim();
-        if(!email){ setMsg('Please enter your email.', 'error'); return; }
-        el('sendResetBtn').disabled = true; el('sendResetBtn').textContent = 'Sending...';
-        try{
-          const resp = await fetch(ENDPOINTS.forgot, {
-            method:'POST',
-            headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
-            body: JSON.stringify({ email })
-          });
-          const dataText = await resp.text();
-          let data;
-          try{ data = JSON.parse(dataText); } catch(e){ data = { message: dataText } }
-          if(resp.ok){
-            setMsg('A password reset link has been sent to your email.', 'su
+      const payload = { role, email, password };
+      if (role === "Agent Admin") {
+        payload.bank = document.getElementById("register-bank").value;
+      }
+
+      try {
+        const res = await fetch(ENDPOINTS.register, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Registration failed");
+        success.textContent = "Registration successful! Please login.";
+        document.getElementById("register-form").reset;
+      } catch (err) {
+        error.textContent = err.message;
+      }
+    }
+
+    async function forgotPassword() {
+      const email = document.getElementById("forgot-email").value;
+      const msg = document.getElementById("forgot-msg");
+      const error = document.getElementById("forgot-error");
+      msg.textContent = "";
+      error.textContent = "";
+
+      if (!email) {
+        error.textContent = "Enter your email.";
+        return;
+      }
+
+      try {
+        const res = await fetch(ENDPOINTS.forgot, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Request failed");
+        msg.textContent = "A password reset link has been sent to your email.";
+      } catch (err) {
+        error.textContent = err.message;
+      }
+    }
+
+    function showForgotPassword() {
+      document.getElementById("login-form").classList.add("hidden");
+      document.getElementById("register-form").classList.add("hidden");
+      document.getElementById("forgot-form").classList.remove("hidden");
+      document.getElementById("login-tab").classList.remove("active");
+      document.getElementById("register-tab").classList.remove("active");
+    }
+    function backToLogin() {
+      document.getElementById("forgot-form").classList.add("hidden");
+      document.getElementById("login-form").classList.remove("hidden");
+      document.getElementById("login-tab").classList.add("active");
+    }
+  </script>
+</body>
+</html>
