@@ -1,258 +1,582 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SkyUltimate - Customer Dashboard</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
-  body, html { width:100%; height:100%; background:#C00000; }
-  a { text-decoration:none; color:inherit; }
-  button { cursor:pointer; border:none; outline:none; }
-
-  #container { width:100%; min-height:100%; padding:20px; display:flex; flex-direction:column; align-items:center; position:relative; }
-  #logo { width:100px; height:100px; border-radius:50%; margin-bottom:10px; }
-  #welcome { font-size:1.4rem; color:white; margin-bottom:20px; text-align:center; }
-
-  .card { background:white; border-radius:12px; padding:20px; width:100%; max-width:500px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
-  .card h3 { margin-bottom:15px; color:#C00000; }
-  .card label { display:block; margin-bottom:5px; font-weight:bold; }
-  .card input, .card select { width:100%; padding:10px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; }
-  .card button { width:100%; padding:12px; border-radius:12px; background:#C00000; color:white; font-weight:bold; transition:0.3s; }
-  .card button:disabled { background:#ccc; cursor:not-allowed; }
-
-  .action-btn { width:100%; padding:12px; border-radius:12px; background:white; color:#C00000; font-weight:bold; margin-bottom:10px; transition:0.3s; }
-  .action-btn:disabled { background:#ccc; color:#666; cursor:not-allowed; }
-
-  #hamburger { position:absolute; top:20px; left:20px; width:30px; height:22px; cursor:pointer; display:flex; flex-direction:column; justify-content:space-between; }
-  .bar { width:100%; height:4px; background:white; border-radius:2px; }
-
-  #menu { position:fixed; top:0; left:-300px; width:250px; height:100%; background:white; color:#C00000; box-shadow:3px 0 10px rgba(0,0,0,0.3); transition:0.3s; display:flex; flex-direction:column; padding:20px; }
-  #menu h2 { margin-bottom:20px; font-size:1.2rem; }
-  .menu-item { margin:10px 0; cursor:pointer; font-weight:bold; }
-
-  .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); color:#C00000; padding:40px; overflow-y:auto; display:none; }
-  .overlay h2 { margin-bottom:15px; }
-  .overlay p { margin-bottom:10px; line-height:1.5; }
-  .close-overlay { position:absolute; top:20px; right:20px; font-weight:bold; cursor:pointer; font-size:1.2rem; }
-
-  #logout { position:absolute; top:20px; right:20px; background:white; color:#C00000; padding:8px 12px; border-radius:8px; font-weight:bold; transition:0.3s; }
-  #logout:hover { background:#f0f0f0; }
-
-  #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; }
-  #modal-content { background:white; padding:20px; border-radius:12px; width:90%; max-width:400px; color:#C00000; }
-  #modal-content h3 { margin-bottom:15px; }
-  #modal-content button { background:#C00000; color:white; width:100%; border-radius:12px; padding:10px; margin-top:10px; }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SkyUltimate — Customer Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background:#C00000; }
+    .card { background: rgba(255,255,255,0.92); border-radius: 16px; padding: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+    .btn-primary { background:#C00000; color:#fff; padding:10px 14px; border-radius:12px; font-weight:600; }
+    .modal-backdrop { background: rgba(0,0,0,0.45); }
+    /* small helper to keep markup short */
+  </style>
 </head>
-<body>
-<div id="container">
-  <img id="logo" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="Logo">
-  <div id="welcome">Welcome back!</div>
+<body class="min-h-screen text-gray-900">
 
-  <div class="card">
-    <h3>Place a New Order</h3>
-    <label>Item Type</label>
-    <select id="itemType">
-      <option value="">Select Item Type</option>
-      <option value="document">Document</option>
-      <option value="parcel">Parcel</option>
-      <option value="general">General Goods</option>
-    </select>
+<!-- Top bar -->
+<header class="flex items-center justify-between px-4 py-3">
+  <div class="flex items-center gap-3">
+    <button id="menuBtn" class="p-2 rounded-md bg-white/10 text-white">☰</button>
+    <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true"
+         alt="logo" class="w-14 h-14 object-contain">
+    <div class="text-white">
+      <div id="greeting" class="font-bold text-lg">Welcome!</div>
+      <div class="text-xs opacity-90">Customer Dashboard</div>
+    </div>
+  </div>
+  <div class="flex items-center gap-2">
+    <button id="notificationsBtn" class="text-white px-3 py-2 rounded-md bg-white/10">Announcements</button>
+    <button id="logout" class="text-white px-3 py-2 rounded-md bg-white/10">Logout</button>
+  </div>
+</header>
 
-    <label>Weight (kg)</label>
-    <input type="number" id="weight" placeholder="Enter Weight">
+<!-- Drawer / hamburger menu -->
+<aside id="drawer" class="fixed left-0 top-0 bottom-0 w-72 transform -translate-x-full transition-transform z-50">
+  <div class="card m-4">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <div id="drawerName" class="font-bold"></div>
+        <div id="drawerRole" class="text-xs text-gray-600"></div>
+      </div>
+      <button id="closeDrawer" class="text-gray-600">✕</button>
+    </div>
 
-    <label>Pickup Address</label>
-    <input type="text" id="pickup" placeholder="Pickup Address">
+    <nav class="space-y-2">
+      <button class="w-full text-left p-2 rounded hover:bg-gray-100" id="navMyOrders">My Orders</button>
+      <button class="w-full text-left p-2 rounded hover:bg-gray-100" id="navRefer">Refer & Earn</button>
+      <button class="w-full text-left p-2 rounded hover:bg-gray-100" id="navHistory">Order History</button>
+      <button class="w-full text-left p-2 rounded hover:bg-gray-100" id="navRate">Rate Agent</button>
+      <button class="w-full text-left p-2 rounded hover:bg-gray-100" id="navReport">Report Agent</button>
+      <button class="w-full text-left p-2 rounded hover:bg-gray-100" id="navProfile">My Profile</button>
+      <button class="w-full text-left p-2 rounded hover:bg-gray-100" id="navHelp">Help</button>
+    </nav>
 
-    <label>Delivery Address</label>
-    <input type="text" id="delivery" placeholder="Delivery Address">
+    <div class="mt-6 text-xs text-gray-500">
+      Contact: <a href="tel:+2349128884830" class="underline">09128884830</a><br/>
+      Email: <a href="mailto:nelsongodspower24@gmail.com" class="underline">nelsongodspower24@gmail.com</a>
+    </div>
+  </div>
+</aside>
 
-    <button id="calculate-btn" disabled>Calculate Final Price</button>
+<!-- Main container -->
+<main class="max-w-3xl mx-auto px-4 pb-24">
+
+  <!-- Announcement banner (top) -->
+  <div id="announcement" class="card my-4 hidden">
+    <div class="font-semibold text-red-700" id="announceTitle"></div>
+    <div class="text-sm mt-1" id="announceMsg"></div>
   </div>
 
-  <button id="confirm-pickup" class="action-btn" disabled>Confirm Item Picked Up</button>
-  <button id="confirm-delivered" class="action-btn" disabled>Confirm Order Delivered</button>
-  <button id="report-agent" class="action-btn">Report Agent / Complaint</button>
+  <!-- Referral -->
+  <section id="referralSection" class="card my-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="font-bold">Refer & Earn</h2>
+        <p class="text-sm text-gray-700">Share your code and earn rewards when friends sign up and complete actions.</p>
+      </div>
+      <div class="text-right">
+        <div class="text-xs text-gray-600">Your code</div>
+        <div id="refCode" class="font-mono font-semibold text-lg">—</div>
+        <div class="mt-2 flex gap-2">
+          <button id="copyRef" class="btn-primary">Copy</button>
+          <button id="shareRef" class="border px-3 py-2 rounded">Share</button>
+        </div>
+      </div>
+    </div>
+    <div id="refStatus" class="mt-3 text-sm text-green-600"></div>
+  </section>
 
-  <div id="hamburger">
-    <div class="bar"></div>
-    <div class="bar"></div>
-    <div class="bar"></div>
+  <!-- Place New Order -->
+  <section id="placement" class="card my-4">
+    <h3 class="font-bold mb-3">Place a New Order</h3>
+
+    <div class="space-y-2">
+      <input id="pickup" placeholder="Pickup address" class="w-full border rounded px-3 py-2" />
+      <input id="dropoff" placeholder="Delivery address" class="w-full border rounded px-3 py-2" />
+      <input id="itemType" placeholder="Item type (e.g., Documents, Parcel)" class="w-full border rounded px-3 py-2" />
+      <div class="flex gap-2">
+        <input id="weight" type="number" placeholder="Weight (kg)" class="flex-1 border rounded px-3 py-2" />
+        <select id="serviceType" class="w-40 border rounded px-3 py-2">
+          <option value="standard">Standard</option>
+          <option value="express">Express</option>
+          <option value="same-day">Same-day</option>
+        </select>
+      </div>
+
+      <div class="flex gap-2 mt-2">
+        <button id="calcPrice" class="btn-primary flex-1">Calculate Final Price</button>
+        <button id="submitOrder" class="bg-gray-200 text-gray-800 px-4 py-2 rounded flex-1">Confirm & Await Admin Approval</button>
+      </div>
+
+      <p id="calcMsg" class="text-sm text-red-600 mt-2"></p>
+    </div>
+  </section>
+
+  <!-- Price Modal (hidden) -->
+  <div id="priceModal" class="fixed inset-0 hidden items-center justify-center z-50">
+    <div class="modal-backdrop absolute inset-0"></div>
+    <div class="bg-white rounded-2xl p-6 z-60 w-11/12 max-w-lg card">
+      <h4 class="font-bold">Final Price</h4>
+      <div class="mt-3">
+        <div class="text-2xl font-semibold" id="finalPrice">₦0</div>
+        <div class="text-sm text-gray-700 mt-2">Pay via bank transfer to:</div>
+        <div class="mt-2 text-sm">
+          <div id="bankName">SkyUltimate Bank</div>
+          <div id="bankAccount">0000000000</div>
+          <div id="bankHolder">SkyUltimate</div>
+        </div>
+        <div class="mt-3 text-sm text-gray-600">After payment, an admin will confirm and your order will move to tracking.</div>
+      </div>
+
+      <div class="mt-4 flex gap-2">
+        <button id="closePrice" class="bg-gray-200 px-4 py-2 rounded flex-1">Close</button>
+        <button id="payConfirm" class="btn-primary flex-1">I have Paid (Simulate)</button>
+      </div>
+    </div>
   </div>
-  <div id="menu">
-    <h2>Menu</h2>
-    <div class="menu-item" id="aboutus-menu">About Us</div>
-    <div class="menu-item" id="mission-menu">Mission & Vision</div>
-    <div class="menu-item" id="faq-menu">FAQ / Support</div>
-  </div>
 
-  <div class="overlay" id="aboutus-overlay">
-    <div class="close-overlay" onclick="closeOverlay('aboutus-overlay')">X</div>
-    <h2>About Us</h2>
-    <p>SkyUltimate Delivery Service, founded in 2024, ensures your packages are handled safely and delivered on time...</p>
-  </div>
+  <!-- Tracking Hub / Active Order -->
+  <section id="tracking" class="card my-4 hidden">
+    <h3 class="font-bold">Order Tracking</h3>
+    <div class="mt-3">
+      <div class="text-sm text-gray-700">Order ID: <span id="trackId"></span></div>
+      <div class="mt-2 text-sm">Status: <span id="trackStatus" class="font-semibold"></span></div>
+      <div class="mt-3" id="trackTimeline"></div>
+      <div class="mt-3">
+        <button id="rateAgentBtn" class="bg-yellow-400 px-3 py-2 rounded hidden">Rate Agent</button>
+        <button id="reportAgentBtn" class="bg-red-600 text-white px-3 py-2 rounded hidden">Report Agent</button>
+      </div>
+    </div>
+  </section>
 
-  <div class="overlay" id="mission-overlay">
-    <div class="close-overlay" onclick="closeOverlay('mission-overlay')">X</div>
-    <h2>Our Mission</h2>
-    <p>To provide a seamless, reliable, and efficient delivery experience exceeding customer expectations...</p>
-    <h2>Our Vision</h2>
-    <p>To be the leader in delivery services known for speed, reliability, and customer satisfaction...</p>
-  </div>
+  <!-- Order History -->
+  <section id="history" class="card my-4">
+    <h3 class="font-bold mb-3">Order History</h3>
+    <div id="historyList" class="space-y-2 text-sm text-gray-700">Loading...</div>
+  </section>
 
-  <div class="overlay" id="faq-overlay">
-    <div class="close-overlay" onclick="closeOverlay('faq-overlay')">X</div>
-    <h2>FAQ & Support</h2>
-    <p>Tracking: Use the tracking number provided in your email.</p>
-    <p>Delivery hours: 9:00 AM - 6:00 PM, Mon-Sat. Special arrangements possible.</p>
-    <p>WhatsApp / Phone: 09128884830</p>
-    <p>Social: Instagram, Facebook (editable)</p>
-  </div>
+</main>
 
-  <button id="logout">Logout</button>
-</div>
-
-<!-- Modal -->
-<div id="modal">
-  <div id="modal-content">
-    <h3>Order Price & Bank Details</h3>
-    <div id="order-info"></div>
-    <button onclick="closeModal()">Close</button>
+<!-- Rating Modal -->
+<div id="rateModal" class="fixed inset-0 hidden items-center justify-center z-50">
+  <div class="modal-backdrop absolute inset-0"></div>
+  <div class="bg-white rounded-2xl p-6 z-60 w-11/12 max-w-md card">
+    <h4 class="font-bold">Rate Agent</h4>
+    <div class="mt-3">
+      <div class="flex gap-1" id="stars">
+        <!-- stars inserted by JS -->
+      </div>
+      <textarea id="rateComment" placeholder="Comment (optional)" class="w-full border rounded mt-3 p-2"></textarea>
+      <div class="mt-4 flex gap-2">
+        <button id="cancelRate" class="bg-gray-200 px-4 py-2 rounded flex-1">Cancel</button>
+        <button id="submitRate" class="btn-primary flex-1">Submit Rating</button>
+      </div>
+      <p id="rateMsg" class="text-sm text-green-600 mt-2"></p>
+    </div>
   </div>
 </div>
 
 <script>
-  const name = sessionStorage.getItem('name') || 'User';
-  const token = sessionStorage.getItem('token');
-  const apiURL = 'https://skyultimate-backend-api-structure.onrender.com/api';
+/* Customer-dashboard.html
+   - Uses API_BASE: change if needed.
+   - Endpoints used:
+     POST /api/orders/calc-price
+     POST /api/orders
+     GET  /api/announcements/latest
+     GET  /api/orders/:id
+     GET  /api/orders?customerId=<id>  (order history - fallback)
+     POST /api/orders/:id/rate
+     POST /api/admin-requests   (report) - best-effort; backend may differ
+   - Auth: expects localStorage.su_token and su_user (set by login)
+*/
 
-  if(!token){
-    window.location.href = "index.html";
+const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
+const token = localStorage.getItem('su_token');
+const currentUser = JSON.parse(localStorage.getItem('su_user') || 'null');
+
+if (!token || !currentUser) {
+  // Not authenticated - send back to login
+  window.location.href = 'index.html';
+}
+
+/* ---------- UI references ---------- */
+const drawer = document.getElementById('drawer');
+const menuBtn = document.getElementById('menuBtn');
+const closeDrawer = document.getElementById('closeDrawer');
+const logoutBtn = document.getElementById('logout');
+
+const announceEl = document.getElementById('announcement');
+const announceTitle = document.getElementById('announceTitle');
+const announceMsg = document.getElementById('announceMsg');
+
+const refCodeEl = document.getElementById('refCode');
+const copyRefBtn = document.getElementById('copyRef');
+const shareRefBtn = document.getElementById('shareRef');
+const refStatus = document.getElementById('refStatus');
+
+const pickupInput = document.getElementById('pickup');
+const dropoffInput = document.getElementById('dropoff');
+const itemTypeInput = document.getElementById('itemType');
+const weightInput = document.getElementById('weight');
+const serviceInput = document.getElementById('serviceType');
+const calcBtn = document.getElementById('calcPrice');
+const submitBtn = document.getElementById('submitOrder');
+const calcMsg = document.getElementById('calcMsg');
+
+const priceModal = document.getElementById('priceModal');
+const finalPriceEl = document.getElementById('finalPrice');
+const bankNameEl = document.getElementById('bankName');
+const bankAccEl = document.getElementById('bankAccount');
+const bankHolderEl = document.getElementById('bankHolder');
+const closePrice = document.getElementById('closePrice');
+const payConfirm = document.getElementById('payConfirm');
+
+const trackingSection = document.getElementById('tracking');
+const trackIdEl = document.getElementById('trackId');
+const trackStatusEl = document.getElementById('trackStatus');
+const trackTimeline = document.getElementById('trackTimeline');
+const rateAgentBtn = document.getElementById('rateAgentBtn');
+const reportAgentBtn = document.getElementById('reportAgentBtn');
+
+const historyList = document.getElementById('historyList');
+
+const rateModal = document.getElementById('rateModal');
+const starsContainer = document.getElementById('stars');
+const submitRateBtn = document.getElementById('submitRate');
+const cancelRateBtn = document.getElementById('cancelRate');
+const rateComment = document.getElementById('rateComment');
+const rateMsg = document.getElementById('rateMsg');
+
+document.getElementById('drawerName').innerText = currentUser.name || 'Customer';
+document.getElementById('drawerRole').innerText = currentUser.role || 'Customer';
+document.getElementById('greeting').innerText = `Hello, ${String(currentUser.name||'').split(' ')[0] || 'there'}!`;
+
+/* ---------- Helpers ---------- */
+async function apiFetch(path, opts = {}) {
+  const headers = opts.headers || {};
+  headers['Content-Type'] = 'application/json';
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(API_BASE + path, { ...opts, headers });
+  if (res.status === 401) {
+    alert('Session expired. Please log in again.');
+    localStorage.removeItem('su_token');
+    localStorage.removeItem('su_user');
+    window.location.href = 'index.html';
+    throw new Error('Unauthorized');
   }
+  const data = await res.json().catch(()=>null);
+  if (!res.ok) throw new Error((data && data.message) || 'Request failed');
+  return data;
+}
 
-  document.getElementById('welcome').textContent = `Welcome back, ${name}!`;
+/* ---------- Menu & basic UI ---------- */
+menuBtn.onclick = ()=> drawer.classList.toggle('-translate-x-full');
+closeDrawer.onclick = ()=> drawer.classList.add('-translate-x-full');
+logoutBtn.onclick = () => { localStorage.removeItem('su_token'); localStorage.removeItem('su_user'); window.location.href = 'index.html'; };
 
-  let currentOrderId = null;
+document.getElementById('navMyOrders').onclick = ()=> { scrollToSection('placement'); drawer.classList.add('-translate-x-full'); };
+document.getElementById('navRefer').onclick = ()=> { scrollToSection('referralSection'); drawer.classList.add('-translate-x-full'); };
+document.getElementById('navHistory').onclick = ()=> { scrollToSection('history'); drawer.classList.add('-translate-x-full'); };
+document.getElementById('navRate').onclick = ()=> { openRateModal(); drawer.classList.add('-translate-x-full'); };
+document.getElementById('navReport').onclick = ()=> { openReportForm(); drawer.classList.add('-translate-x-full'); };
+document.getElementById('navProfile').onclick = ()=> { openProfileEditor(); drawer.classList.add('-translate-x-full'); };
+document.getElementById('navHelp').onclick = ()=> { alert('Help center placeholder — add links or integration.'); drawer.classList.add('-translate-x-full'); };
 
-  const calculateBtn = document.getElementById('calculate-btn');
-  const inputs = ['itemType','weight','pickup','delivery'].map(id=>document.getElementById(id));
-  inputs.forEach(input=>{
-    input.addEventListener('input',()=>{
-      calculateBtn.disabled = inputs.some(i=>i.value==='');
-    });
-  });
-
-  // --- Calculate Final Price ---
-  calculateBtn.addEventListener('click',async ()=>{
-    const data = {
-      itemType: document.getElementById('itemType').value,
-      weight: document.getElementById('weight').value,
-      pickup: document.getElementById('pickup').value,
-      delivery: document.getElementById('delivery').value
-    };
-
-    try {
-      const res = await fetch(`${apiURL}/orders/calculate`,{
-        method:'POST',
-        headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` },
-        body:JSON.stringify(data)
-      });
-      const result = await res.json();
-      if(res.ok){
-        currentOrderId = result.orderId; // returned from backend
-        document.getElementById('order-info').innerHTML = `
-          <p>Final Price: ₦${result.price}</p>
-          <p>Bank Name: Nelson Emmanuel Godspower</p>
-          <p>Moniepoint / Opay / Palmpay: 9128884830</p>
-          <p>UBA: 2342835397</p>
-          <p>GTBank: 0734090626</p>
-        `;
-        document.getElementById('modal').style.display='flex';
-        document.getElementById('confirm-pickup').disabled=false;
-      }else{
-        alert(result.message || "Error calculating price");
-      }
-    } catch(err){ alert('Error connecting to server'); }
-  });
-
-  function closeModal(){ document.getElementById('modal').style.display='none'; }
-
-  // --- Confirm Pickup ---
-  document.getElementById('confirm-pickup').addEventListener('click',async ()=>{
-    if(!currentOrderId) return;
-    try{
-      const res = await fetch(`${apiURL}/orders/${currentOrderId}/pickup`,{
-        method:'PATCH',
-        headers:{ 'Authorization':`Bearer ${token}` }
-      });
-      if(res.ok){
-        alert('Pickup confirmed!');
-        document.getElementById('confirm-delivered').disabled=false;
-        document.getElementById('confirm-pickup').disabled=true;
-      }else{
-        const r = await res.json();
-        alert(r.message || "Error confirming pickup");
-      }
-    }catch(e){ alert("Error connecting to server"); }
-  });
-
-  // --- Confirm Delivery ---
-  document.getElementById('confirm-delivered').addEventListener('click',async ()=>{
-    if(!currentOrderId) return;
-    try{
-      const res = await fetch(`${apiURL}/orders/${currentOrderId}/deliver`,{
-        method:'PATCH',
-        headers:{ 'Authorization':`Bearer ${token}` }
-      });
-      if(res.ok){
-        alert('Order delivered successfully!');
-        document.getElementById('confirm-delivered').disabled=true;
-      }else{
-        const r = await res.json();
-        alert(r.message || "Error confirming delivery");
-      }
-    }catch(e){ alert("Error connecting to server"); }
-  });
-
-  // --- Report Agent ---
-  document.getElementById('report-agent').addEventListener('click',async ()=>{
-    const reason = prompt('Enter your report or complaint:');
-    if(reason){
-      try{
-        const res = await fetch(`${apiURL}/tickets`,{
-          method:'POST',
-          headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` },
-          body:JSON.stringify({reason})
-        });
-        if(res.ok) alert('Report submitted successfully.');
-        else alert('Error submitting report.');
-      }catch(e){ alert('Error connecting to server.'); }
+/* ---------- Announcements ---------- */
+async function loadAnnouncement(){
+  try {
+    const res = await fetch(API_BASE + '/api/announcements/latest', { headers: { Authorization: `Bearer ${token}` }});
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data && data.isActive) {
+      announceTitle.innerText = data.title || 'Announcement';
+      announceMsg.innerText = data.message || '';
+      announceEl.classList.remove('hidden');
     }
-  });
+  } catch (e) { console.info('No announcement', e.message); }
+}
+loadAnnouncement();
 
-  // --- Hamburger Menu ---
-  const hamburger = document.getElementById('hamburger');
-  const menu = document.getElementById('menu');
-  let menuOpen = false;
-  hamburger.addEventListener('click',()=>{
-    menuOpen=!menuOpen;
-    menu.style.left = menuOpen?'0':'-300px';
-  });
+/* ---------- Referral ---------- */
+const referralCode = currentUser.referralCode || (currentUser._id ? ('REF' + String(currentUser._id).slice(-6)) : 'REF-UNKNOWN');
+refCodeEl.innerText = referralCode;
 
-  const openOverlay = (id)=>{ document.getElementById(id).style.display='block'; menu.style.left='-300px'; menuOpen=false; }
-  const closeOverlay = (id)=>{ document.getElementById(id).style.display='none'; }
+copyRefBtn.onclick = async () => {
+  try {
+    await navigator.clipboard.writeText(`${location.origin}/signup?ref=${referralCode}`);
+    refStatus.innerText = 'Referral link copied to clipboard.';
+    setTimeout(()=>refStatus.innerText='',3000);
+  } catch (e) {
+    refStatus.innerText = 'Copy failed.';
+  }
+};
 
-  document.getElementById('aboutus-menu').addEventListener('click',()=>openOverlay('aboutus-overlay'));
-  document.getElementById('mission-menu').addEventListener('click',()=>openOverlay('mission-overlay'));
-  document.getElementById('faq-menu').addEventListener('click',()=>openOverlay('faq-overlay'));
+shareRefBtn.onclick = async () => {
+  const link = `${location.origin}/signup?ref=${referralCode}`;
+  try {
+    if (navigator.share) await navigator.share({ title:'SkyUltimate - Join', text:'Use my referral link', url: link });
+    else { await navigator.clipboard.writeText(link); alert('Link copied: ' + link); }
+  } catch (e) { alert('Share failed'); }
+};
 
-  // --- Logout ---
-  document.getElementById('logout').addEventListener('click',()=>{
-    sessionStorage.clear();
-    window.location.href='index.html';
-  });
+/* ---------- Calculate Price ---------- */
+let lastCalc = null; // stores latest calculation (finalPrice + bank details)
+calcBtn.onclick = async () => {
+  calcMsg.innerText = '';
+  const items = [{ itemType: itemTypeInput.value || 'Item', weight: Number(weightInput.value || 0), quantity: 1 }];
+  try {
+    const payload = { items, serviceType: serviceInput.value, pickup: pickupInput.value, dropoff: dropoffInput.value };
+    const res = await apiFetch('/api/orders/calc-price', { method:'POST', body: JSON.stringify(payload) });
+    // res.finalPrice and maybe res.superAdminBankDetails
+    lastCalc = res;
+    finalPriceEl.innerText = `₦${(res.finalPrice || res.finalprice || 0).toLocaleString()}`;
+    const b = res.superAdminBankDetails || { bankName:'SkyUltimate Bank', accountNumber:'0000000000', accountHolderName:'SkyUltimate' };
+    bankNameEl.innerText = b.bankName || b.bank || 'SkyUltimate Bank';
+    bankAccEl.innerText = b.accountNumber || b.account || '0000000000';
+    bankHolderEl.innerText = b.accountHolderName || b.accountHolder || 'SkyUltimate';
+    priceModal.classList.remove('hidden');
+  } catch(err) {
+    calcMsg.innerText = err.message || 'Could not calculate price.';
+  }
+};
+
+closePrice.onclick = ()=> priceModal.classList.add('hidden');
+
+/* Simulate payment confirmation (frontend-only convenience).
+   In a real flow, the customer would pay externally and admin confirms. */
+payConfirm.onclick = async () => {
+  if (!lastCalc) { alert('No calculation available.'); return; }
+  // Prepare order payload
+  const items = [{ itemType: itemTypeInput.value || 'Item', weight: Number(weightInput.value || 0), quantity: 1 }];
+  const payload = {
+    items,
+    pickupAddress: pickupInput.value || '',
+    deliveryAddress: dropoffInput.value || '',
+    paymentMethod: 'Bank Transfer'
+  };
+  try {
+    const created = await apiFetch('/api/orders', { method:'POST', body: JSON.stringify(payload) });
+    priceModal.classList.add('hidden');
+    // store active order id locally and show tracking hub (status will be PendingPayment or similar)
+    const order = created.order || created;
+    localStorage.setItem('su_active_order', JSON.stringify(order));
+    openTracking(order._id || order.id || order._doc?._id || '');
+    alert('Order created. Await admin payment confirmation.');
+    await loadHistory();
+  } catch (err) {
+    alert(err.message || 'Order creation failed.');
+  }
+};
+
+/* Allow direct Confirm & Await Admin Approval without modal (submit order) */
+submitBtn.onclick = async () => {
+  calcMsg.innerText = '';
+  const items = [{ itemType: itemTypeInput.value || 'Item', weight: Number(weightInput.value || 0), quantity: 1 }];
+  const payload = {
+    items,
+    pickupAddress: pickupInput.value || '',
+    deliveryAddress: dropoffInput.value || '',
+    paymentMethod: 'Bank Transfer'
+  };
+  try {
+    const created = await apiFetch('/api/orders', { method:'POST', body: JSON.stringify(payload) });
+    const order = created.order || created;
+    localStorage.setItem('su_active_order', JSON.stringify(order));
+    alert('Order created. Await admin to confirm payment.');
+    await loadHistory();
+    openTracking(order._id || order.id || '');
+  } catch (err) {
+    calcMsg.innerText = err.message || 'Could not submit order.';
+  }
+};
+
+/* ---------- Tracking Hub (polling) ---------- */
+let pollingInterval = null;
+function openTracking(orderId) {
+  if (!orderId) return;
+  trackingSection.classList.remove('hidden');
+  trackIdEl.innerText = orderId;
+  pollOrder(orderId);
+  if (pollingInterval) clearInterval(pollingInterval);
+  pollingInterval = setInterval(()=>pollOrder(orderId), 5000);
+}
+
+async function pollOrder(orderId) {
+  try {
+    // Try GET /api/orders/:id (controller supports typical REST)
+    const order = await apiFetch(`/api/orders/${orderId}`);
+    const status = order.status || order.order?.status || order.order?.state || 'Unknown';
+    trackStatusEl.innerText = status;
+    renderTimeline(status, order);
+    // show rate/report buttons only when applicable
+    if (status === 'Delivered' || status === 'Completed') {
+      rateAgentBtn.classList.remove('hidden');
+      reportAgentBtn.classList.remove('hidden');
+    } else {
+      rateAgentBtn.classList.add('hidden');
+      reportAgentBtn.classList.add('hidden');
+    }
+  } catch (err) {
+    console.info('Polling error (order):', err.message);
+  }
+}
+
+function renderTimeline(status, order) {
+  const steps = [
+    { key:'PendingPaymentConfirmation', label:'Pending Payment Confirmation' },
+    { key:'PaymentConfirmed', label:'Payment Confirmed' },
+    { key:'EnRouteToPickup', label:'Agent En Route to Pickup' },
+    { key:'EnRouteToDelivery', label:'Agent En Route to Delivery' },
+    { key:'Completed', label:'Delivered' },
+    { key:'Delivered', label:'Delivered' },
+  ];
+  trackTimeline.innerHTML = steps.map(s => {
+    const active = (status === s.key || (s.key==='Completed' && status==='Delivered') || (status === 'Delivered' && s.key === 'Completed'));
+    return `<div class="py-1"><span class="${active ? 'font-bold text-green-600' : 'text-gray-600'}">${s.label}</span></div>`;
+  }).join('');
+}
+
+/* Rate agent flow (customer) */
+let rateTargetOrder = null;
+function openRateModal(orderId=null) {
+  rateMsg.innerText = '';
+ rateComment.value = '';
+  rateModal.classList.remove('hidden');
+  // render 5 stars
+  starsContainer.innerHTML = '';
+  for (let i=1;i<=5;i++){
+    const s = document.createElement('button');
+    s.type='button';
+    s.className='px-2 text-2xl';
+    s.innerText='☆';
+    s.dataset.value = i;
+    s.onclick = ()=> selectStars(i);
+    starsContainer.appendChild(s);
+  }
+  // store order id to rate (if provided) else use active
+  const active = JSON.parse(localStorage.getItem('su_active_order')||'null');
+  rateTargetOrder = orderId || (active && (active._id||active.id)) || null;
+}
+function selectStars(n){
+  Array.from(starsContainer.children).forEach((b,idx)=> b.innerText = (idx < n ? '★' : '☆'));
+  starsContainer.dataset.selected = n;
+}
+cancelRateBtn.onclick = ()=> rateModal.classList.add('hidden');
+submitRateBtn.onclick = async () => {
+  const rating = Number(starsContainer.dataset.selected || 5);
+  if (!rateTargetOrder) { rateMsg.innerText = 'No order selected'; return; }
+  try {
+    await apiFetch(`/api/orders/${rateTargetOrder}/rate`, { method:'POST', body: JSON.stringify({ rating, comment: rateComment.value || '' })});
+    rateMsg.innerText = 'Thanks for your rating!';
+    setTimeout(()=>{ rateModal.classList.add('hidden'); }, 900);
+    await loadHistory();
+  } catch (err) {
+    rateMsg.innerText = err.message || 'Rating failed';
+  }
+};
+
+/* Report Agent flow (sends admin request) */
+async function openReportForm() {
+  const reason = prompt('Describe the issue with the agent (this will create a support ticket):');
+  if (!reason) return;
+  const active = JSON.parse(localStorage.getItem('su_active_order')||'null');
+  const orderId = active && (active._id || active.id);
+  const payload = { orderId, reason, priority: 'high', reporter: currentUser._id || currentUser._id };
+  try {
+    // best-effort endpoint - your backend had adminRequestRoutes earlier
+    await apiFetch('/api/admin-requests', { method:'POST', body: JSON.stringify(payload) });
+    alert('Report submitted. Support will follow up.');
+  } catch (err) {
+    alert('Could not submit report: ' + (err.message || 'error'));
+  }
+}
+
+/* ---------- Order History ---------- */
+async function loadHistory(){
+  historyList.innerHTML = 'Loading...';
+  try {
+    // Attempt to fetch by query param customerId
+    const customerId = currentUser._id || currentUser.id;
+    const data = await apiFetch(`/api/orders?customerId=${customerId}`);
+    const orders = Array.isArray(data) ? data : (data.orders || data.data || []);
+    if (!orders || orders.length === 0) {
+      historyList.innerHTML = '<div class="text-sm text-gray-600">No past orders found.</div>';
+      return;
+    }
+    historyList.innerHTML = '';
+    orders.slice().reverse().forEach(o=>{
+      const id = o._id || o.id;
+      const status = o.status || o.order?.status || 'Unknown';
+      const el = document.createElement('div');
+      el.className = 'p-2 border rounded';
+      el.innerHTML = `<div class="flex justify-between"><div class="font-semibold">Order ${String(id).slice(-6)}</div><div class="text-xs">${status}</div></div>
+                      <div class="text-sm text-gray-700 mt-1">Pickup: ${o.pickupAddress || o.pickup || '—'}</div>
+                      <div class="text-sm text-gray-700">Dropoff: ${o.deliveryAddress || o.deliveryAddress || '—'}</div>
+                      <div class="mt-2 flex gap-2"><button class="px-3 py-1 border rounded viewBtn">View</button></div>`;
+      const viewBtn = el.querySelector('.viewBtn');
+      viewBtn.onclick = ()=> { localStorage.setItem('su_active_order', JSON.stringify(o)); openTracking(id); window.scrollTo({top:0,behavior:'smooth'}); };
+      historyList.appendChild(el);
+    });
+  } catch (err) {
+    historyList.innerHTML = '<div class="text-sm text-red-600">Could not load history.</div>';
+  }
+}
+
+/* ---------- Profile editor (simple phone & bank edit using existing endpoint) ---------- */
+function openProfileEditor() {
+  const phone = prompt('Phone number:', currentUser.phone || '');
+  if (phone === null) return;
+  const bankName = prompt('Bank name:', (currentUser.bankDetails||{}).bankName || '');
+  const acc = prompt('Account number:', (currentUser.bankDetails||{}).accountNumber || '');
+  const holder = prompt('Account holder:', (currentUser.bankDetails||{}).accountHolderName || '');
+  const payload = { phone };
+  if (bankName || acc || holder) {
+    payload.bankName = bankName;
+    payload.accountNumber = acc;
+    payload.accountHolderName = holder;
+  }
+  apiFetch('/api/users/me/bank', { method:'PUT', body: JSON.stringify(payload) })
+    .then(()=> {
+      alert('Profile updated.');
+      // Update local copy
+      const u = Object.assign({}, currentUser);
+      u.phone = payload.phone;
+      u.bankDetails = u.bankDetails || {};
+      if (payload.bankName) u.bankDetails.bankName = payload.bankName;
+      if (payload.accountNumber) u.bankDetails.accountNumber = payload.accountNumber;
+      if (payload.accountHolderName) u.bankDetails.accountHolderName = payload.accountHolderName;
+      localStorage.setItem('su_user', JSON.stringify(u));
+    })
+    .catch(e=> alert('Update failed: ' + e.message));
+}
+
+/* ---------- Init on load ---------- */
+(async function init(){
+  try {
+    await loadHistory();
+    // If there is an active order saved, open tracking
+    const active = JSON.parse(localStorage.getItem('su_active_order') || 'null');
+    if (active) {
+      const id = active._id || active.id || '';
+      if (id) openTracking(id);
+    }
+  } catch (e) {
+    console.info('Init error', e.message);
+  }
+})();
+
+/* Small helper */
+function scrollToSection(id){
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+/* Unused: show rate button action */
+rateAgentBtn.onclick = ()=> openRateModal();
+reportAgentBtn.onclick = ()=> openReportForm();
+
 </script>
 </body>
- </html>
+</html>
