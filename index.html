@@ -8,55 +8,54 @@
 <style>
   :root{
     --brand-red: #C00000;
-    --card-bg: rgba(255,255,255,0.92);
-    --card-blur: 8px;
+    --card-bg: rgba(255,255,255,0.95);
     --muted: #666;
     --success: #0b9b3a;
     --danger: #c21b1b;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   }
   html,body{height:100%;margin:0;background:var(--brand-red);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
-  /* Splash */
+  /* SPLASH */
   .splash {
-    position:fixed; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column;
-    background:var(--brand-red); z-index:50; transition:opacity .6s ease, visibility .6s;
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    background:var(--brand-red); z-index:9999; transition:opacity .6s ease, visibility .6s;
+    -webkit-tap-highlight-color: transparent;
   }
   .splash.fade-out{ opacity:0; visibility:hidden; pointer-events:none; }
-  .logo-wrap{
-    width:160px;height:160px;border-radius:50%; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.25); transform: scale(.98); animation:logo-pop .6s ease .1s both;
+  /* bigger circular flat logo, no spherical shine */
+  .splash-logo-wrap{
+    width:220px; height:220px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center;
+    background: #ffffff; /* white circular background so logo pops */
+    box-shadow: none; /* remove spherical shadow */
+    border: 6px solid rgba(255,255,255,0.06); /* subtle ring */
+    transform: translateY(0); animation:logo-fade-in .5s ease both;
   }
-  @keyframes logo-pop { from { transform: scale(.6); opacity:0 } to { transform: scale(1); opacity:1 } }
-  .logo {
-    width:140px;height:140px;border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center;
-    background: #fff; padding:8px; box-sizing:border-box;
-  }
-  .logo img{ width:100%; height:100%; object-fit:contain; display:block; border-radius:50%; }
+  @keyframes logo-fade-in { from { transform: scale(.85); opacity:0 } to { transform: scale(1); opacity:1 } }
+  .splash-logo { width:86%; height:86%; border-radius:50%; object-fit:contain; display:block; }
 
-  .brand-title { margin-top:14px; color:#fff; font-weight:800; letter-spacing:0.6px; font-size:18px; text-align:center; }
-
-  /* Layout */
+  /* Layout for main auth UI */
   .container { min-height:100vh; display:flex; align-items:flex-start; justify-content:center; padding:48px 20px; box-sizing:border-box; }
   .auth-card {
-    width:420px; max-width:94%; margin-top:40px; background:var(--card-bg); border-radius:12px; box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-    padding:22px; backdrop-filter: blur(var(--card-blur)); position:relative; overflow:hidden;
+    width:420px; max-width:94%; margin-top:40px; background:var(--card-bg); border-radius:12px; box-shadow: 0 10px 30px rgba(0,0,0,0.14);
+    padding:22px; position:relative; overflow:hidden;
   }
   .top-area { display:flex; align-items:center; justify-content:center; gap:12px; flex-direction:column; }
-  .top-logo { width:80px; height:80px; border-radius:50%; overflow:hidden; background:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(0,0,0,0.12); }
-  .top-logo img{ width:100%; height:100%; object-fit:contain; display:block; }
+  .top-logo { width:96px; height:96px; border-radius:22px; overflow:hidden; background:#fff; display:flex; align-items:center; justify-content:center; }
+  .top-logo img{ width:86%; height:86%; object-fit:contain; display:block; border-radius:18px; }
+
   .tabs { display:flex; gap:6px; margin-top:12px; }
   .tab {
     padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:600; font-size:14px;
     background:transparent; color:var(--muted); border:none;
   }
-  .tab.active{ background:var(--brand-red); color:#fff; box-shadow: 0 6px 18px rgba(192,0,0,0.12); }
+  .tab.active{ background:var(--brand-red); color:#fff; box-shadow: 0 6px 18px rgba(192,0,0,0.10); }
 
   .form-area { margin-top:18px; min-height:260px; position:relative; }
-  .form-pane { transition: transform .45s cubic-bezier(.2,.95,.2,1), opacity .4s; }
+  .form-pane { transition: transform .45s cubic-bezier(.2,.95,.2,1), opacity .35s; }
   .form-pane.hidden { opacity:0; transform: translateX(20px); pointer-events:none; height:0; }
-  label{ display:block; font-size:13px; color:#333; margin-bottom:6px; font-weight:600; }
+  label{ display:block; font-size:13px; color:#222; margin-bottom:6px; font-weight:700; }
   input, select, textarea {
-    width:100%; padding:10px 12px; border-radius:8px; border:1px solid #e6e6e6; box-sizing:border-box; font-size:14px;
+    width:100%; padding:10px 12px; border-radius:10px; border:1px solid #eee; box-sizing:border-box; font-size:14px;
     outline:none;
   }
   .field { margin-bottom:12px; }
@@ -73,7 +72,7 @@
     background:var(--brand-red); color:#fff; padding:10px 14px; border-radius:9px; border:none; font-weight:700; cursor:pointer;
   }
   .btn.ghost { background:transparent; color:var(--brand-red); border:1px solid rgba(192,0,0,0.12); font-weight:700; }
-  .link { color:var(--brand-red); cursor:pointer; text-decoration:underline; font-weight:600; font-size:13px; }
+  .link { color:var(--brand-red); cursor:pointer; text-decoration:underline; font-weight:700; font-size:13px; }
 
   .alert { margin-top:8px; font-size:13px; padding:10px 12px; border-radius:8px; }
   .alert.error { background: #ffecec; color:var(--danger); border:1px solid rgba(194,27,27,0.08); }
@@ -88,26 +87,21 @@
 
   footer { text-align:center; color:#fff; position:fixed; left:0; right:0; bottom:10px; font-size:13px; opacity:0.94; }
 
-  /* small */
   @media(max-width:480px){
-    .logo-wrap{ width:120px;height:120px }
-    .logo img{ padding:6px }
-    .top-logo{ width:64px;height:64px }
+    .splash-logo-wrap{ width:160px; height:160px; }
+    .top-logo{ width:76px; height:76px; border-radius:14px; }
   }
 
 </style>
 </head>
 <body>
 
-<!-- SPLASH -->
-<div class="splash" id="splash">
-  <div class="logo-wrap" aria-hidden="true">
-    <div class="logo" title="SkyUltimate">
-      <!-- logo image (raw github link) -->
-      <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/7c71c25bdff1772d676786405469433cb6e175c5/logo.png" alt="SkyUltimate logo" id="splash-logo">
-    </div>
+<!-- SPLASH (no text outside logo) -->
+<div class="splash" id="splash" role="dialog" aria-label="Splash screen — SkyUltimate">
+  <div class="splash-logo-wrap" id="splashClick" title="Tap to continue">
+    <img class="splash-logo" id="splashLogo" alt="SkyUltimate logo"
+      src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/7c71c25bdff1772d676786405469433cb6e175c5/logo.png">
   </div>
-  <div class="brand-title">SkyUltimate</div>
 </div>
 
 <!-- AUTH UI -->
@@ -115,6 +109,7 @@
   <div class="auth-card" role="main" aria-labelledby="authHeading">
     <div class="top-area">
       <div class="top-logo" aria-hidden="true">
+        <!-- top logo remains rounded and slightly squared corners (rounded not spherical) -->
         <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/7c71c25bdff1772d676786405469433cb6e175c5/logo.png" alt="SkyUltimate logo">
       </div>
       <div id="authHeading" style="font-weight:800;font-size:18px;color:#222">Welcome</div>
@@ -145,7 +140,6 @@
           <label for="loginPassword">Password</label>
           <input id="loginPassword" type="password" placeholder="Enter password" autocomplete="current-password">
           <button class="eye-btn" id="loginToggle" aria-label="Toggle password visibility">
-            <!-- simple eye svg -->
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
         </div>
@@ -232,23 +226,16 @@
 <footer>© SkyUltimate</footer>
 
 <script>
-/*
-  Single-file Auth UI for SkyUltimate
-  - Base API URL (update here if endpoints differ)
-  - Login: POST { role, email, password } -> expects { token, user } on success
-  - Register: POST { role, name, email, password, ... } -> expects success or error
-  - Forgot password: POST { email } -> expects success message
-  If your backend uses different paths, change LOGIN_PATH/REGISTER_PATH/FORGOT_PATH below.
-*/
-
+/* Configuration: edit these paths if your backend endpoints differ */
 const API_BASE = "https://nelson192006.github.io/SkyUltimate-"; // user-provided base
-const LOGIN_PATH = "/api/auth/login";            // change if your backend uses different routes
+const LOGIN_PATH = "/api/auth/login";
 const REGISTER_PATH = "/api/auth/register";
 const FORGOT_PATH = "/api/auth/forgot-password";
-const CONFIG_PATH = "/api/auth/config";          // optional: to fetch allowAdmin/allowSuperAdmin flags
+const CONFIG_PATH = "/api/auth/config";
 
-// UI elements
+/* UI elements */
 const splash = document.getElementById('splash');
+const splashClick = document.getElementById('splashClick');
 const app = document.getElementById('app');
 
 const tabs = document.querySelectorAll('.tab');
@@ -286,189 +273,116 @@ const forgotAlert = document.getElementById('forgotAlert');
 const loginToggle = document.getElementById('loginToggle');
 const regToggle = document.getElementById('regToggle');
 
-// Role flags (will be overridden if config fetch works)
+/* Role flags */
 let allowAdmin = false;
-let allowSuperAdmin = true; // allow the first super-admin by default
+let allowSuperAdmin = true;
 
-// role options order
-const ALL_ROLES = ['Customer','Agent Admin','Admin','Super Admin'];
+/* --- Splash logic: DOMContentLoaded ensures progression even if images are slow --- */
+function hideSplashAndShowApp(){
+  splash.classList.add('fade-out');
+  setTimeout(()=> {
+    app.removeAttribute('aria-hidden');
+    // remove the splash from DOM after animation to avoid overlay issues
+    setTimeout(()=> {
+      if(splash && splash.parentNode) splash.parentNode.removeChild(splash);
+    }, 600);
+  }, 300); // short delay during fade
+}
 
-// --- Splash logic: 3s timer, 0.5s fade in logo (CSS handles) and cross-fade to auth ---
-window.addEventListener('load', () => {
-  // show splash for 3s then fade
-  setTimeout(() => {
-    splash.classList.add('fade-out');
-    // reveal main UI after fade begins
-    setTimeout(() => {
-      app.removeAttribute('aria-hidden');
-    }, 300);
-  }, 3000);
+document.addEventListener('DOMContentLoaded', () => {
+  // always fade after 3 seconds
+  const t = setTimeout(hideSplashAndShowApp, 3000);
+
+  // clicking the splash skips it immediately
+  splashClick.addEventListener('click', () => {
+    clearTimeout(t);
+    hideSplashAndShowApp();
+  });
 });
 
-// --- Tab handling ---
+/* --- Tabs --- */
 tabs.forEach(btn => {
   btn.addEventListener('click', () => {
     tabs.forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
     const tab = btn.dataset.tab;
-    if(tab === 'login') {
-      showLogin();
-    } else {
-      showRegister();
-    }
+    if(tab === 'login') showLogin(); else showRegister();
   });
 });
-function showLogin(){
-  loginPane.classList.remove('hidden');
-  registerPane.classList.add('hidden');
-  loginPane.querySelector('input,select').focus();
-}
-function showRegister(){
-  registerPane.classList.remove('hidden');
-  loginPane.classList.add('hidden');
-  registerPane.querySelector('input,select').focus();
-}
+function showLogin(){ loginPane.classList.remove('hidden'); registerPane.classList.add('hidden'); loginPane.querySelector('input,select')?.focus(); }
+function showRegister(){ registerPane.classList.remove('hidden'); loginPane.classList.add('hidden'); registerPane.querySelector('input,select')?.focus(); }
 
-// --- Password visibility toggles ---
-loginToggle.addEventListener('click', () => {
-  toggleVisibility(loginPassword, loginToggle);
-});
-regToggle.addEventListener('click', () => {
-  toggleVisibility(regPassword, regToggle);
-});
+/* --- Password toggles --- */
+loginToggle.addEventListener('click', ()=> toggleVisibility(loginPassword, loginToggle));
+regToggle.addEventListener('click', ()=> toggleVisibility(regPassword, regToggle));
 function toggleVisibility(input, btn){
-  if(input.type === 'password'){ input.type = 'text'; }
-  else input.type = 'password';
-  // small transform to the icon for feedback
+  input.type = (input.type === 'password') ? 'text' : 'password';
   btn.style.transform = 'translateY(-50%) scale(1.02)';
-  setTimeout(()=> btn.style.transform = 'translateY(-50%)', 140);
+  setTimeout(()=> btn.style.transform = 'translateY(-50%)', 120);
 }
 
-// --- Forgot password modal ---
-openForgot.addEventListener('click', ()=> openForgotModal());
-closeForgot.addEventListener('click', ()=> closeForgotModal());
-cancelForgot.addEventListener('click', ()=> closeForgotModal());
+/* --- Forgot modal --- */
+openForgot.addEventListener('click', openForgotModal);
+closeForgot.addEventListener('click', closeForgotModal);
+cancelForgot.addEventListener('click', closeForgotModal);
+function openForgotModal(){ forgotModal.classList.add('open'); forgotModal.setAttribute('aria-hidden','false'); forgotAlert.innerHTML=''; forgotEmail.value=''; }
+function closeForgotModal(){ forgotModal.classList.remove('open'); forgotModal.setAttribute('aria-hidden','true'); forgotAlert.innerHTML=''; }
 
-function openForgotModal(){
-  forgotModal.classList.add('open');
-  forgotModal.setAttribute('aria-hidden','false');
-  forgotAlert.innerHTML = '';
-  forgotEmail.value = '';
-}
-function closeForgotModal(){
-  forgotModal.classList.remove('open');
-  forgotModal.setAttribute('aria-hidden','true');
-  forgotAlert.innerHTML = '';
-}
-
-// send reset
 sendReset.addEventListener('click', async () => {
-  const email = forgotEmail.value.trim();
-  forgotAlert.innerHTML = '';
-  if(!email || !validateEmail(email)){
-    forgotAlert.innerHTML = `<div class="alert error">Please enter a valid email.</div>`;
-    return;
-  }
+  const email = forgotEmail.value.trim(); forgotAlert.innerHTML='';
+  if(!email || !validateEmail(email)){ forgotAlert.innerHTML = `<div class="alert error">Please enter a valid email.</div>`; return; }
   forgotAlert.innerHTML = `<div class="alert">Sending reset link...</div>`;
   try {
     const res = await apiPost(FORGOT_PATH, { email });
-    // assume a 2xx success indicates mail sent; adapt depending on backend response shape
     forgotAlert.innerHTML = `<div class="alert ok">A password reset link has been sent to your email.</div>`;
-  } catch(err) {
-    forgotAlert.innerHTML = `<div class="alert error">${err.message || 'Failed to send reset link. Try again.'}</div>`;
+  } catch(err){
+    forgotAlert.innerHTML = `<div class="alert error">${err.message || 'Failed to send reset link.'}</div>`;
   }
 });
 
-// --- Role display logic: attempt to fetch config from backend, otherwise fallback ---
+/* --- Role config and population --- */
 async function fetchConfig(){
   try {
     const resp = await fetch(API_BASE + CONFIG_PATH, { method:'GET', cache:'no-cache' });
     if(!resp.ok) throw new Error('no config');
     const json = await resp.json();
-    // expect shape: { allowAdmin: true/false, allowSuperAdmin: true/false }
     allowAdmin = !!json.allowAdmin;
     allowSuperAdmin = !!json.allowSuperAdmin;
   } catch(e){
-    // fallback defaults (safe): Admin not available, Super Admin allowed (first user)
     allowAdmin = false;
     allowSuperAdmin = true;
-  } finally {
-    populateRoleOptions();
-  }
+  } finally { populateRoleOptions(); }
 }
-
 function populateRoleOptions(){
-  // login dropdown: only include roles user can choose to log into.
-  // We'll include Customer and Agent Admin always; Admin only if allowAdmin; Super Admin only if allowSuperAdmin
-  const roles = [];
-  roles.push('Customer');
-  roles.push('Agent Admin');
+  const roles = ['Customer','Agent Admin'];
   if(allowAdmin) roles.push('Admin');
   if(allowSuperAdmin) roles.push('Super Admin');
 
-  // helper to set options for a select element
   function setOptions(selectEl, options){
     selectEl.innerHTML = '';
-    options.forEach(r => {
-      const opt = document.createElement('option');
-      opt.value = r;
-      opt.innerText = r;
-      selectEl.appendChild(opt);
-    });
+    options.forEach(r => { const opt = document.createElement('option'); opt.value = r; opt.innerText = r; selectEl.appendChild(opt); });
   }
-
   setOptions(loginRole, roles);
-  setOptions(regRole, ['Customer','Agent Admin', ...(allowAdmin ? ['Admin'] : []), ...(allowSuperAdmin ? ['Super Admin'] : [])]);
-
-  // ensure agent fields toggle responds to register role
+  setOptions(regRole, ['Customer','Agent Admin', ...(allowAdmin?['Admin']:[]), ...(allowSuperAdmin?['Super Admin']:[])]);
   regRole.addEventListener('change', onRegRoleChange);
   onRegRoleChange();
 }
+function onRegRoleChange(){ agentFields.style.display = regRole.value === 'Agent Admin' ? 'block' : 'none'; }
 
-function onRegRoleChange(){
-  const role = regRole.value;
-  if(role === 'Agent Admin'){
-    agentFields.style.display = 'block';
-  } else {
-    agentFields.style.display = 'none';
-  }
-}
-
-// --- Login flow ---
+/* --- Login --- */
 loginBtn.addEventListener('click', async () => {
-  loginAlert.innerHTML = '';
-  const role = loginRole.value;
-  const email = loginEmail.value.trim();
-  const pwd = loginPassword.value;
-
-  if(!role || !email || !pwd){
-    loginAlert.innerHTML = `<div class="alert error">Please fill in role, email and password.</div>`;
-    return;
-  }
-  if(!validateEmail(email)){
-    loginAlert.innerHTML = `<div class="alert error">Please provide a valid email address.</div>`;
-    return;
-  }
-
-  // UI feedback
+  loginAlert.innerHTML=''; const role = loginRole.value; const email = loginEmail.value.trim(); const pwd = loginPassword.value;
+  if(!role||!email||!pwd){ loginAlert.innerHTML = `<div class="alert error">Please fill in role, email and password.</div>`; return; }
+  if(!validateEmail(email)){ loginAlert.innerHTML = `<div class="alert error">Please provide a valid email address.</div>`; return; }
   loginAlert.innerHTML = `<div class="alert">Logging in... please wait.</div>`;
-
   try {
-    const payload = { role, email, password: pwd };
-    const res = await apiPost(LOGIN_PATH, payload);
-    // expected response: { token: '...', user: { ... } }
+    const res = await apiPost(LOGIN_PATH, { role, email, password: pwd });
     if(res && res.token){
-      // store token and user
       localStorage.setItem('sky_token', res.token);
       localStorage.setItem('sky_user', JSON.stringify(res.user || {}));
       loginAlert.innerHTML = `<div class="alert ok">Login successful. Redirecting...</div>`;
-      // redirect - update as needed (use your Universal Home Page)
-      setTimeout(()=> {
-        // default redirects to /home.html (update to your actual page)
-        window.location.href = './home.html';
-      }, 700);
+      setTimeout(()=> window.location.href = './home.html', 700);
     } else {
-      // fallback failure text
       throw new Error(res.message || 'Invalid credentials. Please check your role and login details.');
     }
   } catch(err){
@@ -476,9 +390,31 @@ loginBtn.addEventListener('click', async () => {
   }
 });
 
-// --- Register flow ---
+/* --- Register --- */
 registerBtn.addEventListener('click', async () => {
-  registerAlert.innerHTML = '';
-  const role = regRole.value;
-  const name = regName.value.trim();
-  const email = regEmail.value.tri
+  registerAlert.innerHTML=''; const role = regRole.value; const name = regName.value.trim(); const email = regEmail.value.trim(); const pwd = regPassword.value;
+  if(!role||!name||!email||!pwd){ registerAlert.innerHTML = `<div class="alert error">Please fill all required fields.</div>`; return; }
+  if(!validateEmail(email)){ registerAlert.innerHTML = `<div class="alert error">Please provide a valid email address.</div>`; return; }
+  if(role === 'Agent Admin' && (!bankName.value.trim() || !accountNumber.value.trim())){ registerAlert.innerHTML = `<div class="alert error">Please provide bank name and account number for Agent Admins.</div>`; return; }
+  registerAlert.innerHTML = `<div class="alert">Registering... please wait.</div>`;
+  try {
+    const payload = { role, name, email, password: pwd };
+    if(role === 'Agent Admin'){ payload.bankName = bankName.value.trim(); payload.accountNumber = accountNumber.value.trim(); }
+    const res = await apiPost(REGISTER_PATH, payload);
+    if(res && (res.ok || res.success || res.id)){
+      registerAlert.innerHTML = `<div class="alert ok">Registration successful. Please login with your credentials.</div>`;
+      setTimeout(()=> { document.querySelector('.tab[data-tab="login"]').click(); loginEmail.value = email; }, 700);
+    } else {
+      throw new Error(res.message || 'An account with this email already exists, please Login.');
+    }
+  } catch(err){
+    registerAlert.innerHTML = `<div class="alert error">${err.message || 'Failed to register. Try again.'}</div>`;
+  }
+});
+
+toLogin.addEventListener('click', ()=> document.querySelector('.tab[data-tab="login"]').click());
+
+/* --- API helper & utilities --- */
+async function apiPost(path, body){
+  const url = API_BASE + path;
+  const opts = { method:'POST', headers: { 'Content-Type': 
