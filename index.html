@@ -1,292 +1,484 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SkyUltimate Auth</title>
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #c40000;
-      height: 100vh;
-      overflow: hidden;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SkyUltimate — Auth</title>
+<meta name="theme-color" content="#C00000" />
+<style>
+  :root{
+    --brand-red: #C00000;
+    --card-bg: rgba(255,255,255,0.92);
+    --card-blur: 8px;
+    --muted: #666;
+    --success: #0b9b3a;
+    --danger: #c21b1b;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  html,body{height:100%;margin:0;background:var(--brand-red);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+  /* Splash */
+  .splash {
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column;
+    background:var(--brand-red); z-index:50; transition:opacity .6s ease, visibility .6s;
+  }
+  .splash.fade-out{ opacity:0; visibility:hidden; pointer-events:none; }
+  .logo-wrap{
+    width:160px;height:160px;border-radius:50%; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25); transform: scale(.98); animation:logo-pop .6s ease .1s both;
+  }
+  @keyframes logo-pop { from { transform: scale(.6); opacity:0 } to { transform: scale(1); opacity:1 } }
+  .logo {
+    width:140px;height:140px;border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center;
+    background: #fff; padding:8px; box-sizing:border-box;
+  }
+  .logo img{ width:100%; height:100%; object-fit:contain; display:block; border-radius:50%; }
 
-    .splash {
-      position: fixed;
-      width: 100%;
-      height: 100%;
-      background-color: #c40000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      animation: fadeOut 3s forwards;
-      z-index: 10;
-    }
+  .brand-title { margin-top:14px; color:#fff; font-weight:800; letter-spacing:0.6px; font-size:18px; text-align:center; }
 
-    .splash img {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      animation: fadeIn 0.5s ease-in-out;
-    }
+  /* Layout */
+  .container { min-height:100vh; display:flex; align-items:flex-start; justify-content:center; padding:48px 20px; box-sizing:border-box; }
+  .auth-card {
+    width:420px; max-width:94%; margin-top:40px; background:var(--card-bg); border-radius:12px; box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+    padding:22px; backdrop-filter: blur(var(--card-blur)); position:relative; overflow:hidden;
+  }
+  .top-area { display:flex; align-items:center; justify-content:center; gap:12px; flex-direction:column; }
+  .top-logo { width:80px; height:80px; border-radius:50%; overflow:hidden; background:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(0,0,0,0.12); }
+  .top-logo img{ width:100%; height:100%; object-fit:contain; display:block; }
+  .tabs { display:flex; gap:6px; margin-top:12px; }
+  .tab {
+    padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:600; font-size:14px;
+    background:transparent; color:var(--muted); border:none;
+  }
+  .tab.active{ background:var(--brand-red); color:#fff; box-shadow: 0 6px 18px rgba(192,0,0,0.12); }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.8); }
-      to { opacity: 1; transform: scale(1); }
-    }
+  .form-area { margin-top:18px; min-height:260px; position:relative; }
+  .form-pane { transition: transform .45s cubic-bezier(.2,.95,.2,1), opacity .4s; }
+  .form-pane.hidden { opacity:0; transform: translateX(20px); pointer-events:none; height:0; }
+  label{ display:block; font-size:13px; color:#333; margin-bottom:6px; font-weight:600; }
+  input, select, textarea {
+    width:100%; padding:10px 12px; border-radius:8px; border:1px solid #e6e6e6; box-sizing:border-box; font-size:14px;
+    outline:none;
+  }
+  .field { margin-bottom:12px; }
+  .row { display:flex; gap:10px; }
+  .row .col { flex:1; }
 
-    @keyframes fadeOut {
-      0% { opacity: 1; }
-      90% { opacity: 1; }
-      100% { opacity: 0; visibility: hidden; }
-    }
+  .password-wrap { position:relative; }
+  .eye-btn {
+    position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; cursor:pointer; padding:8px;
+  }
+  .muted { font-size:13px; color:var(--muted); margin-top:6px; }
+  .actions { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:8px; }
+  .btn {
+    background:var(--brand-red); color:#fff; padding:10px 14px; border-radius:9px; border:none; font-weight:700; cursor:pointer;
+  }
+  .btn.ghost { background:transparent; color:var(--brand-red); border:1px solid rgba(192,0,0,0.12); font-weight:700; }
+  .link { color:var(--brand-red); cursor:pointer; text-decoration:underline; font-weight:600; font-size:13px; }
 
-    .auth-container {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 40px;
-    }
+  .alert { margin-top:8px; font-size:13px; padding:10px 12px; border-radius:8px; }
+  .alert.error { background: #ffecec; color:var(--danger); border:1px solid rgba(194,27,27,0.08); }
+  .alert.ok { background:#f1fff3; color:var(--success); border:1px solid rgba(11,155,58,0.08); }
 
-    .auth-logo {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      margin-bottom: 20px;
-    }
+  /* forgot modal */
+  .modal {
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.36); z-index:80; opacity:0; pointer-events:none; transition:opacity .28s;
+  }
+  .modal.open { opacity:1; pointer-events:auto; }
+  .modal-card { width:420px; max-width:94%; background:#fff; padding:18px; border-radius:12px; box-shadow:0 12px 40px rgba(0,0,0,0.28); }
 
-    .card {
-      background-color: rgba(255, 255, 255, 0.9);
-      width: 90%;
-      max-width: 400px;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    }
+  footer { text-align:center; color:#fff; position:fixed; left:0; right:0; bottom:10px; font-size:13px; opacity:0.94; }
 
-    .tabs {
-      display: flex;
-      justify-content: space-around;
-      margin-bottom: 20px;
-    }
+  /* small */
+  @media(max-width:480px){
+    .logo-wrap{ width:120px;height:120px }
+    .logo img{ padding:6px }
+    .top-logo{ width:64px;height:64px }
+  }
 
-    .tab {
-      flex: 1;
-      text-align: center;
-      padding: 10px;
-      cursor: pointer;
-      font-weight: bold;
-      border-bottom: 2px solid transparent;
-    }
-
-    .tab.active {
-      border-bottom: 2px solid #c40000;
-      color: #c40000;
-    }
-
-    .form-group {
-      margin-bottom: 15px;
-    }
-
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #aaa;
-      border-radius: 5px;
-    }
-
-    .toggle-password {
-      position: absolute;
-      right: 20px;
-      top: 38px;
-      cursor: pointer;
-    }
-
-    .forgot {
-      text-align: right;
-      font-size: 0.9em;
-      margin-bottom: 10px;
-      color: #c40000;
-      cursor: pointer;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 10px;
-      background-color: #c40000;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .error {
-      color: red;
-      font-size: 0.9em;
-      margin-bottom: 10px;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .relative {
-      position: relative;
-    }
-  </style>
+</style>
 </head>
 <body>
 
-  <div class="splash">
-    <img src="https://github.com/Nelson192006/SkyUltimate-/blob/7c71c25bdff1772d676786405469433cb6e175c5/logo.png?raw=true" alt="Logo" />
+<!-- SPLASH -->
+<div class="splash" id="splash">
+  <div class="logo-wrap" aria-hidden="true">
+    <div class="logo" title="SkyUltimate">
+      <!-- logo image (raw github link) -->
+      <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/7c71c25bdff1772d676786405469433cb6e175c5/logo.png" alt="SkyUltimate logo" id="splash-logo">
+    </div>
   </div>
+  <div class="brand-title">SkyUltimate</div>
+</div>
 
-  <div class="auth-container">
-    <img class="auth-logo" src="https://github.com/Nelson192006/SkyUltimate-/blob/7c71c25bdff1772d676786405469433cb6e175c5/logo.png?raw=true" alt="Logo" />
-    <div class="card">
-      <div class="tabs">
-        <div class="tab active" id="loginTab">Login</div>
-        <div class="tab" id="registerTab">Register</div>
+<!-- AUTH UI -->
+<div class="container" id="app" aria-hidden="true">
+  <div class="auth-card" role="main" aria-labelledby="authHeading">
+    <div class="top-area">
+      <div class="top-logo" aria-hidden="true">
+        <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/7c71c25bdff1772d676786405469433cb6e175c5/logo.png" alt="SkyUltimate logo">
+      </div>
+      <div id="authHeading" style="font-weight:800;font-size:18px;color:#222">Welcome</div>
+      <div class="tabs" role="tablist" aria-label="Auth tabs">
+        <button class="tab active" data-tab="login" role="tab" aria-selected="true">Login</button>
+        <button class="tab" data-tab="register" role="tab" aria-selected="false">Register</button>
+      </div>
+    </div>
+
+    <div class="form-area">
+      <!-- LOGIN -->
+      <div class="form-pane" id="loginPane">
+        <div id="loginAlert"></div>
+
+        <div class="field">
+          <label for="loginRole">Role</label>
+          <select id="loginRole" aria-label="Role selector">
+            <!-- options injected by JS -->
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email">
+        </div>
+
+        <div class="field password-wrap">
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" placeholder="Enter password" autocomplete="current-password">
+          <button class="eye-btn" id="loginToggle" aria-label="Toggle password visibility">
+            <!-- simple eye svg -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+
+        <div class="actions">
+          <div>
+            <button class="btn" id="loginBtn">Login</button>
+          </div>
+          <div style="text-align:right">
+            <div class="muted">Forgot password? <span class="link" id="openForgot">Reset</span></div>
+          </div>
+        </div>
       </div>
 
-      <div id="formArea">
-        <!-- Dynamic form will be injected here -->
+      <!-- REGISTER -->
+      <div class="form-pane hidden" id="registerPane">
+        <div id="registerAlert"></div>
+
+        <div class="field">
+          <label for="regRole">Role</label>
+          <select id="regRole" aria-label="Role selector (register)">
+            <!-- injected by JS -->
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="regName">Full name</label>
+          <input id="regName" type="text" placeholder="John Doe" autocomplete="name">
+        </div>
+
+        <div class="field">
+          <label for="regEmail">Email</label>
+          <input id="regEmail" type="email" placeholder="you@example.com" autocomplete="email">
+        </div>
+
+        <div class="field password-wrap">
+          <label for="regPassword">Password</label>
+          <input id="regPassword" type="password" placeholder="Create password" autocomplete="new-password">
+          <button class="eye-btn" id="regToggle" aria-label="Toggle password visibility">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+
+        <!-- Agent-specific fields (hidden unless Agent Admin selected) -->
+        <div id="agentFields" style="display:none;">
+          <div class="field">
+            <label for="bankName">Bank name</label>
+            <input id="bankName" type="text" placeholder="e.g. First Bank">
+          </div>
+          <div class="field">
+            <label for="accountNumber">Account number</label>
+            <input id="accountNumber" type="text" inputmode="numeric" placeholder="0123456789">
+          </div>
+        </div>
+
+        <div class="actions" style="margin-top:6px;">
+          <button class="btn" id="registerBtn">Register</button>
+          <button class="btn ghost" id="toLogin">Back to Login</button>
+        </div>
       </div>
     </div>
   </div>
+</div>
 
-  <script>
-    const splash = document.querySelector('.splash');
-    const authContainer = document.querySelector('.auth-container');
-    const loginTab = document.getElementById('loginTab');
-    const registerTab = document.getElementById('registerTab');
-    const formArea = document.getElementById('formArea');
+<!-- Forgot Password Modal -->
+<div class="modal" id="forgotModal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div id="forgotTitle" style="font-weight:800;font-size:16px">Reset password</div>
+      <button class="link" id="closeForgot" style="border:none;background:none;">Close</button>
+    </div>
+    <p class="muted" style="margin-top:8px">Enter your account email and we'll send a reset link.</p>
+    <div style="margin-top:10px">
+      <input id="forgotEmail" type="email" placeholder="you@example.com">
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn" id="sendReset">Send Reset Link</button>
+        <button class="btn ghost" id="cancelForgot">Cancel</button>
+      </div>
+      <div id="forgotAlert" style="margin-top:8px"></div>
+    </div>
+  </div>
+</div>
 
-    let superAdminExists = false; // Simulate backend flag
-    let adminEnabled = false;     // Controlled by Super Admin
+<footer>© SkyUltimate</footer>
 
-    const roles = () => {
-      const list = ['Customer', 'Agent'];
-      if (!superAdminExists) list.push('Super Admin');
-      if (adminEnabled) list.push('Admin');
-      return list;
-    };
+<script>
+/*
+  Single-file Auth UI for SkyUltimate
+  - Base API URL (update here if endpoints differ)
+  - Login: POST { role, email, password } -> expects { token, user } on success
+  - Register: POST { role, name, email, password, ... } -> expects success or error
+  - Forgot password: POST { email } -> expects success message
+  If your backend uses different paths, change LOGIN_PATH/REGISTER_PATH/FORGOT_PATH below.
+*/
 
-    const createForm = (type) => {
-      const isRegister = type === 'register';
-      formArea.innerHTML = `
-        <div class="form-group">
-          <select id="roleSelect">
-            ${roles().map(role => `<option value="${role}">${role}</option>`).join('')}
-          </select>
-        </div>
-        <div class="form-group">
-          <input type="email" id="email" placeholder="Email" />
-        </div>
-        <div class="form-group relative">
-          <input type="password" id="password" placeholder="Password" />
-          <span class="toggle-password" onclick="togglePassword()">👁️</span>
-        </div>
-        ${isRegister ? `
-          <div id="extraFields" class="form-group hidden">
-            <input type="text" id="bankInfo" placeholder="Bank Info (Admin only)" />
-          </div>
-        ` : `
-          <div class="forgot" onclick="forgotPassword()">Forgot Password?</div>
-        `}
-        <div class="error" id="errorMsg"></div>
-        <button class="btn" onclick="${isRegister ? 'register()' : 'login()'}">${isRegister ? 'Register' : 'Login'}</button>
-      `;
+const API_BASE = "https://nelson192006.github.io/SkyUltimate-"; // user-provided base
+const LOGIN_PATH = "/api/auth/login";            // change if your backend uses different routes
+const REGISTER_PATH = "/api/auth/register";
+const FORGOT_PATH = "/api/auth/forgot-password";
+const CONFIG_PATH = "/api/auth/config";          // optional: to fetch allowAdmin/allowSuperAdmin flags
 
-      const roleSelect = document.getElementById('roleSelect');
-      roleSelect.addEventListener('change', () => {
-        const extraFields = document.getElementById('extraFields');
-        if (roleSelect.value === 'Admin') {
-          extraFields.classList.remove('hidden');
-        } else {
-          extraFields.classList.add('hidden');
-        }
-      });
-    };
+// UI elements
+const splash = document.getElementById('splash');
+const app = document.getElementById('app');
 
-    const togglePassword = () => {
-      const pwd = document.getElementById('password');
-      pwd.type = pwd.type === 'password' ? 'text' : 'password';
-    };
+const tabs = document.querySelectorAll('.tab');
+const loginPane = document.getElementById('loginPane');
+const registerPane = document.getElementById('registerPane');
 
-    const forgotPassword = () => {
-      const email = prompt("Enter your email to reset password:");
-      if (email) {
-        fetch('https://nelson192006.github.io/SkyUltimate-/reset-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
-        })
-        .then(() => alert("A password reset link has been sent to your email."))
-        .catch(() => alert("Error sending reset link."));
-      }
-    };
+const loginRole = document.getElementById('loginRole');
+const regRole = document.getElementById('regRole');
 
-    const login = () => {
-      const role = document.getElementById('roleSelect').value;
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const errorMsg = document.getElementById('errorMsg');
+const loginEmail = document.getElementById('loginEmail');
+const loginPassword = document.getElementById('loginPassword');
+const loginBtn = document.getElementById('loginBtn');
+const loginAlert = document.getElementById('loginAlert');
 
-      if (!email || !password) {
-        errorMsg.textContent = "Please fill all fields.";
-        return;
-      }
+const regName = document.getElementById('regName');
+const regEmail = document.getElementById('regEmail');
+const regPassword = document.getElementById('regPassword');
+const registerBtn = document.getElementById('registerBtn');
+const registerAlert = document.getElementById('registerAlert');
 
-      fetch('https://nelson192006.github.io/SkyUltimate-/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role, email, password })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.token) {
-          localStorage.setItem('token', data.token);
-          alert(`Welcome ${role}! Redirecting to your dashboard...`);
-        } else {
-          errorMsg.textContent = "Invalid credentials. Please check your role and login details.";
-        }
-      })
-      .catch(() => errorMsg.textContent = "Login failed. Try again.");
-    };
+const agentFields = document.getElementById('agentFields');
+const bankName = document.getElementById('bankName');
+const accountNumber = document.getElementById('accountNumber');
 
-    const register = () => {
-      const role = document.getElementById('roleSelect').value;
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const bankInfo = document.getElementById('bankInfo')?.value;
-      const errorMsg = document.getElementById('errorMsg');
+const toLogin = document.getElementById('toLogin');
 
-      if (!email || !password) {
-        errorMsg.textContent = "Please fill all fields.";
-       [43dcd9a7-70db-4a1f-b0ae-981daa162054](https://github.com/Ronnie434/30-days-of-React/tree/22142106cb46f717a1259f84227cc90ed7fe50cc/02_Day_Introduction_to_React%2F02_introduction_to_react.md?citationMarker=43dcd9a7-70db-4a1f-b0ae-981daa162054 "1")[43dcd9a7-70db-4a1f-b0ae-981daa162054](https://github.com/lzh-yi/Web-Fork-/tree/024b3e55587afdf9f05a677613a75f24e3d1803e/03-CSS%E8%BF%9B%E9%98%B6%2F04-%E5%A6%82%E4%BD%95%E8%AE%A9%E4%B8%80%E4%B8%AA%E5%85%83%E7%B4%A0%E6%B0%B4%E5%B9%B3%E5%9E%82%E7%9B%B4%E5%B1%85%E4%B8%AD%EF%BC%9F.md?citationMarker=43dcd9a7-70db-4a1f-b0ae-981daa162054 "2")
-                                              fetch('https://nelson192006.github.io/SkyUltimate-/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role, email, password, bankInfo })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          alert("Registration successful! Please log in.");
-          loginTab.classList.add('active');
-          registerTab.classList.remove('active');
-          createForm('login');
-        } else {
-          errorMsg.textContent = "An account with this email already exists, please Login.";
-        }
-      })
-      .catch(() => errorMsg.textContent = "Registration failed. Try again.");
-    };
-  </script>
-</body>
-</html>
+const forgotModal = document.getElementById('forgotModal');
+const openForgot = document.getElementById('openForgot');
+const closeForgot = document.getElementById('closeForgot');
+const cancelForgot = document.getElementById('cancelForgot');
+const sendReset = document.getElementById('sendReset');
+const forgotEmail = document.getElementById('forgotEmail');
+const forgotAlert = document.getElementById('forgotAlert');
+
+const loginToggle = document.getElementById('loginToggle');
+const regToggle = document.getElementById('regToggle');
+
+// Role flags (will be overridden if config fetch works)
+let allowAdmin = false;
+let allowSuperAdmin = true; // allow the first super-admin by default
+
+// role options order
+const ALL_ROLES = ['Customer','Agent Admin','Admin','Super Admin'];
+
+// --- Splash logic: 3s timer, 0.5s fade in logo (CSS handles) and cross-fade to auth ---
+window.addEventListener('load', () => {
+  // show splash for 3s then fade
+  setTimeout(() => {
+    splash.classList.add('fade-out');
+    // reveal main UI after fade begins
+    setTimeout(() => {
+      app.removeAttribute('aria-hidden');
+    }, 300);
+  }, 3000);
+});
+
+// --- Tab handling ---
+tabs.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabs.forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    if(tab === 'login') {
+      showLogin();
+    } else {
+      showRegister();
+    }
+  });
+});
+function showLogin(){
+  loginPane.classList.remove('hidden');
+  registerPane.classList.add('hidden');
+  loginPane.querySelector('input,select').focus();
+}
+function showRegister(){
+  registerPane.classList.remove('hidden');
+  loginPane.classList.add('hidden');
+  registerPane.querySelector('input,select').focus();
+}
+
+// --- Password visibility toggles ---
+loginToggle.addEventListener('click', () => {
+  toggleVisibility(loginPassword, loginToggle);
+});
+regToggle.addEventListener('click', () => {
+  toggleVisibility(regPassword, regToggle);
+});
+function toggleVisibility(input, btn){
+  if(input.type === 'password'){ input.type = 'text'; }
+  else input.type = 'password';
+  // small transform to the icon for feedback
+  btn.style.transform = 'translateY(-50%) scale(1.02)';
+  setTimeout(()=> btn.style.transform = 'translateY(-50%)', 140);
+}
+
+// --- Forgot password modal ---
+openForgot.addEventListener('click', ()=> openForgotModal());
+closeForgot.addEventListener('click', ()=> closeForgotModal());
+cancelForgot.addEventListener('click', ()=> closeForgotModal());
+
+function openForgotModal(){
+  forgotModal.classList.add('open');
+  forgotModal.setAttribute('aria-hidden','false');
+  forgotAlert.innerHTML = '';
+  forgotEmail.value = '';
+}
+function closeForgotModal(){
+  forgotModal.classList.remove('open');
+  forgotModal.setAttribute('aria-hidden','true');
+  forgotAlert.innerHTML = '';
+}
+
+// send reset
+sendReset.addEventListener('click', async () => {
+  const email = forgotEmail.value.trim();
+  forgotAlert.innerHTML = '';
+  if(!email || !validateEmail(email)){
+    forgotAlert.innerHTML = `<div class="alert error">Please enter a valid email.</div>`;
+    return;
+  }
+  forgotAlert.innerHTML = `<div class="alert">Sending reset link...</div>`;
+  try {
+    const res = await apiPost(FORGOT_PATH, { email });
+    // assume a 2xx success indicates mail sent; adapt depending on backend response shape
+    forgotAlert.innerHTML = `<div class="alert ok">A password reset link has been sent to your email.</div>`;
+  } catch(err) {
+    forgotAlert.innerHTML = `<div class="alert error">${err.message || 'Failed to send reset link. Try again.'}</div>`;
+  }
+});
+
+// --- Role display logic: attempt to fetch config from backend, otherwise fallback ---
+async function fetchConfig(){
+  try {
+    const resp = await fetch(API_BASE + CONFIG_PATH, { method:'GET', cache:'no-cache' });
+    if(!resp.ok) throw new Error('no config');
+    const json = await resp.json();
+    // expect shape: { allowAdmin: true/false, allowSuperAdmin: true/false }
+    allowAdmin = !!json.allowAdmin;
+    allowSuperAdmin = !!json.allowSuperAdmin;
+  } catch(e){
+    // fallback defaults (safe): Admin not available, Super Admin allowed (first user)
+    allowAdmin = false;
+    allowSuperAdmin = true;
+  } finally {
+    populateRoleOptions();
+  }
+}
+
+function populateRoleOptions(){
+  // login dropdown: only include roles user can choose to log into.
+  // We'll include Customer and Agent Admin always; Admin only if allowAdmin; Super Admin only if allowSuperAdmin
+  const roles = [];
+  roles.push('Customer');
+  roles.push('Agent Admin');
+  if(allowAdmin) roles.push('Admin');
+  if(allowSuperAdmin) roles.push('Super Admin');
+
+  // helper to set options for a select element
+  function setOptions(selectEl, options){
+    selectEl.innerHTML = '';
+    options.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r;
+      opt.innerText = r;
+      selectEl.appendChild(opt);
+    });
+  }
+
+  setOptions(loginRole, roles);
+  setOptions(regRole, ['Customer','Agent Admin', ...(allowAdmin ? ['Admin'] : []), ...(allowSuperAdmin ? ['Super Admin'] : [])]);
+
+  // ensure agent fields toggle responds to register role
+  regRole.addEventListener('change', onRegRoleChange);
+  onRegRoleChange();
+}
+
+function onRegRoleChange(){
+  const role = regRole.value;
+  if(role === 'Agent Admin'){
+    agentFields.style.display = 'block';
+  } else {
+    agentFields.style.display = 'none';
+  }
+}
+
+// --- Login flow ---
+loginBtn.addEventListener('click', async () => {
+  loginAlert.innerHTML = '';
+  const role = loginRole.value;
+  const email = loginEmail.value.trim();
+  const pwd = loginPassword.value;
+
+  if(!role || !email || !pwd){
+    loginAlert.innerHTML = `<div class="alert error">Please fill in role, email and password.</div>`;
+    return;
+  }
+  if(!validateEmail(email)){
+    loginAlert.innerHTML = `<div class="alert error">Please provide a valid email address.</div>`;
+    return;
+  }
+
+  // UI feedback
+  loginAlert.innerHTML = `<div class="alert">Logging in... please wait.</div>`;
+
+  try {
+    const payload = { role, email, password: pwd };
+    const res = await apiPost(LOGIN_PATH, payload);
+    // expected response: { token: '...', user: { ... } }
+    if(res && res.token){
+      // store token and user
+      localStorage.setItem('sky_token', res.token);
+      localStorage.setItem('sky_user', JSON.stringify(res.user || {}));
+      loginAlert.innerHTML = `<div class="alert ok">Login successful. Redirecting...</div>`;
+      // redirect - update as needed (use your Universal Home Page)
+      setTimeout(()=> {
+        // default redirects to /home.html (update to your actual page)
+        window.location.href = './home.html';
+      }, 700);
+    } else {
+      // fallback failure text
+      throw new Error(res.message || 'Invalid credentials. Please check your role and login details.');
+    }
+  } catch(err){
+    loginAlert.innerHTML = `<div class="alert error">${err.message || 'Invalid credentials. Please check your role and login details.'}</div>`;
+  }
+});
+
+// --- Register flow ---
+registerBtn.addEventListener('click', async () => {
+  registerAlert.innerHTML = '';
+  const role = regRole.value;
+  const name = regName.value.trim();
+  const email = regEmail.value.tri
