@@ -5,129 +5,288 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SkyUltimate Auth</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 0; }
-    .container { max-width: 400px; margin: 60px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    h2 { text-align: center; margin-bottom: 20px; }
-    input, select { width: 100%; padding: 10px; margin: 10px 0; border-radius: 4px; border: 1px solid #ccc; }
-    button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    button:hover { background: #0056b3; }
-    .tabs { display: flex; justify-content: space-around; margin-bottom: 20px; }
-    .tabs button { flex: 1; background: #eee; border: none; padding: 10px; cursor: pointer; }
-    .tabs button.active { background: #007bff; color: white; }
-    .hidden { display: none; }
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #c40000;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .splash {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      background-color: #c40000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: fadeOut 3s forwards;
+      z-index: 10;
+    }
+
+    .splash img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { opacity: 0; visibility: hidden; }
+    }
+
+    .auth-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 40px;
+    }
+
+    .auth-logo {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background-color: rgba(255, 255, 255, 0.9);
+      width: 90%;
+      max-width: 400px;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      border-bottom: 2px solid transparent;
+    }
+
+    .tab.active {
+      border-bottom: 2px solid #c40000;
+      color: #c40000;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #aaa;
+      border-radius: 5px;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 20px;
+      top: 38px;
+      cursor: pointer;
+    }
+
+    .forgot {
+      text-align: right;
+      font-size: 0.9em;
+      margin-bottom: 10px;
+      color: #c40000;
+      cursor: pointer;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 10px;
+      background-color: #c40000;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .error {
+      color: red;
+      font-size: 0.9em;
+      margin-bottom: 10px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .relative {
+      position: relative;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>SkyUltimate</h2>
-    <div class="tabs">
-      <button id="loginTab" class="active">Login</button>
-      <button id="registerTab">Register</button>
+
+  <div class="splash">
+    <img src="https://github.com/Nelson192006/SkyUltimate-/blob/7c71c25bdff1772d676786405469433cb6e175c5/logo.png?raw=true" alt="Logo" />
+  </div>
+
+  <div class="auth-container">
+    <img class="auth-logo" src="https://github.com/Nelson192006/SkyUltimate-/blob/7c71c25bdff1772d676786405469433cb6e175c5/logo.png?raw=true" alt="Logo" />
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" id="loginTab">Login</div>
+        <div class="tab" id="registerTab">Register</div>
+      </div>
+
+      <div id="formArea">
+        <!-- Dynamic form will be injected here -->
+      </div>
     </div>
-
-    <!-- Login Form -->
-    <form id="loginForm">
-      <input type="email" id="loginEmail" placeholder="Email" required />
-      <input type="password" id="loginPassword" placeholder="Password" required />
-      <select id="loginRole" required>
-        <option value="">Select Role</option>
-        <option value="Customer">Customer</option>
-        <option value="Agent Admin">Agent Admin</option>
-        <option value="Super Admin">Super Admin</option>
-      </select>
-      <button type="submit">Login</button>
-    </form>
-
-    <!-- Register Form -->
-    <form id="registerForm" class="hidden">
-      <input type="text" id="registerName" placeholder="Name" required />
-      <input type="email" id="registerEmail" placeholder="Email" required />
-      <input type="password" id="registerPassword" placeholder="Password" required />
-      <select id="registerRole" required>
-        <option value="">Select Role</option>
-        <option value="Customer">Customer</option>
-        <option value="Agent Admin">Agent Admin</option>
-        <option value="Super Admin">Super Admin</option>
-      </select>
-      <input type="text" id="bankInfo" placeholder="Bank Info (Agent Admin only)" class="hidden" />
-      <button type="submit">Register</button>
-    </form>
-
-    <!-- Forgot Password (optional) -->
-    <!-- <p style="text-align:center; margin-top:10px;"><a href="#">Forgot Password?</a></p> -->
   </div>
 
   <script>
-    const loginTab = document.getElementById("loginTab");
-    const registerTab = document.getElementById("registerTab");
-    const loginForm = document.getElementById("loginForm");
-    const registerForm = document.getElementById("registerForm");
-    const bankInfo = document.getElementById("bankInfo");
-    const registerRole = document.getElementById("registerRole");
+    const splash = document.querySelector('.splash');
+    const authContainer = document.querySelector('.auth-container');
+    const loginTab = document.getElementById('loginTab');
+    const registerTab = document.getElementById('registerTab');
+    const formArea = document.getElementById('formArea');
 
-    loginTab.onclick = () => {
-      loginTab.classList.add("active");
-      registerTab.classList.remove("active");
-      loginForm.classList.remove("hidden");
-      registerForm.classList.add("hidden");
+    let superAdminExists = false; // Simulate backend flag
+    let adminEnabled = false;     // Controlled by Super Admin
+
+    const roles = () => {
+      const list = ['Customer', 'Agent'];
+      if (!superAdminExists) list.push('Super Admin');
+      if (adminEnabled) list.push('Admin');
+      return list;
     };
 
-    registerTab.onclick = () => {
-      registerTab.classList.add("active");
-      loginTab.classList.remove("active");
-      registerForm.classList.remove("hidden");
-      loginForm.classList.add("hidden");
+    const createForm = (type) => {
+      const isRegister = type === 'register';
+      formArea.innerHTML = `
+        <div class="form-group">
+          <select id="roleSelect">
+            ${roles().map(role => `<option value="${role}">${role}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <input type="email" id="email" placeholder="Email" />
+        </div>
+        <div class="form-group relative">
+          <input type="password" id="password" placeholder="Password" />
+          <span class="toggle-password" onclick="togglePassword()">👁️</span>
+        </div>
+        ${isRegister ? `
+          <div id="extraFields" class="form-group hidden">
+            <input type="text" id="bankInfo" placeholder="Bank Info (Admin only)" />
+          </div>
+        ` : `
+          <div class="forgot" onclick="forgotPassword()">Forgot Password?</div>
+        `}
+        <div class="error" id="errorMsg"></div>
+        <button class="btn" onclick="${isRegister ? 'register()' : 'login()'}">${isRegister ? 'Register' : 'Login'}</button>
+      `;
+
+      const roleSelect = document.getElementById('roleSelect');
+      roleSelect.addEventListener('change', () => {
+        const extraFields = document.getElementById('extraFields');
+        if (roleSelect.value === 'Admin') {
+          extraFields.classList.remove('hidden');
+        } else {
+          extraFields.classList.add('hidden');
+        }
+      });
     };
 
-    registerRole.onchange = () => {
-      bankInfo.classList.toggle("hidden", registerRole.value !== "Agent Admin");
+    const togglePassword = () => {
+      const pwd = document.getElementById('password');
+      pwd.type = pwd.type === 'password' ? 'text' : 'password';
     };
 
-    loginForm.onsubmit = async (e) => {
-      e.preventDefault();
-      const res = await fetch("https://skyultimate-backend-api-structure.onrender.com/api/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: loginEmail.value,
-          password: loginPassword.value,
-          role: loginRole.value
+    const forgotPassword = () => {
+      const email = prompt("Enter your email to reset password:");
+      if (email) {
+        fetch('https://nelson192006.github.io/SkyUltimate-/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
         })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        localStorage.setItem("token", data.token);
-        alert("Login successful!");
-        window.location.href = "/home.html";
-      } else {
-        alert(data.error || "Login failed.");
+        .then(() => alert("A password reset link has been sent to your email."))
+        .catch(() => alert("Error sending reset link."));
       }
     };
 
-    registerForm.onsubmit = async (e) => {
-      e.preventDefault();
-      const payload = {
-        name: registerName.value,
-        email: registerEmail.value,
-        password: registerPassword.value,
-        role: registerRole.value
-      };
-      if (registerRole.value === "Agent Admin") {
-        payload.bankInfo = bankInfo.value;
+    const login = () => {
+      const role = document.getElementById('roleSelect').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const errorMsg = document.getElementById('errorMsg');
+
+      if (!email || !password) {
+        errorMsg.textContent = "Please fill all fields.";
+        return;
       }
-      const res = await fetch("https://skyultimate-backend-api-structure.onrender.com/api/users/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (res.ok) {
-        alert("Registration successful! You can now log in.");
-        loginTab.click();
-      } else {
-        alert(data.error || "Registration failed.");
-      }
+
+      fetch('https://nelson192006.github.io/SkyUltimate-/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role, email, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+          alert(`Welcome ${role}! Redirecting to your dashboard...`);
+        } else {
+          errorMsg.textContent = "Invalid credentials. Please check your role and login details.";
+        }
+      })
+      .catch(() => errorMsg.textContent = "Login failed. Try again.");
+    };
+
+    const register = () => {
+      const role = document.getElementById('roleSelect').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const bankInfo = document.getElementById('bankInfo')?.value;
+      const errorMsg = document.getElementById('errorMsg');
+
+      if (!email || !password) {
+        errorMsg.textContent = "Please fill all fields.";
+       [43dcd9a7-70db-4a1f-b0ae-981daa162054](https://github.com/Ronnie434/30-days-of-React/tree/22142106cb46f717a1259f84227cc90ed7fe50cc/02_Day_Introduction_to_React%2F02_introduction_to_react.md?citationMarker=43dcd9a7-70db-4a1f-b0ae-981daa162054 "1")[43dcd9a7-70db-4a1f-b0ae-981daa162054](https://github.com/lzh-yi/Web-Fork-/tree/024b3e55587afdf9f05a677613a75f24e3d1803e/03-CSS%E8%BF%9B%E9%98%B6%2F04-%E5%A6%82%E4%BD%95%E8%AE%A9%E4%B8%80%E4%B8%AA%E5%85%83%E7%B4%A0%E6%B0%B4%E5%B9%B3%E5%9E%82%E7%9B%B4%E5%B1%85%E4%B8%AD%EF%BC%9F.md?citationMarker=43dcd9a7-70db-4a1f-b0ae-981daa162054 "2")
+                                              fetch('https://nelson192006.github.io/SkyUltimate-/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role, email, password, bankInfo })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert("Registration successful! Please log in.");
+          loginTab.classList.add('active');
+          registerTab.classList.remove('active');
+          createForm('login');
+        } else {
+          errorMsg.textContent = "An account with this email already exists, please Login.";
+        }
+      })
+      .catch(() => errorMsg.textContent = "Registration failed. Try again.");
     };
   </script>
 </body>
-          </html>
+</html>
