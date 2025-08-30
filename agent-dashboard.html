@@ -1,230 +1,492 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SkyUltimate - Agent Dashboard</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SkyUltimate — Agent Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
-    body, html { width:100%; height:100%; background:#C00000; }
-    button { cursor:pointer; border:none; outline:none; }
-    a { text-decoration:none; color:inherit; }
-    #container { width:100%; min-height:100%; padding:20px; display:flex; flex-direction:column; align-items:center; position:relative; }
-
-    #logo { width:100px; height:100px; border-radius:50%; margin-bottom:10px; }
-    #welcome { font-size:1.4rem; color:white; margin-bottom:20px; text-align:center; }
-
-    /* Toggle */
-    .toggle-container { display:flex; align-items:center; justify-content:center; margin-bottom:20px; }
-    .toggle-label { color:white; margin:0 10px; font-weight:bold; }
-    .toggle-btn { width:60px; height:30px; background:white; border-radius:15px; position:relative; cursor:pointer; }
-    .toggle-circle { width:26px; height:26px; background:#C00000; border-radius:50%; position:absolute; top:2px; left:2px; transition:0.3s; }
-
-    /* Job Card */
-    .job-card { background:white; border-radius:12px; padding:15px; width:100%; max-width:500px; margin-bottom:15px; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
-    .job-card h3 { color:#C00000; margin-bottom:10px; }
-    .job-card p { margin-bottom:8px; }
-    .job-card button { width:100%; padding:10px; border-radius:12px; background:#C00000; color:white; font-weight:bold; margin-top:10px; transition:0.3s; }
-
-    /* Action Buttons */
-    .action-btn { width:100%; padding:12px; border-radius:12px; background:white; color:#C00000; font-weight:bold; margin-bottom:10px; transition:0.3s; }
-    .action-btn:disabled { background:#ccc; color:#666; cursor:not-allowed; }
-
-    /* Hamburger Menu */
-    #hamburger { position:absolute; top:20px; left:20px; width:30px; height:22px; cursor:pointer; display:flex; flex-direction:column; justify-content:space-between; }
-    .bar { width:100%; height:4px; background:white; border-radius:2px; }
-
-    #menu { position:fixed; top:0; left:-300px; width:250px; height:100%; background:white; color:#C00000; box-shadow:3px 0 10px rgba(0,0,0,0.3); transition:0.3s; display:flex; flex-direction:column; padding:20px; }
-    #menu h2 { margin-bottom:20px; font-size:1.2rem; }
-    .menu-item { margin:10px 0; cursor:pointer; font-weight:bold; }
-
-    .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); color:#C00000; padding:40px; overflow-y:auto; display:none; }
-    .overlay h2 { margin-bottom:15px; }
-    .overlay p { margin-bottom:10px; line-height:1.5; }
-    .close-overlay { position:absolute; top:20px; right:20px; font-weight:bold; cursor:pointer; font-size:1.2rem; }
-
-    #logout { position:absolute; top:20px; right:20px; background:white; color:#C00000; padding:8px 12px; border-radius:8px; font-weight:bold; transition:0.3s; }
-    #logout:hover { background:#f0f0f0; }
+    body { background:#C00000; }
+    .card { background: rgba(255,255,255,0.95); border-radius: 12px; padding: 14px; box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+    .btn { background:#C00000;color:#fff;padding:8px 12px;border-radius:10px;font-weight:600; }
+    .muted { color:#6b7280; }
+    .small { font-size:0.85rem; }
+    .drawer { transform: translateX(-100%); transition: transform .25s ease; }
+    .drawer.open { transform: translateX(0); }
+    .modal-backdrop { background: rgba(0,0,0,0.45); }
   </style>
 </head>
-<body>
-<div id="container">
-  <img id="logo" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="Logo">
-  <div id="welcome">Welcome back!</div>
+<body class="min-h-screen text-gray-900">
 
-  <!-- ONLINE / OFFLINE Toggle -->
-  <div class="toggle-container">
-    <span class="toggle-label">OFFLINE</span>
-    <div class="toggle-btn" id="toggleBtn"><div class="toggle-circle"></div></div>
-    <span class="toggle-label">ONLINE</span>
-  </div>
-
-  <!-- Job List -->
-  <div id="job-list"></div>
-
-  <div id="hamburger">
-    <div class="bar"></div>
-    <div class="bar"></div>
-    <div class="bar"></div>
-  </div>
-  <div id="menu">
-    <h2>Menu</h2>
-    <div class="menu-item" id="aboutus-menu">About Us</div>
-    <div class="menu-item" id="mission-menu">Mission & Vision</div>
-    <div class="menu-item" id="faq-menu">FAQ / Support</div>
+<header class="flex items-center justify-between px-4 py-3">
+  <div class="flex items-center gap-3">
+    <button id="menuBtn" class="p-2 rounded-md bg-white/10 text-white">☰</button>
+    <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="logo" class="w-14 h-14 object-contain">
+    <div class="text-white">
+      <div id="agentGreeting" class="font-bold text-lg">Hello, Agent</div>
+      <div id="agentStatusText" class="text-sm muted">Offline</div>
+    </div>
   </div>
 
-  <!-- Overlays -->
-  <div class="overlay" id="aboutus-overlay">
-    <div class="close-overlay" onclick="closeOverlay('aboutus-overlay')">X</div>
-    <h2>About Us</h2>
-    <p>SkyUltimate Delivery Service, founded in 2024, ensures your packages are handled safely and delivered on time...</p>
+  <div class="flex items-center gap-2">
+    <label class="text-white small mr-2">Available</label>
+    <input id="toggleAvailable" type="checkbox" />
+    <button id="logoutBtn" class="text-white px-3 py-1 rounded bg-white/10">Logout</button>
   </div>
-  <div class="overlay" id="mission-overlay">
-    <div class="close-overlay" onclick="closeOverlay('mission-overlay')">X</div>
-    <h2>Our Mission</h2>
-    <p>To provide a seamless, reliable, and efficient delivery experience exceeding customer expectations...</p>
-    <h2>Our Vision</h2>
-    <p>To be the leader in delivery services known for speed, reliability, and customer satisfaction...</p>
-  </div>
-  <div class="overlay" id="faq-overlay">
-    <div class="close-overlay" onclick="closeOverlay('faq-overlay')">X</div>
-    <h2>FAQ & Support</h2>
-    <p>Tracking: Use the tracking number provided in your email.</p>
-    <p>Delivery hours: 9:00 AM - 6:00 PM, Mon-Sat. Special arrangements possible.</p>
-    <p>WhatsApp / Phone: 09128884830</p>
-    <p>Social: Instagram, Facebook (editable)</p>
-  </div>
+</header>
 
-  <button id="logout">Logout</button>
+<!-- Drawer -->
+<aside id="drawer" class="fixed left-0 top-0 bottom-0 w-72 p-4 drawer z-40">
+  <div class="card">
+    <div class="flex items-center justify-between mb-3">
+      <div>
+        <div id="drawerName" class="font-bold"></div>
+        <div id="drawerRole" class="text-xs muted"></div>
+      </div>
+      <button id="closeDrawer">✕</button>
+    </div>
+
+    <nav class="space-y-2">
+      <button id="navFeed" class="w-full text-left p-2 rounded hover:bg-gray-100">New Orders Feed</button>
+      <button id="navActive" class="w-full text-left p-2 rounded hover:bg-gray-100">Active Delivery</button>
+      <button id="navEarnings" class="w-full text-left p-2 rounded hover:bg-gray-100">Payouts & Earnings</button>
+      <button id="navHistory" class="w-full text-left p-2 rounded hover:bg-gray-100">My History</button>
+      <button id="navSupport" class="w-full text-left p-2 rounded hover:bg-gray-100">Contact Support</button>
+    </nav>
+    <div class="mt-4 text-xs muted">
+      Contact: <a href="tel:+2349128884830" class="underline">09128884830</a><br/>
+      Email: <a href="mailto:nelsongodspower24@gmail.com" class="underline">nelsongodspower24@gmail.com</a>
+    </div>
+  </div>
+</aside>
+
+<main class="max-w-4xl mx-auto px-4 pb-24">
+
+  <!-- Live Feed -->
+  <section id="feedSection" class="my-4">
+    <div class="flex items-center justify-between mb-2">
+      <h2 class="text-white text-xl font-bold">New Orders Feed</h2>
+      <div class="text-sm text-white muted">Polling every 8s</div>
+    </div>
+    <div id="feedList" class="space-y-3"></div>
+  </section>
+
+  <!-- Active Order -->
+  <section id="activeSection" class="my-4 hidden">
+    <div class="card">
+      <div class="flex justify-between items-start">
+        <div>
+          <h3 class="font-bold">Active Delivery</h3>
+          <div id="activeId" class="small muted">Order: —</div>
+        </div>
+        <div id="activeFee" class="font-semibold text-lg">₦0</div>
+      </div>
+
+      <div class="mt-3 grid grid-cols-1 gap-2">
+        <div><span class="muted small">Pickup:</span> <span id="activePickup"></span></div>
+        <div><span class="muted small">Dropoff:</span> <span id="activeDropoff"></span></div>
+        <div><span class="muted small">Item:</span> <span id="activeItem"></span></div>
+      </div>
+
+      <div class="mt-4 flex gap-2">
+        <button id="navToPickup" class="btn">Start Navigation</button>
+        <button id="callCustomer" class="border px-3 py-2 rounded">Call Customer</button>
+        <button id="acceptComplete" class="bg-green-600 text-white px-3 py-2 rounded hidden">Mark Picked Up</button>
+        <button id="markDelivered" class="bg-blue-600 text-white px-3 py-2 rounded hidden">Mark Delivered</button>
+      </div>
+
+      <div id="activeMapMsg" class="muted small mt-2">Live location reporting: <span id="locStatus">off</span></div>
+    </div>
+  </section>
+
+  <!-- Earnings -->
+  <section id="earningsSection" class="my-4 hidden">
+    <div class="card">
+      <h3 class="font-bold">Payouts & Earnings</h3>
+      <div class="mt-3 small muted">Pending Payout: <span id="pendingPayout">₦0</span></div>
+      <div class="mt-3" id="payoutList"></div>
+      <div class="mt-3">
+        <button id="editBank" class="border px-3 py-2 rounded">Update Bank Details</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- History -->
+  <section id="historySection" class="my-4 hidden">
+    <div class="card">
+      <h3 class="font-bold">My Delivery History</h3>
+      <div id="agentHistory" class="mt-3 space-y-2 text-sm muted">Loading…</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Minimal modal for messages -->
+<div id="modal" class="fixed inset-0 hidden items-center justify-center z-50">
+  <div class="modal-backdrop absolute inset-0"></div>
+  <div class="card z-60 w-11/12 max-w-md">
+    <div id="modalContent"></div>
+    <div class="mt-4 text-right"><button id="modalClose" class="border px-3 py-1 rounded">Close</button></div>
+  </div>
 </div>
 
 <script>
-  const name = sessionStorage.getItem('name') || 'Agent';
-  const token = sessionStorage.getItem('token');
-  const apiURL = 'https://skyultimate-backend-api-structure.onrender.com';
-  document.getElementById('welcome').textContent = `Welcome back, ${name}!`;
+/*
+  Agent-dashboard.html
+  - API_BASE: your live backend
+  - Expected auth: localStorage.su_token + localStorage.su_user (must be Agent)
+  - Endpoints used (from your controllers):
+    PUT  /api/users/agent/availability         (toggle online status)
+    GET  /api/orders?status=PaymentConfirmed   (available unassigned orders feed)  <-- assumption (common pattern)
+    POST /api/orders/:id/claim                 (claim order by agent)
+    GET  /api/orders/:id                       (fetch single order status/details)
+    PUT  /api/orders/:id/pickup                (confirm picked up)
+    PUT  /api/orders/:id/deliver               (confirm delivered)
+    GET  /api/orders?agentId=...               (agent's orders / history)
+    GET  /api/payouts?agentId=...              (payout list, optional)
+    POST /api/admin-requests                   (report / support) <-- best-effort
+    POST /api/agents/location                  (location updates) <-- optional; implement server-side if desired
+  - Polling strategy used for feed & active order (upgradeable to WebSocket later)
+*/
 
-  // Redirect to login if no token
-  if (!token) {
-    window.location.href = "index.html";
+const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
+const token = localStorage.getItem('su_token');
+const me = JSON.parse(localStorage.getItem('su_user') || 'null');
+if (!token || !me || !['Agent','agent'].includes(me.role)) {
+  alert('Agent authentication required. Redirecting to login.');
+  localStorage.removeItem('su_token'); localStorage.removeItem('su_user');
+  window.location.href = 'index.html';
+}
+
+// simple helpers
+const X = id=>document.getElementById(id);
+const feedList = X('feedList'), activeSection = X('activeSection'),
+      earningsSection = X('earningsSection'), historySection = X('historySection'),
+      activePickup = X('activePickup'), activeDropoff = X('activeDropoff'), activeItem = X('activeItem'),
+      activeId = X('activeId'), activeFee = X('activeFee'), callCustomer = X('callCustomer'),
+      navToPickup = X('navToPickup'), acceptComplete = X('acceptComplete'), markDelivered = X('markDelivered'),
+      locStatus = X('locStatus'), pendingPayoutEl = X('pendingPayout'), payoutList = X('payoutList'),
+      agentHistory = X('agentHistory'), drawer = document.getElementById('drawer');
+
+X('drawerName').innerText = me.name || 'Agent';
+X('drawerRole').innerText = me.role || 'Agent';
+X('agentGreeting').innerText = `Hello, ${ (me.name||'').split(' ')[0] }`;
+
+// auth wrapper
+async function apiFetch(path, opts={}) {
+  opts.headers = opts.headers || {};
+  opts.headers['Content-Type'] = 'application/json';
+  if (token) opts.headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(API_BASE + path, opts);
+  if (res.status === 401) { alert('Session expired'); localStorage.clear(); window.location.href = 'index.html'; throw new Error('unauthorized'); }
+  const json = await res.json().catch(()=>null);
+  if (!res.ok) throw new Error((json && json.message) || 'Request failed');
+  return json;
+}
+
+/* ---------- UI wiring ---------- */
+document.getElementById('menuBtn').onclick = ()=> drawer.classList.toggle('open');
+document.getElementById('closeDrawer').onclick = ()=> drawer.classList.remove('open');
+X('navFeed').onclick = ()=> showSection('feed');
+X('navActive').onclick = ()=> showSection('active');
+X('navEarnings').onclick = ()=> showSection('earnings');
+X('navHistory').onclick = ()=> showSection('history');
+X('navSupport').onclick = ()=> openSupportPrompt();
+X('logoutBtn').onclick = ()=> { localStorage.removeItem('su_token'); localStorage.removeItem('su_user'); window.location.href='index.html'; }
+
+/* availability toggle */
+const availableToggle = X('toggleAvailable');
+availableToggle.checked = !!me.isAvailable;
+updateStatusText(availableToggle.checked);
+availableToggle.addEventListener('change', async ()=> {
+  const online = availableToggle.checked;
+  try {
+    // your backend route exists: PUT /api/users/agent/availability
+    const res = await apiFetch('/api/users/agent/availability', { method:'PUT', body: JSON.stringify({ online }) });
+    updateStatusText(res.online);
+    // update local copy
+    me.isAvailable = !!res.online;
+    localStorage.setItem('su_user', JSON.stringify(me));
+  } catch (err) {
+    alert('Could not update availability: ' + err.message);
+    // revert toggle UI
+    availableToggle.checked = !online;
+    updateStatusText(availableToggle.checked);
   }
+});
+function updateStatusText(online) { X('agentStatusText').innerText = online ? 'Online' : 'Offline'; }
 
-  // --- Toggle ONLINE / OFFLINE ---
-  const toggleBtn = document.getElementById('toggleBtn');
-  const toggleCircle = toggleBtn.querySelector('.toggle-circle');
-  let online = false;
+/* ---------- Feed (polling) ---------- */
+let feedPolling = null;
+async function loadFeed() {
+  feedList.innerHTML = '<div class="muted small">Loading…</div>';
+  try {
+    // Common pattern: fetch unassigned orders ready for agents.
+    // If your backend exposes a different route, change this path.
+    const data = await apiFetch('/api/orders?status=PaymentConfirmed');
+    const orders = Array.isArray(data) ? data : (data.orders || data.data || []);
+    if (!orders || orders.length === 0) { feedList.innerHTML = '<div class="muted small">No available jobs right now.</div>'; return; }
+    feedList.innerHTML = '';
+    orders.forEach(o => feedList.appendChild(renderFeedItem(o)));
+  } catch (e) {
+    feedList.innerHTML = `<div class="muted small">Feed error: ${e.message}</div>`;
+  }
+}
+function renderFeedItem(o) {
+  const id = o._id || o.id;
+  const el = document.createElement('div'); el.className='card flex justify-between items-start';
+  const left = document.createElement('div');
+  left.innerHTML = `<div class="font-semibold">Order ${String(id).slice(-6)}</div>
+                    <div class="small muted">Pickup: ${o.pickupAddress || o.pickup || '—'}</div>
+                    <div class="small muted">Dropoff: ${o.deliveryAddress || o.deliveryAddress || '—'}</div>
+                    <div class="small muted">Item: ${o.itemType || (o.items && o.items[0] && o.items[0].itemType) || '—'}</div>`;
+  const right = document.createElement('div'); right.className='flex flex-col gap-2';
+  const fee = document.createElement('div'); fee.className='font-semibold'; fee.innerText = `₦${(o.finalPrice||o.pricePaid||0).toLocaleString()}`;
+  const accept = document.createElement('button'); accept.className='btn'; accept.innerText='Accept';
+  const decline = document.createElement('button'); decline.className='border px-3 py-1 rounded'; decline.innerText='Decline';
+  accept.onclick = ()=> claimJob(id);
+  decline.onclick = ()=> { el.remove(); };
+  right.appendChild(fee); right.appendChild(accept); right.appendChild(decline);
+  el.appendChild(left); el.appendChild(right);
+  return el;
+}
 
-  toggleBtn.addEventListener('click', () => {
-    online = !online;
-    toggleCircle.style.left = online ? '32px' : '2px';
-    if (online) {
-      alert("Agent is now ONLINE");
-      startPollingJobs();
-    } else {
-      alert("Agent is now OFFLINE");
-      jobList.innerHTML = "";
-    }
-  });
+async function claimJob(orderId) {
+  try {
+    // POST /api/orders/:id/claim  (controller provided)
+    const res = await apiFetch(`/api/orders/${orderId}/claim`, { method:'POST' });
+    alert('Job claimed — now active.');
+    const order = res.order || res;
+    localStorage.setItem('su_active_order', JSON.stringify(order));
+    openActive(order);
+    // refresh feed immediately
+    await loadFeed();
+  } catch (e) {
+    alert('Could not claim job: ' + e.message);
+    await loadFeed();
+  }
+}
 
-  // --- Fetch Jobs ---
-  const jobList = document.getElementById('job-list');
-  async function startPollingJobs() {
-    jobList.innerHTML = '';
+/* ---------- Active Order handling & status updates ---------- */
+function openActive(order) {
+  activeSection.classList.remove('hidden');
+  showSection('active');
+  fillActive(order);
+  // start polling active order
+  if (activePolling) clearInterval(activePolling);
+  activePolling = setInterval(()=> pollActive(order._id || order.id), 5000);
+  // start location watch if allowed
+  startLocationWatch(order._id || order.id);
+}
+function fillActive(o) {
+  const id = o._id || o.id;
+  activeId.innerText = 'Order ' + String(id).slice(-8);
+  activePickup.innerText = o.pickupAddress || o.pickup || '—';
+  activeDropoff.innerText = o.deliveryAddress || o.deliveryAddress || '—';
+  activeItem.innerText = o.itemType || (o.items && o.items[0] && o.items[0].itemType) || '—';
+  activeFee.innerText = `₦${(o.finalPrice||o.pricePaid||0).toLocaleString()}`;
+  // contact button
+  const phone = (o.customer && o.customer.phone) || o.customerPhone || (o.contact && o.contact.phone) || null;
+  if (phone) {
+    callCustomer.onclick = ()=> window.location.href = `tel:${phone}`;
+    callCustomer.classList.remove('opacity-50'); callCustomer.disabled = false;
+  } else {
+    callCustomer.onclick = ()=> alert('Customer phone not available yet.');
+  }
+  // navigation deep link
+  navToPickup.onclick = ()=> {
+    const dest = encodeURIComponent(o.pickupAddress || o.pickup || o.deliveryAddress || '');
+    // geo deep link works on most mobile devices
+    window.location.href = `geo:0,0?q=${dest}`;
+  };
+  // show action buttons depending on status
+  updateActiveButtons(o.status || o.order?.status);
+}
+
+let activePolling = null;
+async function pollActive(orderId) {
+  try {
+    const o = await apiFetch(`/api/orders/${orderId}`);
+    fillActive(o);
+  } catch (e) {
+    console.info('Active poll error', e.message);
+  }
+}
+
+function updateActiveButtons(status) {
+  acceptComplete.classList.add('hidden'); markDelivered.classList.add('hidden');
+  if (!status) return;
+  // Use the status enum you provided in backend
+  if (status === 'EnRouteToPickup' || status === 'EnRouteToDelivery') {
+    acceptComplete.classList.remove('hidden'); acceptComplete.innerText = status === 'EnRouteToPickup' ? 'Confirm Picked Up' : 'Confirm Reached';
+  }
+  if (status === 'EnRouteToDelivery') {
+    markDelivered.classList.remove('hidden'); markDelivered.innerText = 'Confirm Delivered';
+  }
+}
+
+// picked up
+acceptComplete.onclick = async ()=> {
+  const active = JSON.parse(localStorage.getItem('su_active_order') || 'null');
+  const id = active && (active._id||active.id);
+  if (!id) return alert('No active order.');
+  try {
+    await apiFetch(`/api/orders/${id}/pickup`, { method:'PUT' });
+    alert('Pickup confirmed.');
+    await pollActive(id);
+  } catch (e) { alert('Could not confirm pickup: ' + e.message); }
+};
+
+// delivered
+markDelivered.onclick = async ()=> {
+  const active = JSON.parse(localStorage.getItem('su_active_order') || 'null');
+  const id = active && (active._id||active.id);
+  if (!id) return alert('No active order.');
+  try {
+    await apiFetch(`/api/orders/${id}/deliver`, { method:'PUT' });
+    alert('Delivery confirmed. Payout queued.');
+    await pollActive(id);
+    // clear active order
+    localStorage.removeItem('su_active_order');
+  } catch (e) { alert('Could not confirm delivery: ' + e.message); }
+};
+
+/* ---------- Live Location reporting ---------- */
+let watchId = null;
+function startLocationWatch(orderId) {
+  if (!navigator.geolocation) { locStatus.innerText = 'unsupported'; return; }
+  locStatus.innerText = 'on';
+  // watch position and POST to server (best-effort)
+  watchId = navigator.geolocation.watchPosition(async pos => {
+    const { latitude, longitude } = pos.coords;
+    // POST to an endpoint to save location — backend integration required.
+    // I couldn't find a matching endpoint in the controllers you pasted; implement one server-side
+    // (e.g., POST /api/agents/location or PUT /api/orders/:id/location) and update this URL.
     try {
-      const res = await fetch(`${apiURL}/orders/available`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error("Failed to fetch jobs");
-      const jobs = await res.json();
-
-      if (jobs.length === 0) {
-        jobList.innerHTML = "<p style='color:white;text-align:center;'>No jobs available right now.</p>";
-        return;
-      }
-
-      jobs.forEach(job => {
-        const card = document.createElement('div');
-        card.className = 'job-card';
-        card.innerHTML = `
-          <h3>Order #${job.id}</h3>
-          <p>Pickup: ${job.pickup}</p>
-          <p>Delivery: ${job.delivery}</p>
-          <p>Weight: ${job.weight}kg</p>
-          <p>Type: ${job.itemType}</p>
-          <button class="accept-btn">ACCEPT ORDER</button>
-        `;
-        card.querySelector('.accept-btn').addEventListener('click', () => acceptJob(job.id, card));
-        jobList.appendChild(card);
+      await fetch(API_BASE + '/api/agents/location', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ agentId: me._id || me.id, orderId, lat: latitude, lng: longitude, ts: Date.now() })
       });
     } catch (err) {
-      console.log('Error fetching jobs', err);
+      // ignore failures (server may not support this route). no spam alerts.
+      // If you implement a server-side endpoint, this will start reporting live location.
     }
-  }
+  }, err => {
+    console.info('geolocation error', err.message);
+    locStatus.innerText = 'denied';
+  }, { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 });
+}
+function stopLocationWatch() {
+  if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+  locStatus.innerText = 'off';
+}
 
-  // --- Accept Job ---
-  async function acceptJob(jobId, card) {
+/* ---------- Earnings & History ---------- */
+async function loadEarnings() {
+  try {
+    // Try /api/payouts?agentId=... (admin had /api/admin/payouts but there is a generic /api/payouts router)
+    let payouts = [];
+    try { payouts = await apiFetch(`/api/payouts?agentId=${me._id||me.id}`); } catch(_) { payouts = []; }
+    payoutList.innerHTML = '';
+    if (Array.isArray(payouts) && payouts.length) {
+      payouts.forEach(p => {
+        const el = document.createElement('div'); el.className='p-2 border rounded mb-2';
+        el.innerHTML = `<div class="font-semibold">₦${(p.amount||0).toLocaleString()}</div><div class="small muted">${new Date(p.createdAt||p.date||Date.now()).toLocaleString()}</div>`;
+        payoutList.appendChild(el);
+      });
+    } else {
+      payoutList.innerHTML = '<div class="muted small">No payouts yet.</div>';
+    }
+
+    // Compute pending payouts by summing pendingPayout on user or orders
     try {
-      const res = await fetch(`${apiURL}/orders/accept/${jobId}`, {
-        method: 'POST',
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const result = await res.json();
-      if (res.ok && result.success) {
-        alert('Order Accepted! Active Delivery Mode Enabled.');
-        card.innerHTML = `
-          <h3>Order #${jobId}</h3>
-          <button class="action-btn" onclick="startNavigation('${result.pickup}')">Start Navigation</button>
-          <button class="action-btn" onclick="contactCustomer('${result.customerPhone}')">Contact Customer</button>
-          <p>Expected Income: ₦${result.agentPayout}</p>
-        `;
-      } else {
-        alert(result.message || 'Order already taken!');
-        card.remove();
-      }
-    } catch (e) {
-      alert('Error accepting job');
+      // Try fetching user fresh profile (GET /api/users/profile)
+      const profile = await apiFetch('/api/users/profile');
+      pendingPayoutEl.innerText = `₦${Math.round(profile.pendingPayout || 0).toLocaleString()}`;
+    } catch (_) {
+      pendingPayoutEl.innerText = `₦${(me.pendingPayout||0).toLocaleString()}`;
     }
+  } catch (e) {
+    payoutList.innerHTML = `<div class="muted small">Could not load payouts: ${e.message}</div>`;
   }
+}
 
-  function startNavigation(address) {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(pos => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        window.open(`https://www.google.com/maps/dir/?api=1&origin=${lat},${lon}&destination=${encodeURIComponent(address)}`);
-      });
+async function loadHistory() {
+  agentHistory.innerHTML = 'Loading…';
+  try {
+    // GET /api/orders?agentId=...
+    const data = await apiFetch(`/api/orders?agentId=${me._id||me.id}`);
+    const orders = Array.isArray(data) ? data : (data.orders || data.data || []);
+    if (!orders || orders.length === 0) { agentHistory.innerHTML = '<div class="muted small">No deliveries yet.</div>'; return; }
+    agentHistory.innerHTML = '';
+    orders.slice().reverse().forEach(o=>{
+      const el = document.createElement('div'); el.className = 'p-2 border rounded';
+      el.innerHTML = `<div class="flex justify-between"><div class="font-semibold">Order ${String(o._id||o.id).slice(-6)}</div><div class="small muted">${o.status||'—'}</div></div>
+                      <div class="small muted">₦${(o.finalPrice||o.pricePaid||0).toLocaleString()}</div>`;
+      agentHistory.appendChild(el);
+    });
+  } catch (e) {
+    agentHistory.innerHTML = `<div class="muted small">Could not load history: ${e.message}</div>`;
+  }
+}
+
+/* ---------- Support / Report ---------- */
+async function openSupportPrompt() {
+  const txt = prompt('Describe your issue for admin support (this creates a ticket):');
+  if (!txt) return;
+  try {
+    // best-effort: POST /api/admin-requests or /api/admin/requests (some apps differ)
+    try { await apiFetch('/api/admin-requests', { method:'POST', body: JSON.stringify({ reason: txt }) }); alert('Support ticket created.'); return; } catch(_) {}
+    await apiFetch('/api/admin/requests', { method:'POST', body: JSON.stringify({ reason: txt }) });
+    alert('Support ticket created.');
+  } catch (e) {
+    alert('Could not create support ticket: ' + e.message);
+  }
+}
+
+/* ---------- Helpers & UI flow ---------- */
+function showSection(name) {
+  feedSection.style.display = 'block';
+  activeSection.style.display = 'none';
+  earningsSection.style.display = 'none';
+  historySection.style.display = 'none';
+  if (name === 'feed') { feedSection.style.display = 'block'; }
+  if (name === 'active') { activeSection.style.display = 'block'; }
+  if (name === 'earnings') { earningsSection.style.display = 'block'; }
+  if (name === 'history') { historySection.style.display = 'block'; }
+}
+
+// set initial visibility references
+const feedSection = document.getElementById('feedSection');
+feedSection.style.display='block';
+activeSection.style.display='none';
+earningsSection.style.display='none';
+historySection.style.display='none';
+
+/* ---------- Init: start polling feed, earnings and history ---------- */
+let feedInterval = null;
+let activeOrder = JSON.parse(localStorage.getItem('su_active_order') || 'null');
+
+(async function init() {
+  try {
+    await loadFeed();
+    feedInterval = setInterval(loadFeed, 8000);
+
+    await loadEarnings();
+    await loadHistory();
+
+    if (activeOrder && (activeOrder._id || activeOrder.id)) {
+      openActive(activeOrder);
     }
+  } catch (e) {
+    console.info('init err', e.message);
   }
+})();
 
-  function contactCustomer(phone) {
-    window.location.href = `tel:${phone}`;
-  }
+/* stop location watch when unload */
+window.addEventListener('beforeunload', ()=> { if (watchId !== null) navigator.geolocation.clearWatch(watchId); });
 
-  // --- Hamburger Menu ---
-  const hamburger = document.getElementById('hamburger');
-  const menu = document.getElementById('menu');
-  let menuOpen = false;
-  hamburger.addEventListener('click', () => {
-    menuOpen = !menuOpen;
-    menu.style.left = menuOpen ? '0' : '-300px';
-  });
-
-  const openOverlay = (id) => { document.getElementById(id).style.display = 'block'; menu.style.left = '-300px'; menuOpen = false; }
-  const closeOverlay = (id) => { document.getElementById(id).style.display = 'none'; }
-
-  document.getElementById('aboutus-menu').addEventListener('click', () => openOverlay('aboutus-overlay'));
-  document.getElementById('mission-menu').addEventListener('click', () => openOverlay('mission-overlay'));
-  document.getElementById('faq-menu').addEventListener('click', () => openOverlay('faq-overlay'));
-
-  // --- Logout ---
-  document.getElementById('logout').addEventListener('click', () => {
-    sessionStorage.clear();
-    window.location.href = 'index.html';
-  });
 </script>
 </body>
 </html>
