@@ -1,405 +1,446 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SkyUltimate — Master Control Panel (Super Admin)</title>
-<style>
-  :root{
-    --brand:#C00000;
-    --muted:#666;
-    --card-bg:#fff;
-    --surface:#f7f7f8;
-    --danger:#c0392b;
-    --success:#27ae60;
-  }
-  *{box-sizing:border-box;font-family:Inter,Arial,Helvetica,sans-serif}
-  body{margin:0;background:linear-gradient(180deg,#fff,#f5f5f7);color:#222}
-  header{background:var(--brand);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
-  header h1{font-size:20px;margin:0}
-  .wrap{max-width:1200px;margin:20px auto;padding:18px}
-  .layout{display:grid;grid-template-columns:320px 1fr;gap:18px}
-  nav.card{background:var(--card-bg);padding:14px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.06)}
-  nav .nav-item{display:block;padding:10px 12px;border-radius:8px;color:var(--brand);font-weight:700;margin-bottom:8px;cursor:pointer}
-  nav .nav-item:hover{background:#fff0f0}
-  main{min-height:70vh}
-  .panel{background:var(--card-bg);padding:14px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.05);margin-bottom:16px}
-  h2{color:var(--brand);margin:0 0 8px 0}
-  .row{display:flex;gap:10px;align-items:center}
-  input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd}
-  table{width:100%;border-collapse:collapse;margin-top:10px}
-  th,td{padding:10px;border:1px solid #eee;text-align:left}
-  th{background:var(--surface);color:var(--muted)}
-  .btn{background:var(--brand);color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
-  .btn.secondary{background:#eee;color:var(--brand)}
-  .btn.warn{background:var(--danger)}
-  .small{font-size:13px;color:var(--muted)}
-  .muted{color:var(--muted)}
-  .flex{display:flex;gap:10px;align-items:center}
-  .actions button{margin-right:8px}
-  .banner{background:#fff4f4;border-left:4px solid var(--brand);padding:12px;border-radius:8px;margin-bottom:12px}
-  .success{background:#e8fff0;border-left:4px solid var(--success);padding:10px;border-radius:8px}
-  .search{display:flex;gap:8px;margin-top:8px;margin-bottom:8px}
-  .chip{display:inline-block;padding:6px 10px;border-radius:999px;background:#fff;border:1px solid #eee;color:var(--muted);font-weight:700}
-  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  @media(max-width:980px){.layout{grid-template-columns:1fr;}.grid-3{grid-template-columns:1fr}}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SkyUltimate — Master Control (Super Admin)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* small custom adjustments */
+    .sidebar { width: 280px; }
+    .map-container { height: 420px; border-radius: 12px; overflow: hidden; }
+    .kpi { min-width: 140px; }
+  </style>
 </head>
-<body>
-<header>
-  <h1>SkyUltimate — Master Control Panel</h1>
-  <div style="display:flex;gap:12px;align-items:center">
-    <div id="healthDot" class="chip">Checking...</div>
-    <button class="btn" id="logoutBtn">Logout</button>
-  </div>
-</header>
+<body class="bg-gray-50">
 
-<div class="wrap">
-  <div class="layout">
-    <nav class="card" aria-label="SuperAdmin nav">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-        <img src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="logo" style="width:56px;height:56px;border-radius:50%">
-        <div>
-          <div style="font-weight:800" id="saName">Super Admin</div>
-          <div class="small" id="saEmail">admin@example.com</div>
-        </div>
+  <!-- top bar -->
+  <header class="bg-red-700 text-white p-3 flex items-center justify-between shadow">
+    <div class="flex items-center gap-4">
+      <button id="hamburger" class="p-2 rounded hover:bg-white/10">☰</button>
+      <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="logo" class="w-12 h-12 object-contain">
+      <div>
+        <div class="font-bold">SkyUltimate</div>
+        <div class="text-xs opacity-80">Master Control Panel</div>
       </div>
+    </div>
 
-      <div class="small muted">Navigation</div>
-      <div style="margin-top:8px">
-        <div class="nav-item" onclick="showPanel('dashboardPanel')">Dashboard</div>
-        <div class="nav-item" onclick="showPanel('usersPanel')">User Management</div>
-        <div class="nav-item" onclick="showPanel('requestsPanel')">Admin Request Queue</div>
-        <div class="nav-item" onclick="showPanel('financialPanel')">Financials & Payouts</div>
-        <div class="nav-item" onclick="showPanel('settingsPanel')">Platform Settings</div>
-        <div class="nav-item" onclick="showPanel('announcementsPanel')">Announcements</div>
-        <div class="nav-item" onclick="showPanel('referralsPanel')">Referrals</div>
-        <div class="nav-item" onclick="showPanel('feedbackPanel')">Feedback & Tickets</div>
-        <div class="nav-item" onclick="showPanel('logsPanel')">Logs & Export</div>
-        <div class="nav-item" onclick="showPanel('uptimePanel')">Uptime / Health</div>
-        <div class="nav-item" onclick="showPanel('notificationsPanel')">Send Notification</div>
-      </div>
+    <div class="flex items-center gap-3">
+      <button id="announceQuickBtn" class="bg-white/10 px-3 py-1 rounded">New Announcement</button>
+      <button id="logoutBtn" class="bg-white text-red-700 px-3 py-1 rounded">Logout</button>
+    </div>
+  </header>
 
-      <div style="margin-top:16px">
-        <div class="small muted">Quick actions</div>
-        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
-          <button class="btn" onclick="loadAll()">Refresh All</button>
-          <button class="btn secondary" onclick="openBlacklistHelper()">Blacklist helper</button>
-        </div>
-      </div>
+  <div class="flex min-h-[calc(100vh-64px)]">
 
-    </nav>
+    <!-- sidebar (hidden on small screens via hamburger) -->
+    <aside id="sidebar" class="sidebar bg-white border-r hidden md:block p-4">
+      <nav class="space-y-3">
+        <button class="w-full text-left px-3 py-2 rounded hover:bg-red-50" data-view="dashboard">Dashboard</button>
+        <button class="w-full text-left px-3 py-2 rounded hover:bg-red-50" data-view="orders">Orders / Payment Queue</button>
+        <button class="w-full text-left px-3 py-2 rounded hover:bg-red-50" data-view="payouts">Agent Payouts</button>
+        <button class="w-full text-left px-3 py-2 rounded hover:bg-red-50" data-view="agents">Agents</button>
+        <button class="w-full text-left px-3 py-2 rounded hover:bg-red-50" data-view="admins">Regular Admins</button>
+        <button class="w-full text-left px-3 py-2 rounded hover:bg-red-50" data-view="referral">Referral Program</button>
+        <button class="w-full text-left px-3 py-2 rounded hover:bg-red-50" data-view="settings">System Settings</button>
+        <button class="w-full text-left px-3 py-2 rounded hover:bg-red-50" data-view="announcements">Announcements</button>
+      </nav>
+      <hr class="my-4">
+      <div class="text-xs text-gray-600">Contact: +234 912 888 4830</div>
+    </aside>
 
-    <main>
-      <!-- Dashboard -->
-      <section id="dashboardPanel" class="panel active">
-        <h2>Live Summary</h2>
-        <div class="grid-3">
-          <div class="panel" style="padding:12px">
-            <div class="small muted">Total Users</div>
-            <div style="font-size:22px;font-weight:800" id="statUsers">—</div>
-            <div class="small">Admins, Agents, Customers</div>
+    <!-- main area -->
+    <main class="flex-1 p-6">
+
+      <!-- DASHBOARD VIEW -->
+      <section id="view-dashboard" class="">
+        <!-- quick KPIs -->
+        <div class="flex gap-4 flex-wrap mb-6">
+          <div class="bg-white p-4 rounded-xl shadow kpi">
+            <div class="text-sm text-gray-500">Total Revenue</div>
+            <div id="kpi-revenue" class="text-2xl font-bold">Loading…</div>
           </div>
-          <div class="panel" style="padding:12px">
-            <div class="small muted">Active Orders</div>
-            <div style="font-size:22px;font-weight:800" id="statOrders">—</div>
-            <div class="small">Pending / In-transit</div>
+          <div class="bg-white p-4 rounded-xl shadow kpi">
+            <div class="text-sm text-gray-500">Total Orders</div>
+            <div id="kpi-orders" class="text-2xl font-bold">Loading…</div>
           </div>
-          <div class="panel" style="padding:12px">
-            <div class="small muted">Pending Payouts</div>
-            <div style="font-size:22px;font-weight:800" id="statPayouts">—</div>
-            <div class="small">Awaiting processing</div>
+          <div class="bg-white p-4 rounded-xl shadow kpi">
+            <div class="text-sm text-gray-500">Successful Deliveries</div>
+            <div id="kpi-success" class="text-2xl font-bold">Loading…</div>
+          </div>
+          <div class="bg-white p-4 rounded-xl shadow kpi">
+            <div class="text-sm text-gray-500">Active Agents</div>
+            <div id="kpi-agents" class="text-2xl font-bold">Loading…</div>
+          </div>
+          <div class="bg-white p-4 rounded-xl kpi">
+            <div class="text-sm text-gray-500">Avg Delivery Time</div>
+            <div id="kpi-avgtime" class="text-2xl font-bold">Loading…</div>
           </div>
         </div>
 
-        <div style="margin-top:14px">
-          <h3 style="margin-bottom:8px;color:var(--muted)">Recent Actions</h3>
-          <div id="recentActions" class="small muted">Loading recent actions...</div>
+        <!-- map + critical alerts -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="col-span-2 bg-white p-4 rounded-xl shadow">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-semibold">Live Map — Agents & Active Orders</h3>
+              <div class="text-sm text-gray-500">Auto-refresh every 8s</div>
+            </div>
+            <div id="map" class="map-container"></div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl shadow">
+            <h3 class="font-semibold mb-3">Critical Alerts</h3>
+            <ul id="alerts" class="space-y-3 text-sm text-gray-700">
+              <li>No critical alerts</li>
+            </ul>
+          </div>
         </div>
       </section>
 
-      <!-- Users -->
-      <section id="usersPanel" class="panel" aria-live="polite">
-        <h2>User Management</h2>
-        <div class="search">
-          <input id="userSearch" placeholder="Search by name or email..." oninput="searchUsers()"/>
-          <button class="btn secondary" onclick="loadUsers()">Clear / Refresh</button>
+      <!-- ORDERS / PAYMENT QUEUE VIEW -->
+      <section id="view-orders" class="hidden mt-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold">Orders — Payment Queue & Management</h2>
+          <div class="flex gap-2">
+            <select id="orders-filter" class="border rounded p-2">
+              <option value="">All statuses</option>
+              <option value="PendingPaymentConfirmation">PendingPaymentConfirmation</option>
+              <option value="PaymentConfirmed">PaymentConfirmed</option>
+              <option value="PickedUp">PickedUp</option>
+              <option value="Delivered">Delivered</option>
+            </select>
+            <button onclick="fetchOrders()" class="bg-red-700 text-white px-3 py-1 rounded">Refresh</button>
+          </div>
         </div>
-        <table id="usersTable" aria-describedby="userSearch">
-          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </section>
 
-      <!-- Admin Requests -->
-      <section id="requestsPanel" class="panel">
-        <h2>Admin Request Queue</h2>
-        <div id="adminRequestsList">Loading admin requests...</div>
-      </section>
-
-      <!-- Financials -->
-      <section id="financialPanel" class="panel">
-        <h2>Financials & Payouts</h2>
-        <div class="small muted">Agents with pending payouts</div>
-        <table id="agentsPayoutTable">
-          <thead><tr><th><input type="checkbox" id="selectAllAgents" onchange="toggleSelectAllAgents(this)"/></th><th>Agent</th><th>Pending (₦)</th><th>Bank</th></tr></thead>
-          <tbody></tbody>
-        </table>
-        <div style="margin-top:10px;display:flex;gap:8px">
-          <button class="btn" onclick="processSelectedPayouts()">Process Selected Payouts</button>
+        <div class="bg-white rounded-xl shadow overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="p-3">Order ID</th>
+                <th class="p-3">Customer</th>
+                <th class="p-3">Agent</th>
+                <th class="p-3">Pickup</th>
+                <th class="p-3">Delivery</th>
+                <th class="p-3">Status</th>
+                <th class="p-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody" class="divide-y"></tbody>
+          </table>
         </div>
       </section>
 
-      <!-- Settings -->
-      <section id="settingsPanel" class="panel">
-        <h2>Platform Settings</h2>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <!-- PAYOUTS VIEW -->
+      <section id="view-payouts" class="hidden mt-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold">Payouts (Pending)</h2>
+          <div class="text-sm text-gray-500">Process payouts after verification</div>
+        </div>
+
+        <div id="payouts-list" class="space-y-3"></div>
+      </section>
+
+      <!-- AGENTS -->
+      <section id="view-agents" class="hidden mt-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold">Agents</h2>
+          <button onclick="fetchAgents()" class="bg-red-700 text-white px-3 py-1 rounded">Refresh</button>
+        </div>
+
+        <div class="bg-white rounded-xl shadow overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="p-3">Name</th>
+                <th class="p-3">Email</th>
+                <th class="p-3">Status</th>
+                <th class="p-3">Deliveries</th>
+                <th class="p-3">Avg Rating</th>
+                <th class="p-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="agents-tbody" class="divide-y"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ADMINS -->
+      <section id="view-admins" class="hidden mt-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold">Regular Admins</h2>
+          <div class="flex gap-2">
+            <input id="new-admin-email" placeholder="email@example.com" class="border p-2 rounded" />
+            <button onclick="createAdmin()" class="bg-green-600 text-white px-3 py-1 rounded">Create Admin</button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="bg-gray-50">
+              <tr><th class="p-3">Name/Email</th><th class="p-3">Role</th><th class="p-3">Actions</th></tr>
+            </thead>
+            <tbody id="admins-tbody" class="divide-y"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- REFERRAL -->
+      <section id="view-referral" class="hidden mt-6">
+        <div class="bg-white p-4 rounded-xl shadow">
+          <h2 class="text-xl font-semibold mb-3">Referral Program</h2>
+          <div class="flex gap-2 mb-4">
+            <input id="ref-reward-referrer" placeholder="Referrer reward (NGN or %)" class="border p-2 rounded" />
+            <input id="ref-reward-referred" placeholder="Referred reward" class="border p-2 rounded" />
+            <button onclick="updateReferralConfig()" class="bg-blue-600 text-white px-3 py-1 rounded">Save</button>
+          </div>
+          <div id="ref-stats" class="text-sm text-gray-700">Loading referral stats...</div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="view-settings" class="hidden mt-6">
+        <div class="bg-white p-4 rounded-xl shadow">
+          <h2 class="text-xl font-semibold mb-3">System Settings</h2>
+
+          <div class="mb-3 flex items-center gap-3">
+            <label class="flex-1 text-gray-700">Allow Admin Registration (toggle)</label>
+            <input id="adminRegToggle" type="checkbox" class="h-5 w-5" />
+            <button onclick="saveSettings()" class="ml-2 bg-red-700 text-white px-3 py-1 rounded">Save</button>
+          </div>
+
+          <div class="mb-3">
+            <label class="block text-sm text-gray-600">Commission Rate (agent)</label>
+            <input id="commissionRate" class="border p-2 rounded w-40" />
+          </div>
+
           <div>
-            <label>Commission rate (%)</label>
-            <input id="commissionRate" type="number" min="0" max="100"/>
-          </div>
-          <div>
-            <label>Company bank details</label>
-            <input id="companyBank" type="text" placeholder="Bank, Account number, Name"/>
+            <button onclick="fetchSettings()" class="bg-gray-200 px-3 py-1 rounded">Reload Settings</button>
           </div>
         </div>
-        <div style="margin-top:12px;display:flex;gap:8px">
-          <button class="btn" onclick="saveSettings()">Save Settings</button>
-          <button class="btn secondary" onclick="toggleAdminRegistration()">Toggle Admin Registration</button>
-        </div>
-        <div id="settingsMsg" class="small muted" style="margin-top:10px"></div>
       </section>
 
-      <!-- Announcements -->
-      <section id="announcementsPanel" class="panel">
-        <h2>Announcements</h2>
-        <div class="small muted">Post a message that appears on all users' home pages</div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <input id="announcementInput" placeholder="Type announcement message..."/>
-          <button class="btn" onclick="postAnnouncement()">Post</button>
-        </div>
-        <div id="announcementList" style="margin-top:12px"></div>
-      </section>
+      <!-- ANNOUNCEMENTS -->
+      <section id="view-announcements" class="hidden mt-6">
+        <div class="bg-white p-4 rounded-xl shadow">
+          <h2 class="text-xl font-semibold mb-3">Announcements</h2>
 
-      <!-- Referrals -->
-      <section id="referralsPanel" class="panel">
-        <h2>Referral Codes & Rewards</h2>
-        <div style="display:flex;gap:8px">
-          <input id="refCode" placeholder="New referral code (e.g. WELCOME10)"/>
-          <input id="refReward" placeholder="Reward (e.g. 500)" type="number"/>
-          <button class="btn" onclick="createReferral()">Create</button>
-        </div>
-        <div id="referralList" style="margin-top:12px"></div>
-      </section>
+          <div class="flex gap-2 mb-4">
+            <input id="ann-title" placeholder="Title" class="border p-2 rounded flex-1" />
+            <input id="ann-msg" placeholder="Message" class="border p-2 rounded flex-2" />
+            <button onclick="createAnnouncement()" class="bg-blue-600 text-white px-4 py-2 rounded">Post</button>
+          </div>
 
-      <!-- Feedback / Tickets -->
-      <section id="feedbackPanel" class="panel">
-        <h2>Feedback & Tickets</h2>
-        <div class="small muted">View user ratings and open tickets</div>
-        <div id="feedbackList" style="margin-top:10px">Loading...</div>
-      </section>
-
-      <!-- Logs & Export -->
-      <section id="logsPanel" class="panel">
-        <h2>System Logs & Export</h2>
-        <div class="small muted">View system logs and export CSV for auditing</div>
-        <div style="margin-top:8px;display:flex;gap:8px">
-          <input id="logsFilter" placeholder="Filter by keyword (optional)"/>
-          <button class="btn" onclick="loadLogs()">Load</button>
-          <button class="btn secondary" onclick="exportLogsCSV()">Export as CSV</button>
-        </div>
-        <div id="logsContainer" style="margin-top:12px;max-height:320px;overflow:auto"></div>
-      </section>
-
-      <!-- Uptime / Health -->
-      <section id="uptimePanel" class="panel">
-        <h2>Uptime & Health</h2>
-        <div class="small muted">Ping API and optionally wake backend workers</div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn" onclick="checkHealth()">Ping API</button>
-          <button class="btn secondary" onclick="attemptWake()">Wake API (if supported)</button>
-          <div id="healthMsg" class="small muted" style="margin-left:12px"></div>
-        </div>
-      </section>
-
-      <!-- Notifications -->
-      <section id="notificationsPanel" class="panel">
-        <h2>Send Notification</h2>
-        <div class="small muted">Send system notification (email/push/sms depending on backend)</div>
-        <div style="margin-top:8px;display:grid;grid-template-columns:1fr 220px;gap:8px">
-          <input id="notifyTarget" placeholder="target (all / admins / agents / user:email@example.com)"/>
-          <select id="notifyType"><option value="broadcast">Broadcast</option><option value="email">Email</option><option value="sms">SMS</option></select>
-        </div>
-        <div style="margin-top:8px">
-          <textarea id="notifyMessage" rows="4" placeholder="Your message here..."></textarea>
-        </div>
-        <div style="margin-top:8px">
-          <button class="btn" onclick="sendNotification()">Send</button>
-          <div id="notifyResult" class="small muted" style="margin-top:8px"></div>
+          <div id="ann-list" class="space-y-2 text-sm"></div>
         </div>
       </section>
 
     </main>
   </div>
-</div>
 
-<!-- Blacklist helper modal (simple) -->
-<div id="blacklistModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center">
-  <div style="background:#fff;padding:16px;border-radius:12px;max-width:480px;width:92%;box-shadow:0 8px 24px rgba(0,0,0,.3)">
-    <h3 style="color:var(--brand)">Blacklist helper</h3>
-    <p class="small muted">Add email to server blacklist (if supported).</p>
-    <input id="blackEmail" placeholder="user@example.com"/>
-    <div style="display:flex;gap:8px;margin-top:10px">
-      <button class="btn" onclick="addToBlacklist()">Add</button>
-      <button class="btn secondary" onclick="closeBlacklistHelper()">Close</button>
-    </div>
-    <div id="blackMsg" style="margin-top:8px" class="small muted"></div>
-  </div>
-</div>
+  <!-- Google Maps (your provided key embedded) -->
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDu1dptqgTwWWD6568jhf_tal7uYfdyMlQ&callback=initMap">
+  </script>
 
-<script>
-/* ================= Configuration ================= */
-const API_BASE = 'https://skyultimate-backend-api-structure.onrender.com';
-const token = sessionStorage.getItem('token') || localStorage.getItem('token') || ''; // token may be in sessionStorage
-const headersAuth = token ? { 'Authorization': 'Bearer ' + token } : {};
-// Helper to attach JSON header + auth
-function jsonOptions(data, method='POST'){ return { method, headers: {...headersAuth, 'Content-Type':'application/json'}, body: JSON.stringify(data) }; }
+  <script>
+    /*************** Configuration ***************/
+    const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
+    const token = localStorage.getItem("token");
+    if (!token) { window.location.href = "index.html"; }
 
-/* ================= UI helpers ================= */
-function showPanel(id){
-  document.querySelectorAll('main section').forEach(s=>s.classList.remove('active'));
-  const target = document.getElementById(id);
-  if(target) target.classList.add('active');
-}
+    const headersAuth = () => ({ "Content-Type": "application/json", "Authorization": `Bearer ${token}` });
 
-// Guard: require token
-if(!token){
-  alert('No token found. Please login as Super Admin first.');
-  window.location.href = 'index.html';
-}
+    /*************** UI Helpers ***************/
+    const views = {
+      dashboard: document.getElementById('view-dashboard'),
+      orders: document.getElementById('view-orders'),
+      payouts: document.getElementById('view-payouts'),
+      agents: document.getElementById('view-agents'),
+      admins: document.getElementById('view-admins'),
+      referral: document.getElementById('view-referral'),
+      settings: document.getElementById('view-settings'),
+      announcements: document.getElementById('view-announcements')
+    };
 
-/* ================= Load initial data ================= */
-async function loadAll(){
-  try{
-    await Promise.all([ loadStats(), loadUsers(), loadAdminRequests(), loadAgentsPayouts(), loadSettings(), loadAnnouncements(), loadReferrals(), loadFeedbacks(), loadLogs(), checkHealth() ]);
-  }catch(e){ console.error('Initial load error', e) }
-}
-loadAll();
+    function hideAllViews() {
+      Object.values(views).forEach(v => v.classList.add('hidden'));
+    }
 
-/* ================= LOGGED IN SUPERADMIN INFO ================= */
-async function loadStats(){
-  try{
-    const [uRes,oRes,pRes,recentRes] = await Promise.all([
-      fetch(`${API_BASE}/users`, { headers: headersAuth }),
-      fetch(`${API_BASE}/orders`, { headers: headersAuth }),
-      fetch(`${API_BASE}/agents/payouts`, { headers: headersAuth }),
-      fetch(`${API_BASE}/logs?limit=10`, { headers: headersAuth }),
-    ]);
-    const users = await (uRes.ok ? uRes.json() : []);
-    const orders = await (oRes.ok ? oRes.json() : []);
-    const payouts = await (pRes.ok ? pRes.json() : []);
-    const recent = await (recentRes.ok ? recentRes.json() : []);
-
-    document.getElementById('statUsers').textContent = Array.isArray(users)?users.length: '-';
-    document.getElementById('statOrders').textContent = Array.isArray(orders)?orders.filter(o=>o.status && o.status!=='completed').length : '-';
-    document.getElementById('statPayouts').textContent = Array.isArray(payouts) ? payouts.reduce((s,a)=>s + (a.pendingPayout||0),0) : '-';
-
-    // recent actions
-    const recentActions = document.getElementById('recentActions');
-    if(Array.isArray(recent) && recent.length){
-      recentActions.innerHTML = recent.slice(0,10).map(r=>`<div>${new Date(r.createdAt||Date.now()).toLocaleString()} — ${r.message || r.action || JSON.stringify(r)}</div>`).join('');
-    } else recentActions.textContent = 'No recent logs';
-  }catch(e){ console.error(e) }
-}
-
-/* ================= USERS: view, suspend, delete ================= */
-async function loadUsers(){
-  try{
-    const res = await fetch(`${API_BASE}/users`, { headers: headersAuth });
-    if(!res.ok) throw new Error('failed load users');
-    const users = await res.json();
-    const tbody = document.querySelector('#usersTable tbody');
-    tbody.innerHTML = '';
-    users.forEach(u=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${u.fullName || u.name || u.username || '-'}</td>
-        <td>${u.email || '-'}</td>
-        <td>${u.role || '-'}</td>
-        <td>${u.status || 'active'}</td>
-        <td class="actions">
-          <button class="btn secondary" onclick='viewUser("${u._id}")'>View</button>
-          <button class="btn" onclick='suspendUser("${u._id}")'>Suspend</button>
-          <button class="btn warn" onclick='deleteUser("${u._id}", "${u.email||''}")'>DELETE USER</button>
-        </td>`;
-      tbody.appendChild(tr);
+    document.querySelectorAll('[data-view]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const view = btn.getAttribute('data-view');
+        hideAllViews();
+        const el = views[view] || views.dashboard;
+        el.classList.remove('hidden');
+        // load view data
+        if (view === 'orders') fetchOrders();
+        if (view === 'payouts') fetchPayouts();
+        if (view === 'agents') fetchAgents();
+        if (view === 'admins') fetchAdmins();
+        if (view === 'referral') fetchReferralStats();
+        if (view === 'settings') fetchSettings();
+        if (view === 'announcements') fetchAnnouncements();
+      });
     });
-    document.getElementById('saName').textContent = (users.find(x=>x.role==='superadmin')?.fullName) || sessionStorage.getItem('name') || 'Super Admin';
-    document.getElementById('saEmail').textContent = sessionStorage.getItem('email') || 'admin@company.com';
-  }catch(e){ console.error('loadUsers', e); document.querySelector('#usersTable tbody').innerHTML = '<tr><td colspan="5" class="small muted">Failed to load users</td></tr>';}
-}
 
-async function viewUser(userId){
-  try{
-    const res = await fetch(`${API_BASE}/users/${userId}`, { headers: headersAuth });
-    if(!res.ok) { alert('Failed to fetch user'); return; }
-    const u = await res.json();
-    alert(`User details:\n\nName: ${u.fullName||u.name}\nEmail: ${u.email}\nRole: ${u.role}\nStatus: ${u.status}`);
-  }catch(e){ alert('Error loading user') }
-}
+    document.getElementById('hamburger').addEventListener('click', () => {
+      const sb = document.getElementById('sidebar');
+      sb.classList.toggle('hidden');
+    });
+    document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.removeItem('token'); window.location.href = 'index.html'; });
+    document.getElementById('announceQuickBtn').addEventListener('click', () => { hideAllViews(); views.announcements.classList.remove('hidden'); fetchAnnouncements(); });
 
-async function suspendUser(userId){
-  if(!confirm('Suspend this user?')) return;
-  try{
-    const res = await fetch(`${API_BASE}/users/suspend/${userId}`, { method:'POST', headers: headersAuth });
-    if(res.ok) { alert('User suspended'); loadUsers(); } else { alert('Failed to suspend'); }
-  }catch(e){ alert('Error'); }
-}
+    /*************** Dashboard KPIs ***************/
+    async function loadKPIs() {
+      try {
+        // Route: GET /api/admin/stats  (implement server-side to return these aggregated KPIs)
+        const res = await fetch(`${API_BASE}/api/admin/stats`, { headers: headersAuth() });
+        if (!res.ok) throw new Error('stats fetch failed');
+        const d = await res.json();
+        document.getElementById('kpi-revenue').innerText = `₦${d.totalRevenue?.toLocaleString() || 0}`;
+        document.getElementById('kpi-orders').innerText = `${d.totalOrders || 0}`;
+        document.getElementById('kpi-success').innerText = `${d.successfulPercent || 0}%`;
+        document.getElementById('kpi-agents').innerText = `${d.activeAgents || 0}`;
+        document.getElementById('kpi-avgtime').innerText = `${d.avgDeliveryTime || 'N/A'} mins`;
+      } catch (err) {
+        console.warn('KPIs failed', err);
+        document.getElementById('kpi-revenue').innerText = '—';
+        document.getElementById('kpi-orders').innerText = '—';
+        document.getElementById('kpi-success').innerText = '—';
+        document.getElementById('kpi-agents').innerText = '—';
+        document.getElementById('kpi-avgtime').innerText = '—';
+      }
+    }
 
-async function deleteUser(userId, email){
-  if(!confirm(`DELETE this user (${email})? This cannot be undone.`)) return;
-  try{
-    const res = await fetch(`${API_BASE}/users/${userId}`, { method:'DELETE', headers: headersAuth });
-    if(res.ok){
-      // try to add to server blacklist if API supports it
-      try{ await fetch(`${API_BASE}/admin/blacklist`, jsonOptions({ email })); }catch(e){}
-      alert('User deleted');
-      loadUsers();
-    } else { alert('Failed to delete user'); }
-  }catch(e){ alert('Error'); }
-}
+    /*************** Live Map ***************/
+    let gmap, markers = {};
+    window.initMap = function initMap() {
+      gmap = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 6.5244, lng: 3.3792 }, // Lagos center
+        zoom: 12,
+      });
+      // initial load
+      refreshMapMarkers();
+      // periodic refresh
+      setInterval(refreshMapMarkers, 8000);
+    };
 
-/* ================= ADMIN REQUEST QUEUE ================= */
-async function loadAdminRequests(){
-  try{
-    const res = await fetch(`${API_BASE}/super-admin/requests?status=pending`, { headers: headersAuth });
-    if(!res.ok) { document.getElementById('adminRequestsList').textContent='No requests or failed to load'; return; }
-    const arr = await res.json();
-    if(!arr.length){ document.getElementById('adminRequestsList').textContent='No pending requests'; return; }
-    const html = arr.map(q=>`
-      <div style="padding:8px;border-bottom:1px solid #eee">
-        <div style="font-weight:700">${q.actionType || q.action || q.type} — ${q.targetUserName||q.targetUser}</div>
-        <div class="small muted">${q.reason||q.message||''}</div>
-        <div style="margin-top:6px">
-          <button class="btn" onclick="approveReq('${q._id}')">Approve</button>
-          <button class="btn secondary" onclick="denyReq('${q._id}')">Deny</button>
-        </div>
-      </div>`).join('');
-    document.getElementById('adminRequestsList').innerHTML = html;
-  }catch(e){ console.error(e); document.getElementById('adminRequestsList').textContent='Failed to load requests'; }
-}
+    async function refreshMapMarkers() {
+      try {
+        // implement server-side: GET /api/admin/agents/locations -> [{agentId, name, lat, lng, status, orderId}]
+        const res = await fetch(`${API_BASE}/api/admin/agents/locations`, { headers: headersAuth() });
+        if (!res.ok) throw new Error('no locations');
+        const list = await res.json();
+        const newIds = new Set();
+        for (const a of list) {
+          newIds.add(a.agentId);
+          const pos = { lat: Number(a.lat), lng: Number(a.lng) };
+          if (markers[a.agentId]) {
+            markers[a.agentId].setPosition(pos);
+            markers[a.agentId].setTitle(`${a.name} — ${a.status}${a.orderId? ' (order:'+a.orderId+')':''}`);
+          } else {
+            const m = new google.maps.Marker({
+              position: pos,
+              map: gmap,
+              title: `${a.name} — ${a.status}`,
+            });
+            const inf = new google.maps.InfoWindow({ content: `<strong>${a.name}</strong><div>${a.status}</div><div>${a.orderId? 'Order: '+a.orderId: ''}</div>`});
+            m.addListener('click', ()=>inf.open(gmap,m));
+            markers[a.agentId] = m;
+          }
+        }
+        // remove markers not in new list
+        Object.keys(markers).forEach(id => { if (!newIds.has(id)) { markers[id].setMap(null); delete markers[id]; }});
+      } catch (err) {
+        console.info("Map refresh:", err.message);
+      }
+    }
 
-async function approveReq(id){
-  if(!confirm('Approve request?')) return;
-  try{ const r = await fetch(`${API_BASE}/super-admin/requests/${id}/approve`, { method:'PATCH', headers: headersAuth }); if(r.ok){ alert('Approved'); loadAdminRequests(); } else alert('Failed'); }catch(e){alert('Error')}
-}
-async function denyReq(id){ if(!confirm('Deny request?')) return; try{ const r = await fetch(`${API_BASE}/super-admin/requests/${id}/deny`, { method:'PATCH', headers: headersAuth }); if(r.ok){ alert('Denied'); loadAdminRequests(); } else alert('Failed'); }catch(e){alert('Error')} }
+    /*************** Orders & Payment Confirmation ***************/
+    async function fetchOrders() {
+      try {
+        const status = document.getElementById('orders-filter').value;
+        // implement server-side: GET /api/orders?status=...
+        const url = `${API_BASE}/api/orders${status? '?status='+encodeURIComponent(status): ''}`;
+        const res = await fetch(url, { headers: headersAuth() });
+        if (!res.ok) throw new Error('orders fail');
+        const orders = await res.json();
+        const tbody = document.getElementById('orders-tbody');
+        tbody.innerHTML = orders.map(o => `
+          <tr>
+            <td class="p-3 font-mono text-sm">${o._id}</td>
+            <td class="p-3">${o.customer?.name || o.customerEmail || '—'}</td>
+            <td class="p-3">${o.agent?.name || 'Unassigned'}</td>
+            <td class="p-3">${o.pickupAddress}</td>
+            <td class="p-3">${o.deliveryAddress}</td>
+            <td class="p-3">${o.status}</td>
+            <td class="p-3">
+              ${o.status === 'PendingPaymentConfirmation' ? `<button onclick="confirmPayment('${o._id}')" class="bg-green-600 text-white px-3 py-1 rounded">Confirm Payment</button>` : ''}
+              <button onclick="viewOrder('${o._id}')" class="ml-2 bg-gray-200 px-2 py-1 rounded">View</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.warn('fetchOrders', err);
+        document.getElementById('orders-tbody').innerHTML = `<tr><td class="p-3" colspan="7">Could not load orders</td></tr>`;
+      }
+    }
 
-/* ================= AGENTS PAYOUTS ================= */
-async function loadAgentsPayouts(){
-  try{
-    const res = await fetch(`${API_BASE}/agents/payouts`, { headers: headersAuth });
-    if(!res.ok) throw new Error('payouts fail');
-    const agents = await res.json();
-    const tbody = document.querySelector('#agentsPayoutTable tbody');
-    tbody.inne
+    async function confirmPayment(orderId) {
+      if (!confirm('Confirm payment for order ' + orderId + '?')) return;
+      try {
+        // PUT /api/orders/:id/confirm-payment
+        const res = await fetch(`${API_BASE}/api/orders/${orderId}/confirm-payment`, {
+          method: 'PUT',
+          headers: headersAuth()
+        });
+        if (!res.ok) throw new Error('confirm failed');
+        alert('Payment confirmed');
+        fetchOrders();
+        loadKPIs(); // update stats
+      } catch (err) {
+        alert('Failed to confirm: ' + err.message);
+      }
+    }
+
+    function viewOrder(id) {
+      // simple viewer - fetch order details
+      (async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/orders/${id}`, { headers: headersAuth() });
+          if (!res.ok) throw new Error('not found');
+          const o = await res.json();
+          alert(JSON.stringify(o, null, 2));
+        } catch (err) {
+          alert('Cannot fetch order: ' + err.message);
+        }
+      })();
+    }
+
+    /*************** Payouts ***************/
+    async function fetchPayouts() {
+      try {
+        // GET /api/admin/payouts  (existing route in adminRoutes)
+        const res = await fetch(`${API_BASE}/api/admin/payouts`, { headers: headersAuth() });
+        if (!res.ok) throw new Error('payouts fail');
+        const list = await res.json();
+        const container = document.getElementById('payouts-list');
+        container.innerHTML = list.map(a => `
+          <div class="bg-white p-3 rounded flex items-center justify-between shadow">
+            <div>
+              <div class="font-semibold">${a.name || a.email}</div>
+              <div class="text-sm text-gray-600">${a.email}</div>
+              <div class="text-sm text-gray-600">Pending: ₦${a.pendingPayout || 0}</div>
+            </div>
+            <div class="flex gap-2">
+              <label class="text-sm text-gray-500 self-center">Process:</label>
+              <button onclick="processPayout('${a._id}')" class="bg-green-600 text-white px-3 py-1 rounded">Process</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.warn('fetchPayouts', err);
+        document.getElementById('payouts-list').innerHTML = `<div class="text-sm text-gray-600">Could not load payouts</div>`;
+      }
+  
