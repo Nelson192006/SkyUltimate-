@@ -49,7 +49,8 @@
             <option>SuperAdmin</option>
           </select>
 
-          <input type="email" id="loginEmail" placeholder="Email" class="w-full border rounded px-3 py-2" required>
+          <!-- NOTE: login now uses NAME (not email) as requested -->
+          <input type="text" id="loginName" placeholder="Your name" class="w-full border rounded px-3 py-2" required>
 
           <div class="relative">
             <input type="password" id="loginPassword" placeholder="Password"
@@ -70,7 +71,7 @@
             <option>Customer</option>
             <option>Agent</option>
             <option>Admin</option>
-            <option>SuperAdmin</option>
+            <!-- SuperAdmin option will be appended/removed based on backend check -->
           </select>
 
           <input type="email" id="registerEmail" placeholder="Email" class="w-full border rounded px-3 py-2" required>
@@ -107,52 +108,54 @@
 
   <script>
     /**
-     * IMPORTANT: This frontend expects your backend to expose routes under:
-     *    https://skyultimate-backend-api-structure.onrender.com/api
-     *
-     * - Register: POST  /api/auth/register
-     * - Login:    POST  /api/auth/login
-     *
-     * If your backend uses different mount points, update API_BASE accordingly.
+     * API_BASE is the root of your backend. Adjust if needed.
+     * Backend routes used:
+     *  GET  /api/auth/check-for-super-admin
+     *  POST /api/auth/register
+     *  POST /api/auth/login
      */
     const API_BASE = "https://skyultimate-backend-api-structure.onrender.com/api";
 
-    // smarter fetch: if backend returns HTML (error page), we include that text in thrown error
+    // universal fetch helper: returns parsed JSON (or throws) and surfaces non-JSON responses for debugging
     async function apiFetch(path, opts = {}) {
       const token = localStorage.getItem("su_token");
       const headers = opts.headers || {};
-      headers["Content-Type"] = "application/json";
+      if (!headers["Content-Type"] && !(opts.body instanceof FormData)) {
+        headers["Content-Type"] = "application/json";
+      }
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
       let res;
       try {
         res = await fetch(API_BASE + path, { ...opts, headers });
       } catch (networkErr) {
-        console.error("Network error calling API:", networkErr);
-        throw new Error("Network error: " + networkErr.message);
+        throw new Error("Network error: " + (networkErr.message || networkErr));
       }
 
-      const text = await res.text(); // always get raw text first
-      // attempt to parse JSON; if not JSON, include text in error so you can see server HTML
-      let data = null;
+      const text = await res.text().catch(() => "");
+      if (!text) {
+        if (!res.ok) throw new Error(`Empty response with status ${res.status}`);
+        return null;
+      }
+
+      // try parse JSON; if fails and not OK -> include snippet for debugging
       try {
-        data = text ? JSON.parse(text) : null;
+        const data = JSON.parse(text);
+        if (!res.ok) {
+          const msg = data.message || data.error || `API Error ${res.status}`;
+          throw new Error(msg);
+        }
+        return data;
       } catch (e) {
         // not JSON
         if (!res.ok) {
-          console.error("Non-JSON API error response:", text);
-          // include first 800 chars of HTML/text in thrown error for debugging
-          throw new Error(`Server returned non-JSON response (status ${res.status}). See console for response snippet.`);
+          const snippet = text.slice(0, 800);
+          console.error("Server non-JSON error (snippet):", snippet);
+          throw new Error(`Server returned an HTML/error page (status ${res.status}). Check console server response snippet.`);
         }
-        // if OK and no JSON, return raw text
+        // OK and non-JSON - return raw text
         return text;
       }
-
-      if (!res.ok) {
-        console.error("API Error JSON:", data);
-        throw new Error((data && (data.message || data.error)) || `API Error: ${res.status}`);
-      }
-      return data;
     }
 
     // -- splash logic --
@@ -163,7 +166,7 @@
       }, 3000);
     });
 
-    // -- tabs, forms, toggles --
+    // -- UI refs --
     const loginTab = document.getElementById('loginTab');
     const registerTab = document.getElementById('registerTab');
     const loginForm = document.getElementById('loginForm');
@@ -171,6 +174,7 @@
     const bankFields = document.getElementById('bankFields');
     const forgotPasswordForm = document.getElementById('forgotPasswordForm');
 
+    // Tabs toggles (preserve existing styling)
     loginTab.addEventListener('click', () => {
       loginForm.classList.remove('hidden');
       registerForm.classList.add('hidden');
@@ -178,7 +182,6 @@
       loginTab.classList.add('border-red-600'); loginTab.classList.remove('text-gray-500');
       registerTab.classList.remove('border-red-600'); registerTab.classList.add('text-gray-500');
     });
-
     registerTab.addEventListener('click', () => {
       loginForm.classList.add('hidden');
       registerForm.classList.remove('hidden');
@@ -187,7 +190,7 @@
       loginTab.classList.remove('border-red-600'); loginTab.classList.add('text-gray-500');
     });
 
-    // password toggles (keeps your UI)
+    // password toggles
     document.getElementById('loginTogglePassword').addEventListener('click', () => {
       const p = document.getElementById('loginPassword');
       p.type = p.type === 'password' ? 'text' : 'password';
@@ -220,77 +223,119 @@
       document.getElementById('forgotMsg').innerText = "This feature is coming soon.";
     });
 
-    // normalize roles to formats commonly expected by backend
+    // --- SuperAdmin option visibility (call backend to decide) ---
+    (async function checkSuperAdminOption() {
+      try {
+        // endpoint implemented in your backend: GET /api/auth/check-for-super-admin
+        const data = await apiFetch('/auth/check-for-super-admin', { method: 'GET' });
+        // backend might return { exists: true } or { exists: false } or { available: true }
+        const exists = data && (data.exists === true || data.exists === 'true' || data.exists === '1');
+        // if super admin exists, remove SuperAdmin option; otherwise add it if missing
+        const regRole = document.getElementById('registerRole');
+        const loginRole = document.getElementById('loginRole');
+        // helper to add option only if not present
+        function addSuperOption(selectEl) {
+          const found = [...selectEl.options].some(o => o.value === 'SuperAdmin');
+          if (!found) {
+            const opt = document.createElement('option');
+            opt.value = 'SuperAdmin';
+            opt.textContent = 'SuperAdmin';
+            selectEl.appendChild(opt);
+          }
+        }
+        function removeSuperOption(selectEl) {
+          [...selectEl.options].forEach(o => { if (o.value === 'SuperAdmin') o.remove(); });
+        }
+
+        if (exists) {
+          removeSuperOption(regRole);
+          removeSuperOption(loginRole);
+        } else {
+          addSuperOption(regRole);
+          addSuperOption(loginRole);
+        }
+      } catch (err) {
+        // don't block UI on failure; just leave options as-is
+        console.warn("Could not check super-admin status:", err);
+      }
+    })();
+
+    // Normalization helper for role strings to match backend
     const normalizeRole = (r) => {
-      if (!r) return "customer";
+      if (!r) return "Customer";
       const s = String(r).toLowerCase();
       if (s === "customer") return "customer";
       if (s === "agent") return "agent";
       if (s === "admin") return "admin";
-      // backend variations used "superadmin", "super-admin", "SuperAdmin" in different places.
-      // send 'super-admin' which many implementations accept
       if (s === "superadmin" || s === "super-admin" || s === "super admin") return "super-admin";
-      return s;
+      return r;
     };
 
-    // -- LOGIN submit (calls backend /api/auth/login) --
+    // --- LOGIN (name + password) ---
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const roleRaw = document.getElementById('loginRole').value;
       const role = normalizeRole(roleRaw);
-      const email = document.getElementById('loginEmail').value.trim();
+      const name = document.getElementById('loginName').value.trim();
       const password = document.getElementById('loginPassword').value;
       const errorEl = document.getElementById('loginError');
       errorEl.innerText = '';
 
-      if (!email || !password) { errorEl.innerText = 'Please fill all fields.'; return; }
+      if (!name || !password) { errorEl.innerText = 'Please fill all fields.'; return; }
 
       try {
+        // NOTE: backend must accept { name, password, role } for this to work.
+        const payload = { name, password };
+        // include role if your backend expects it (some routes check role)
+        if (role) payload.role = role;
+
         const data = await apiFetch('/auth/login', {
           method: 'POST',
-          body: JSON.stringify({ role, email, password }),
+          body: JSON.stringify(payload),
         });
 
-        // Expected: { message, user, token }
-        if (data.token) {
+        // Expect backend to return at least: { token, user } or { token, role, user }
+        if (data && data.token) {
           localStorage.setItem('su_token', data.token);
-          localStorage.setItem('su_user', JSON.stringify(data.user || {}));
-          // redirect to homepage (already provided)
+          localStorage.setItem('su_user', JSON.stringify(data.user || { name, role: data.role || role }));
+          // Redirect to home page (universal homepage)
           window.location.href = 'home.html';
         } else {
-          console.warn("Login response had no token:", data);
-          errorEl.innerText = data.message || 'Login failed';
+          const msg = (data && (data.message || data.error)) || "Login failed";
+          errorEl.innerText = msg;
         }
       } catch (err) {
-        // If server returned HTML or non-JSON, apiFetch will have thrown a readable error
         console.error("Login failed:", err);
         errorEl.innerText = err.message || "Invalid credentials. Please check your role and login details.";
       }
     });
 
-    // -- REGISTER submit (calls backend /api/auth/register) --
+    // --- REGISTER ---
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = document.getElementById('registerName').value.trim();
-      const role = normalizeRole(document.getElementById('registerRole').value);
+      const roleRaw = document.getElementById('registerRole').value;
+      const role = normalizeRole(roleRaw);
       const email = document.getElementById('registerEmail').value.trim();
       const password = document.getElementById('registerPassword').value;
-      const bankName = document.getElementById('bankName').value;
-      const accountNumber = document.getElementById('accountNumber').value;
-      const accountHolderName = document.getElementById('accountHolderName').value;
-      const phone = document.getElementById('phone').value;
+      const bankName = document.getElementById('bankName').value.trim();
+      const accountNumber = document.getElementById('accountNumber').value.trim();
+      const accountHolderName = document.getElementById('accountHolderName').value.trim();
+      const phone = document.getElementById('phone').value.trim();
       const errorEl = document.getElementById('registerError');
       errorEl.innerText = '';
 
       if (!name || !email || !password) { errorEl.innerText = 'Please fill all required fields.'; return; }
 
-      const payload = { name, role, email, password };
+      // Build payload: include both nested bankDetails (common) and top-level keys (in case backend expects either)
+      const payload = { name, email, password, role };
       if (role === 'agent' || role === 'admin') {
-        // keep same keys that some backend files expect (bank details nested or flat)
+        payload.bankDetails = { bankName, accountNumber, accountHolderName };
+        // some backends expect flat fields too — include them
         payload.bankName = bankName;
         payload.accountNumber = accountNumber;
         payload.accountHolderName = accountHolderName;
-        payload.phone = phone;
+        if (phone) payload.phone = phone;
       }
 
       try {
@@ -299,18 +344,23 @@
           body: JSON.stringify(payload),
         });
 
-        // Some backends auto-login and return token; others just return success.
-        if (data.token) {
+        // If backend auto-logs in and sends a token => go to home
+        if (data && data.token) {
           localStorage.setItem('su_token', data.token);
-          localStorage.setItem('su_user', JSON.stringify(data.user || {}));
+          localStorage.setItem('su_user', JSON.stringify(data.user || { name, email, role }));
           window.location.href = 'home.html';
-        } else {
-          // registration success -> switch to login tab with prefilled email
-          loginTab.click();
-          document.getElementById('loginEmail').value = email;
-          document.getElementById('loginPassword').value = '';
-          errorEl.innerText = "Registration successful! Please login.";
+          return;
         }
+
+        // Otherwise, show success and switch to login (prefill name & password)
+        // Some backends return { message: 'Registered' } or similar
+        // Auto-switch to login tab with prefilled credentials
+        loginTab.click();
+        // prefill name (login uses name) and password
+        document.getElementById('loginName').value = name;
+        document.getElementById('loginPassword').value = password;
+        errorEl.innerText = "Registration successful! Please click Login to continue.";
+
       } catch (err) {
         console.error("Registration error:", err);
         errorEl.innerText = err.message || "An account with this email already exists, Login.";
