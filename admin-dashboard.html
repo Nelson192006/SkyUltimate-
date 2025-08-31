@@ -1,248 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SkyUltimate - Admin Dashboard</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
-  body, html { width:100%; min-height:100%; background:#C00000; }
-  button { cursor:pointer; border:none; outline:none; }
-  a { text-decoration:none; color:inherit; }
-
-  #container { width:100%; min-height:100%; padding:20px; display:flex; flex-direction:column; align-items:center; position:relative; }
-
-  #logo { width:100px; height:100px; border-radius:50%; margin-bottom:10px; }
-  #welcome { font-size:1.4rem; color:white; margin-bottom:20px; text-align:center; }
-
-  /* --- Sections --- */
-  .section { width:100%; max-width:600px; background:white; border-radius:12px; padding:15px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
-  .section h3 { color:#C00000; margin-bottom:10px; }
-  .section input, .section select, .section textarea { width:100%; padding:10px; margin:5px 0 15px 0; border-radius:8px; border:1px solid #ccc; }
-  .section button { width:100%; padding:12px; border-radius:12px; background:#C00000; color:white; font-weight:bold; margin-top:10px; transition:0.3s; }
-
-  /* --- Hamburger Menu --- */
-  #hamburger { position:absolute; top:20px; left:20px; width:30px; height:22px; cursor:pointer; display:flex; flex-direction:column; justify-content:space-between; }
-  .bar { width:100%; height:4px; background:white; border-radius:2px; }
-  #menu { position:fixed; top:0; left:-300px; width:250px; height:100%; background:white; color:#C00000; box-shadow:3px 0 10px rgba(0,0,0,0.3); transition:0.3s; display:flex; flex-direction:column; padding:20px; }
-  #menu h2 { margin-bottom:20px; font-size:1.2rem; }
-  .menu-item { margin:10px 0; cursor:pointer; font-weight:bold; }
-
-  .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); color:#C00000; padding:40px; overflow-y:auto; display:none; }
-  .overlay h2 { margin-bottom:15px; }
-  .overlay p { margin-bottom:10px; line-height:1.5; }
-  .close-overlay { position:absolute; top:20px; right:20px; font-weight:bold; cursor:pointer; font-size:1.2rem; }
-
-  #logout { position:absolute; top:20px; right:20px; background:white; color:#C00000; padding:8px 12px; border-radius:8px; font-weight:bold; transition:0.3s; }
-  #logout:hover { background:#f0f0f0; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkyUltimate — Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-<div id="container">
-  <img id="logo" src="https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/fdf409b0e40dfbd432afd277b20ddb8965600fc7/logo.png" alt="Logo">
-  <div id="welcome">Welcome back, Admin!</div>
+<body class="flex bg-gray-100 h-screen">
 
-  <!-- Live Dashboard Section -->
-  <div class="section" id="live-dashboard">
-    <h3>Live Orders</h3>
-    <div id="order-list">Loading orders...</div>
-  </div>
+  <!-- Sidebar -->
+  <aside class="w-64 bg-red-700 text-white flex flex-col p-4">
+    <h2 class="text-2xl font-bold mb-6">Admin Panel</h2>
+    <nav class="flex-1">
+      <ul>
+        <li><button onclick="showSection('orders')" class="w-full text-left py-2 hover:bg-red-800 rounded">Orders</button></li>
+        <li><button onclick="showSection('agents')" class="w-full text-left py-2 hover:bg-red-800 rounded">Agents</button></li>
+        <li><button onclick="showSection('customers')" class="w-full text-left py-2 hover:bg-red-800 rounded">Customers</button></li>
+        <li><button onclick="showSection('support')" class="w-full text-left py-2 hover:bg-red-800 rounded">Support</button></li>
+        <li><button onclick="showSection('profile')" class="w-full text-left py-2 hover:bg-red-800 rounded">Profile</button></li>
+      </ul>
+    </nav>
+    <button onclick="logout()" class="bg-black py-2 rounded">Logout</button>
+  </aside>
 
-  <!-- User Lookup & Request Action -->
-  <div class="section">
-    <h3>User Lookup</h3>
-    <input type="text" id="user-search" placeholder="Search by name or email">
-    <div id="search-results"></div>
-  </div>
+  <!-- Main content -->
+  <main class="flex-1 p-6 overflow-y-auto">
 
-  <!-- Issue Resolution Center -->
-  <div class="section" id="issue-center">
-    <h3>Open Tickets</h3>
-    <div id="ticket-list">Loading tickets...</div>
-  </div>
+    <!-- Orders Section -->
+    <section id="orders" class="hidden">
+      <h2 class="text-xl font-bold mb-4">Orders</h2>
+      <div class="mb-2">
+        <label class="mr-2">Filter by Status:</label>
+        <select id="orderStatusFilter" class="p-2 border rounded" onchange="fetchOrders()">
+          <option value="">All</option>
+          <option value="PendingPaymentConfirmation">Pending Payment</option>
+          <option value="PaymentConfirmed">Payment Confirmed</option>
+          <option value="PickedUp">Picked Up</option>
+          <option value="Delivered">Delivered</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+      <table class="w-full bg-white rounded shadow mt-4">
+        <thead>
+          <tr class="bg-gray-200 text-left">
+            <th class="p-2">Customer</th>
+            <th class="p-2">Pickup</th>
+            <th class="p-2">Delivery</th>
+            <th class="p-2">Status</th>
+            <th class="p-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTable"></tbody>
+      </table>
+    </section>
 
-  <!-- Editable Admin Bank Details -->
-  <div class="section" id="bank-details">
-    <h3>Your Bank Details</h3>
-    <label>Bank Name</label>
-    <input type="text" id="bank-name" placeholder="Your Bank Name">
-    <label>Account Number</label>
-    <input type="text" id="account-number" placeholder="Your Account Number">
-    <button id="save-bank">Save Bank Details</button>
-  </div>
+    <!-- Agents Section -->
+    <section id="agents" class="hidden">
+      <h2 class="text-xl font-bold mb-4">Agents</h2>
+      <table class="w-full bg-white rounded shadow">
+        <thead>
+          <tr class="bg-gray-200 text-left">
+            <th class="p-2">Name</th>
+            <th class="p-2">Email</th>
+            <th class="p-2">Availability</th>
+            <th class="p-2">Revenue</th>
+          </tr>
+        </thead>
+        <tbody id="agentsTable"></tbody>
+      </table>
+    </section>
 
-  <!-- Hamburger Menu -->
-  <div id="hamburger">
-    <div class="bar"></div>
-    <div class="bar"></div>
-    <div class="bar"></div>
-  </div>
-  <div id="menu">
-    <h2>Menu</h2>
-    <div class="menu-item" id="aboutus-menu">About Us</div>
-    <div class="menu-item" id="mission-menu">Mission & Vision</div>
-    <div class="menu-item" id="faq-menu">FAQ / Support</div>
-  </div>
+    <!-- Customers Section -->
+    <section id="customers" class="hidden">
+      <h2 class="text-xl font-bold mb-4">Customers</h2>
+      <table class="w-full bg-white rounded shadow">
+        <thead>
+          <tr class="bg-gray-200 text-left">
+            <th class="p-2">Name</th>
+            <th class="p-2">Email</th>
+            <th class="p-2">Orders Count</th>
+          </tr>
+        </thead>
+        <tbody id="customersTable"></tbody>
+      </table>
+    </section>
 
-  <div class="overlay" id="aboutus-overlay">
-    <div class="close-overlay" onclick="closeOverlay('aboutus-overlay')">X</div>
-    <h2>About Us</h2>
-    <p>SkyUltimate Delivery Service, founded in 2024, ensures your packages are handled safely and delivered on time...</p>
-  </div>
+    <!-- Support Section -->
+    <section id="support" class="hidden">
+      <h2 class="text-xl font-bold mb-4">Support Requests</h2>
+      <p class="text-gray-600">Coming soon: Support tickets integration.</p>
+    </section>
 
-  <div class="overlay" id="mission-overlay">
-    <div class="close-overlay" onclick="closeOverlay('mission-overlay')">X</div>
-    <h2>Our Mission</h2>
-    <p>To provide a seamless, reliable, and efficient delivery experience exceeding customer expectations...</p>
-    <h2>Our Vision</h2>
-    <p>To be the leader in delivery services known for speed, reliability, and customer satisfaction...</p>
-  </div>
+    <!-- Profile Section -->
+    <section id="profile" class="hidden">
+      <h2 class="text-xl font-bold mb-4">My Profile</h2>
+      <form id="bankForm" class="bg-white p-4 rounded shadow w-full max-w-md">
+        <label class="block mb-2">Bank Details</label>
+        <input type="text" id="bankDetails" class="w-full p-2 border rounded mb-4" />
+        <button type="submit" class="bg-red-700 text-white py-2 px-4 rounded">Update</button>
+      </form>
+    </section>
+  </main>
 
-  <div class="overlay" id="faq-overlay">
-    <div class="close-overlay" onclick="closeOverlay('faq-overlay')">X</div>
-    <h2>FAQ & Support</h2>
-    <p>Tracking: Use the tracking number provided in your email.</p>
-    <p>Delivery hours: 9:00 AM - 6:00 PM, Mon-Sat. Special arrangements possible.</p>
-    <p>WhatsApp / Phone: 09128884830</p>
-    <p>Social: Instagram, Facebook (editable)</p>
-  </div>
+  <script>
+    const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
+    const token = localStorage.getItem("token");
 
-  <button id="logout">Logout</button>
-</div>
+    if (!token) window.location.href = "index.html"; // Not logged in
 
-<script>
-  const apiURL = 'https://skyultimate-backend-api-structure.onrender.com';
-  const token = sessionStorage.getItem('token');
-  const name = sessionStorage.getItem('name') || 'Admin';
-  document.getElementById('welcome').textContent = `Welcome back, ${name}!`;
+    // Section toggle
+    function showSection(id) {
+      document.querySelectorAll("main section").forEach(s => s.classList.add("hidden"));
+      document.getElementById(id).classList.remove("hidden");
 
-  // --- Fetch Live Orders ---
-  async function loadOrders(){
-    const list = document.getElementById('order-list');
-    try{
-      const res = await fetch(`${apiURL}/orders/all`,{ headers:{ 'Authorization':`Bearer ${token}` } });
-      const orders = await res.json();
-      list.innerHTML='';
-      orders.forEach(order=>{
-        const div = document.createElement('div');
-        div.innerHTML=`
-          <p>Order #${order.id} | Customer: ${order.customerName} | Status: ${order.status}</p>
-          <button onclick="viewOrder(${order.id})">View Details</button>
-          <button onclick="requestSuperAdmin(${order.customerId})">Request Action</button>
-        `;
-        list.appendChild(div);
+      if (id === "orders") fetchOrders();
+      if (id === "agents") fetchAgents();
+      if (id === "customers") fetchCustomers();
+      if (id === "profile") fetchProfile();
+    }
+
+    // Fetch Orders
+    async function fetchOrders() {
+      const status = document.getElementById("orderStatusFilter").value;
+      const res = await fetch(`${API_BASE}/orders`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-    }catch(e){ list.innerHTML='Failed to load orders'; }
-  }
-  loadOrders();
-
-  async function viewOrder(orderId){
-    alert(`Order details for #${orderId} (replace with modal view with API fetch)`);
-  }
-
-  async function requestSuperAdmin(userId){
-    const reason = prompt('Enter reason for action request:');
-    const type = prompt('Enter action type (Suspend/Delete):');
-    if(!reason || !type) return alert('Action cancelled');
-    try{
-      await fetch(`${apiURL}/admin/request/${userId}`,{
-        method:'POST',
-        headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
-        body: JSON.stringify({type, reason})
-      });
-      alert('Request sent to Super Admin');
-    }catch(e){ alert('Failed to send request'); }
-  }
-
-  // --- Issue Resolution ---
-  async function loadTickets(){
-    const ticketsDiv = document.getElementById('ticket-list');
-    try{
-      const res = await fetch(`${apiURL}/tickets/open`,{ headers:{'Authorization':`Bearer ${token}`}});
-      const tickets = await res.json();
-      ticketsDiv.innerHTML='';
-      tickets.forEach(ticket=>{
-        const div = document.createElement('div');
-        div.innerHTML=`
-          <p>Ticket #${ticket.id} | User: ${ticket.userName}</p>
-          <button onclick="resolveTicket(${ticket.id})">Mark as Resolved</button>
-        `;
-        ticketsDiv.appendChild(div);
-      });
-    }catch(e){ ticketsDiv.innerHTML='Failed to load tickets'; }
-  }
-  loadTickets();
-
-  async function resolveTicket(ticketId){
-    try{
-      await fetch(`${apiURL}/tickets/resolve/${ticketId}`,{
-        method:'POST',
-        headers:{'Authorization':`Bearer ${token}`}
-      });
-      alert('Ticket resolved');
-      loadTickets();
-    }catch(e){ alert('Failed to resolve'); }
-  }
-
-  // --- Editable Bank Details ---
-  async function loadBankDetails(){
-    try{
-      const res = await fetch(`${apiURL}/admin/bank-details`,{ headers:{'Authorization':`Bearer ${token}`}});
       const data = await res.json();
-      document.getElementById('bank-name').value = data.bankName || '';
-      document.getElementById('account-number').value = data.accountNumber || '';
-    }catch(e){ console.log('Failed to fetch bank details'); }
-  }
-  loadBankDetails();
+      const filtered = status ? data.filter(o => o.status === status) : data;
+      const tbody = document.getElementById("ordersTable");
+      tbody.innerHTML = filtered.map(o => `
+        <tr class="border-t">
+          <td class="p-2">${o.customer?.name || "N/A"}</td>
+          <td class="p-2">${o.pickupAddress}</td>
+          <td class="p-2">${o.deliveryAddress}</td>
+          <td class="p-2">${o.status}</td>
+          <td class="p-2">
+            ${o.status === "PendingPaymentConfirmation" 
+              ? `<button onclick="confirmPayment('${o._id}')" class="bg-green-600 text-white px-3 py-1 rounded">Confirm</button>` 
+              : ""}
+          </td>
+        </tr>
+      `).join("");
+    }
 
-  document.getElementById('save-bank').addEventListener('click', async ()=>{
-    const bankName = document.getElementById('bank-name').value;
-    const accountNumber = document.getElementById('account-number').value;
-    try{
-      await fetch(`${apiURL}/admin/bank-details`,{
-        method:'PUT',
-        headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
-        body: JSON.stringify({bankName, accountNumber})
+    // Confirm Payment
+    async function confirmPayment(orderId) {
+      await fetch(`${API_BASE}/orders/${orderId}/confirm-payment`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
       });
-      alert('Bank details updated');
-    }catch(e){ alert('Failed to update bank details'); }
-  });
+      fetchOrders();
+    }
 
-  // --- Hamburger Menu ---
-  const hamburger = document.getElementById('hamburger');
-  const menu = document.getElementById('menu');
-  let menuOpen = false;
-  hamburger.addEventListener('click',()=>{ menuOpen=!menuOpen; menu.style.left = menuOpen?'0':'-300px'; });
-
-  const openOverlay = (id)=>{ document.getElementById(id).style.display='block'; menu.style.left='-300px'; menuOpen=false; }
-  const closeOverlay = (id)=>{ document.getElementById(id).style.display='none'; }
-  document.getElementById('aboutus-menu').addEventListener('click',()=>openOverlay('aboutus-overlay'));
-  document.getElementById('mission-menu').addEventListener('click',()=>openOverlay('mission-overlay'));
-  document.getElementById('faq-menu').addEventListener('click',()=>openOverlay('faq-overlay'));
-
-  // --- User Lookup ---
-  const searchInput = document.getElementById('user-search');
-  searchInput.addEventListener('input', async ()=>{
-    const query = searchInput.value.trim();
-    const resultsDiv = document.getElementById('search-results');
-    if(!query){ resultsDiv.innerHTML=''; return; }
-    try{
-      const res = await fetch(`${apiURL}/users/search?query=${query}`,{ headers:{'Authorization':`Bearer ${token}`} });
-      const users = await res.json();
-      resultsDiv.innerHTML='';
-      users.forEach(u=>{
-        const div = document.createElement('div');
-        div.innerHTML=`${u.name} (${u.role})`;
-        resultsDiv.appendChild(div);
+    // Fetch Agents
+    async function fetchAgents() {
+      const res = await fetch(`${API_BASE}/users?role=Agent`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-    }catch(e){ resultsDiv.innerHTML='Search failed'; }
-  });
+      const data = await res.json();
+      const tbody = document.getElementById("agentsTable");
+      tbody.innerHTML = data.map(a => `
+        <tr class="border-t">
+          <td class="p-2">${a.name}</td>
+          <td class="p-2">${a.email}</td>
+          <td class="p-2">${a.isAvailable ? "Available" : "Unavailable"}</td>
+          <td class="p-2">$${a.revenue || 0}</td>
+        </tr>
+      `).join("");
+    }
 
-  // --- Logout ---
-  document.getElementById('logout').addEventListener('click',()=>{
-    sessionStorage.clear();
-    window.location.href='index.html';
-  });
-</script>
+    // Fetch Customers
+    async function fetchCustomers() {
+      const res = await fetch(`${API_BASE}/users?role=Customer`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const tbody = document.getElementById("customersTable");
+      tbody.innerHTML = data.map(c => `
+        <tr class="border-t">
+          <td class="p-2">${c.name}</td>
+          <td class="p-2">${c.email}</td>
+          <td class="p-2">${c.orderCount || 0}</td>
+        </tr>
+      `).join("");
+    }
+
+    // Profile
+    async function fetchProfile() {
+      const res = await fetch(`${API_BASE}/users/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const profile = await res.json();
+      document.getElementById("bankDetails").value = profile.bankDetails || "";
+    }
+
+    document.getElementById("bankForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const bank = document.getElementById("bankDetails").value;
+      await fetch(`${API_BASE}/users/me/bank`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ bankDetails: bank })
+      });
+      alert("Bank details updated");
+    });
+
+    // Logout
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "index.html";
+    }
+
+    // Default load orders
+    showSection('orders');
+  </script>
 </body>
 </html>
