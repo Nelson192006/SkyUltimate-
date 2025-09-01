@@ -4,459 +4,368 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SkyUltimate — Login & Registration</title>
-  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Splash fade-in animation */
-    .fade-in { animation: fadeIn 0.5s ease forwards; opacity: 0; }
+    html,body{height:100%}
+    body { background:#ef4444; min-height:100vh; display:flex; align-items:center; justify-content:center; font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; }
+    .fade-in { animation: fadeIn 0.45s ease forwards; opacity: 0; }
     @keyframes fadeIn { to { opacity: 1; } }
-    /* cross fade helpers (kept for later) */
-    .cross-fade-enter { opacity: 0; transition: opacity 0.5s; }
-    .cross-fade-enter-active { opacity: 1; }
-    .cross-fade-leave { opacity: 1; transition: opacity 0.5s; }
-    .cross-fade-leave-active { opacity: 0; }
+    .card { width:100%; max-width:420px; border-radius:18px; padding:28px; box-shadow:0 12px 30px rgba(0,0,0,0.14); backdrop-filter: blur(6px); }
+    .logo-wrap { display:flex; align-items:center; gap:12px; justify-content:center; margin-bottom:10px; }
+    .logo-img { width:86px; height:86px; border-radius:9999px; object-fit:cover; border:4px solid rgba(255,255,255,0.25); background:#fff; }
+    .logo-title { font-weight:700; color:#b91c1c; font-size:20px; }
+    .tab-active { border-bottom-width:2px; border-color:#b91c1c; color:#111827; }
+    .tab-inactive { color:#6b7280; }
+    .rounded-btn { border-radius:9999px; }
+    select:invalid { color:#9ca3af; }
   </style>
 </head>
-<body class="bg-red-600 min-h-screen flex items-center justify-center relative">
+<body>
 
-  <!-- Splash Screen -->
-  <div id="splash" class="absolute inset-0 flex flex-col items-center justify-center bg-red-600 z-50">
-    <!-- Bigger logo and slogan area for readability -->
-    <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true"
-         alt="SkyUltimate Logo" class="w-56 fade-in mb-4">
-    <div class="text-white text-lg opacity-90 font-semibold">SkyUltimate — Fast. Reliable. Ultimate.</div>
+  <!-- Splash -->
+  <div id="splash" class="fixed inset-0 flex items-center justify-center z-50">
+    <div class="text-center">
+      <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true"
+           alt="SkyUltimate" class="logo-img fade-in" style="width:140px;height:140px;">
+      <div style="color:#fff; margin-top:18px; font-weight:700; font-size:22px;">SkyUltimate</div>
+      <div style="color:#fee2e2; margin-top:6px; font-size:13px;">Deliveries. Simplified.</div>
+    </div>
   </div>
 
-  <!-- Login/Register Card -->
-  <div id="authCard" class="hidden absolute inset-0 flex items-start justify-center pt-12 px-4">
-    <div class="bg-white/85 backdrop-blur-md rounded-2xl shadow-2xl p-6 md:p-8 w-full max-w-xl">
-      <div class="flex flex-col items-center">
-        <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true"
-             alt="Logo" class="w-36 mb-3">
-        <h1 class="text-red-700 font-bold text-xl mb-4">Welcome to SkyUltimate</h1>
-      </div>
+  <!-- Auth card -->
+  <div id="authCard" class="hidden card bg-white/90">
+    <div class="logo-wrap">
+      <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true"
+           alt="logo" class="logo-img">
+      <div class="logo-title">SkyUltimate</div>
+    </div>
 
-      <!-- Tabs -->
-      <div class="flex justify-around mb-4">
-        <button id="loginTab" class="font-semibold border-b-2 border-red-600 pb-1">Login</button>
-        <button id="registerTab" class="font-semibold text-gray-500 pb-1">Register</button>
-      </div>
+    <!-- tabs -->
+    <div class="flex justify-between mb-4">
+      <button id="loginTab" class="tab-active px-3 py-2 text-sm">Login</button>
+      <button id="registerTab" class="tab-inactive px-3 py-2 text-sm">Register</button>
+    </div>
 
-      <!-- Forms Container -->
-      <div id="formsContainer">
+    <div id="formsContainer">
+      <!-- LOGIN -->
+      <form id="loginForm" class="space-y-3">
+        <label class="block text-sm text-gray-600">Select role</label>
+        <select id="loginRole" class="w-full border rounded-md px-3 py-2" required>
+          <option value="" disabled selected>Select role</option>
+          <!-- Options populated after flags fetch -->
+        </select>
 
-        <!-- LOGIN FORM -->
-        <form id="loginForm" class="space-y-4">
-          <label class="block text-sm text-gray-600">Role</label>
-          <select id="loginRole" class="w-full border rounded px-3 py-2">
-            <!-- populated by JS -->
-          </select>
+        <label class="block text-sm text-gray-600">Name</label>
+        <input id="loginName" placeholder="Your full name" class="w-full border rounded-md px-3 py-2" required>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <div>
-              <label class="block text-sm text-gray-600">Name</label>
-              <input type="text" id="loginName" placeholder="Your full name" class="w-full border rounded px-3 py-2" required>
-            </div>
-            <div class="hidden" id="loginEmailWrap">
-              <label class="block text-sm text-gray-600">Email (optional)</label>
-              <input type="email" id="loginEmail" placeholder="Email (optional)" class="w-full border rounded px-3 py-2">
-            </div>
-          </div>
-
-          <div class="relative">
-            <label class="block text-sm text-gray-600">Password</label>
-            <input type="password" id="loginPassword" placeholder="Password"
-                   class="w-full border rounded px-3 py-2 pr-10" required>
-            <button type="button" id="loginTogglePassword" class="absolute right-2 top-8 text-gray-500">👁️</button>
-          </div>
-
-          <a href="#" id="forgotPasswordLink" class="text-sm text-red-700 hover:underline block text-right">Forgot Password?</a>
-
-          <button type="submit" class="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700">Login</button>
-          <p id="loginError" class="text-red-600 text-sm"></p>
-        </form>
-
-        <!-- REGISTER FORM -->
-        <form id="registerForm" class="space-y-4 hidden">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <div>
-              <label class="block text-sm text-gray-600">Full Name</label>
-              <input type="text" id="registerName" placeholder="Full Name" class="w-full border rounded px-3 py-2" required>
-            </div>
-            <div>
-              <label class="block text-sm text-gray-600">Email</label>
-              <input type="email" id="registerEmail" placeholder="Email" class="w-full border rounded px-3 py-2" required>
-            </div>
-          </div>
-
-          <label class="block text-sm text-gray-600">Role</label>
-          <select id="registerRole" class="w-full border rounded px-3 py-2">
-            <!-- populated by JS -->
-          </select>
-
-          <div class="relative">
-            <label class="block text-sm text-gray-600">Password</label>
-            <input type="password" id="registerPassword" placeholder="Password" class="w-full border rounded px-3 py-2 pr-10" required>
-            <button type="button" id="registerTogglePassword" class="absolute right-2 top-10 text-gray-500">👁️</button>
-          </div>
-
-          <!-- Dynamic Bank Info Fields for Agent/Admin -->
-          <div id="bankFields" class="hidden space-y-2">
-            <label class="block text-sm text-gray-600">Bank Name</label>
-            <input type="text" id="bankName" placeholder="Bank Name" class="w-full border rounded px-3 py-2">
-            <label class="block text-sm text-gray-600">Account Number</label>
-            <input type="text" id="accountNumber" placeholder="Account Number" class="w-full border rounded px-3 py-2">
-            <label class="block text-sm text-gray-600">Account Holder Name</label>
-            <input type="text" id="accountHolderName" placeholder="Account Holder Name" class="w-full border rounded px-3 py-2">
-            <label class="block text-sm text-gray-600">Phone</label>
-            <input type="text" id="phone" placeholder="Phone Number" class="w-full border rounded px-3 py-2">
-          </div>
-
-          <button type="submit" class="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700">Register</button>
-          <p id="registerError" class="text-red-600 text-sm"></p>
-        </form>
-
-        <!-- Forgot Password Placeholder -->
-        <div id="forgotPasswordForm" class="hidden space-y-4">
-          <p class="text-gray-700">Feature coming soon. Enter your email to get a reset link.</p>
-          <input type="email" id="forgotEmail" placeholder="Email" class="w-full border rounded px-3 py-2">
-          <button id="sendResetLink" class="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700">Send Reset Link</button>
-          <p id="forgotMsg" class="text-green-600 text-sm"></p>
-          <button id="backToLogin" class="w-full border border-red-600 text-red-600 py-2 rounded hover:bg-red-100">Back to Login</button>
+        <label class="block text-sm text-gray-600">Password</label>
+        <div class="relative">
+          <input id="loginPassword" type="password" placeholder="Password" class="w-full border rounded-md px-3 py-2 pr-10" required>
+          <button type="button" id="loginTogglePassword" class="absolute right-2 top-2 text-gray-500">👁️</button>
         </div>
 
+        <div class="flex justify-between items-center">
+          <a href="#" id="forgotPasswordLink" class="text-sm text-red-700 hover:underline">Forgot password?</a>
+        </div>
+
+        <button id="loginBtn" class="w-full bg-red-600 text-white py-2 rounded-btn">Login</button>
+        <p id="loginError" class="text-red-600 text-sm"></p>
+      </form>
+
+      <!-- REGISTER -->
+      <form id="registerForm" class="space-y-3 hidden">
+        <label class="block text-sm text-gray-600">Full name</label>
+        <input id="registerName" placeholder="John Doe" class="w-full border rounded-md px-3 py-2" required>
+
+        <label class="block text-sm text-gray-600">Select role</label>
+        <select id="registerRole" class="w-full border rounded-md px-3 py-2" required>
+          <option value="" disabled selected>Select role</option>
+          <!-- populated dynamically -->
+        </select>
+
+        <label class="block text-sm text-gray-600">Email</label>
+        <input id="registerEmail" type="email" placeholder="you@example.com" class="w-full border rounded-md px-3 py-2" required>
+
+        <label class="block text-sm text-gray-600">Password</label>
+        <div class="relative">
+          <input id="registerPassword" type="password" placeholder="Create password" class="w-full border rounded-md px-3 py-2 pr-10" required>
+          <button type="button" id="registerTogglePassword" class="absolute right-2 top-2 text-gray-500">👁️</button>
+        </div>
+
+        <!-- bank fields (for agent/admin) -->
+        <div id="bankFields" class="hidden space-y-2">
+          <label class="block text-sm text-gray-600">Bank Name</label>
+          <input id="bankName" placeholder="Bank name" class="w-full border rounded-md px-3 py-2">
+          <label class="block text-sm text-gray-600">Account Number</label>
+          <input id="accountNumber" placeholder="Account number" class="w-full border rounded-md px-3 py-2">
+          <label class="block text-sm text-gray-600">Account Holder</label>
+          <input id="accountHolderName" placeholder="Account holder name" class="w-full border rounded-md px-3 py-2">
+          <label class="block text-sm text-gray-600">Phone</label>
+          <input id="phone" placeholder="Phone number" class="w-full border rounded-md px-3 py-2">
+        </div>
+
+        <button id="registerBtn" class="w-full bg-red-600 text-white py-2 rounded-btn">Register</button>
+        <p id="registerError" class="text-red-600 text-sm"></p>
+      </form>
+
+      <!-- forgot placeholder -->
+      <div id="forgotForm" class="hidden">
+        <p class="text-sm text-gray-700">Password reset feature coming soon.</p>
+        <input id="forgotEmail" placeholder="Email" class="w-full border rounded-md px-3 py-2 mt-2">
+        <div class="flex gap-2 mt-3">
+          <button id="sendReset" class="bg-red-600 text-white px-4 py-2 rounded-btn">Send Reset</button>
+          <button id="backToAuth" class="border px-4 py-2 rounded-btn">Back</button>
+        </div>
+        <p id="forgotMsg" class="text-green-600 text-sm mt-2"></p>
       </div>
     </div>
   </div>
 
-  <script>
-    // Primary API host (your live render app)
-    const API_HOST = "https://skyultimate-backend-api-structure.onrender.com";
-    // We will attempt a few likely prefixes/paths if one fails.
-    const tryRegisterPaths = ["/api/auth/register", "/api/users/register", "/api/auth/register/"];
-    const tryLoginPaths = ["/api/auth/login", "/api/users/login", "/auth/login", "/api/auth/login/"];
+<script>
+/*
+  Wiring notes:
+  - API_BASE must point to your backend root (no trailing slash)
+  - This file expects these endpoints:
+    GET  /api/public/flags
+    POST /api/auth/register
+    POST /api/auth/login
+*/
 
-    // Utility fetch wrapper that returns parsed JSON, or throws an Error with helpful message.
-    async function doFetch(url, opts = {}) {
-      opts.headers = opts.headers || {};
-      if (!opts.headers["Content-Type"]) opts.headers["Content-Type"] = "application/json";
-      let res;
-      try {
-        res = await fetch(url, opts);
-      } catch (netErr) {
-        throw new Error("Network error: " + netErr.message);
-      }
+const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
 
-      const text = await res.text();
-      try {
-        const data = text ? JSON.parse(text) : null;
-        if (!res.ok) {
-          const msg = data?.message || data?.error || `Server returned ${res.status}`;
-          throw new Error(msg);
-        }
-        return data;
-      } catch (parseErr) {
-        // Not JSON
-        if (!res.ok) {
-          console.error("Server returned non-JSON (HTML) response:", text.substring(0,800));
-          throw new Error(`Server returned an HTML/error page (status ${res.status}). Check console for response snippet.`);
-        }
-        return text; // OK and not JSON
-      }
+// helper that handles JSON or non-JSON error pages gracefully
+async function apiFetch(path, opts = {}) {
+  const token = localStorage.getItem("su_token");
+  const headers = opts.headers || {};
+  headers["Content-Type"] = "application/json";
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  let res;
+  try {
+    res = await fetch(API_BASE + path, {...opts, headers});
+  } catch (e) {
+    throw new Error("Network error: " + (e.message || e));
+  }
+  const text = await res.text().catch(() => "");
+  // try parse
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch (e) {
+    if (!res.ok) {
+      // include snippet to console for debugging
+      console.error("Non-JSON server response:", text.slice(0,1200));
+      throw new Error(`Server returned non-JSON response (status ${res.status}). See console.`);
+    }
+    return text;
+  }
+  if (!res.ok) {
+    const msg = (data && (data.message || data.error)) || `API error ${res.status}`;
+    throw new Error(msg);
+  }
+  return data;
+}
+
+// UI elements
+const splash = document.getElementById('splash');
+const authCard = document.getElementById('authCard');
+const loginTab = document.getElementById('loginTab');
+const registerTab = document.getElementById('registerTab');
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+const forgotForm = document.getElementById('forgotForm');
+
+const loginRole = document.getElementById('loginRole');
+const registerRole = document.getElementById('registerRole');
+
+const loginName = document.getElementById('loginName');
+const loginPassword = document.getElementById('loginPassword');
+const registerName = document.getElementById('registerName');
+const registerEmail = document.getElementById('registerEmail');
+const registerPassword = document.getElementById('registerPassword');
+
+const bankFields = document.getElementById('bankFields');
+const bankName = document.getElementById('bankName');
+const accountNumber = document.getElementById('accountNumber');
+const accountHolderName = document.getElementById('accountHolderName');
+const phone = document.getElementById('phone');
+
+const loginError = document.getElementById('loginError');
+const registerError = document.getElementById('registerError');
+
+// splash -> show card after 3s
+window.addEventListener('load', async () => {
+  setTimeout(() => {
+    splash.classList.add('hidden');
+    authCard.classList.remove('hidden');
+  }, 3000);
+
+  // get flags to populate role dropdowns
+  try {
+    const flags = await apiFetch('/api/public/flags');
+    populateRoleOptions(flags);
+  } catch (err) {
+    console.error("Flags fetch failed:", err);
+    // fallback: default roles (hide superadmin if not explicitly allowed)
+    populateRoleOptions({ adminRegistrationEnabled: false, allowSuperAdminRegistration: false });
+  }
+});
+
+function populateRoleOptions(flags = {}) {
+  const allowedAdmin = !!flags.adminRegistrationEnabled;
+  const allowSuper = !!flags.allowSuperAdminRegistration;
+
+  // roles preference order: Customer, Agent, Admin (optional), SuperAdmin (if allowed)
+  const roles = ["Customer","Agent"];
+  if (allowedAdmin) roles.push("Admin");
+  if (allowSuper) roles.push("SuperAdmin");
+
+  // fill login & register selects
+  [loginRole, registerRole].forEach(sel => {
+    // remove existing options and add placeholder
+    sel.innerHTML = '<option value="" disabled selected>Select role</option>';
+    roles.forEach(r => {
+      const o = document.createElement('option');
+      o.value = r;
+      o.textContent = r;
+      sel.appendChild(o);
+    });
+  });
+}
+
+// tab switching
+loginTab.addEventListener('click', () => {
+  loginForm.classList.remove('hidden'); registerForm.classList.add('hidden'); forgotForm.classList.add('hidden');
+  loginTab.classList.add('tab-active'); loginTab.classList.remove('tab-inactive');
+  registerTab.classList.remove('tab-active'); registerTab.classList.add('tab-inactive');
+});
+registerTab.addEventListener('click', () => {
+  registerForm.classList.remove('hidden'); loginForm.classList.add('hidden'); forgotForm.classList.add('hidden');
+  registerTab.classList.add('tab-active'); registerTab.classList.remove('tab-inactive');
+  loginTab.classList.remove('tab-active'); loginTab.classList.add('tab-inactive');
+});
+
+// password toggles
+document.getElementById('loginTogglePassword').addEventListener('click', () => {
+  loginPassword.type = loginPassword.type === 'password' ? 'text' : 'password';
+});
+document.getElementById('registerTogglePassword').addEventListener('click', () => {
+  registerPassword.type = registerPassword.type === 'password' ? 'text' : 'password';
+});
+
+// show bank fields when selecting Agent or Admin in register
+registerRole.addEventListener('change', (e) => {
+  const v = e.target.value;
+  if (v === 'Agent' || v === 'Admin') bankFields.classList.remove('hidden');
+  else bankFields.classList.add('hidden');
+});
+
+// FORGOT placeholder
+document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  loginForm.classList.add('hidden');
+  forgotForm.classList.remove('hidden');
+});
+document.getElementById('backToAuth').addEventListener('click', () => {
+  forgotForm.classList.add('hidden');
+  loginForm.classList.remove('hidden');
+});
+document.getElementById('sendReset').addEventListener('click', () => {
+  document.getElementById('forgotMsg').innerText = "Feature coming soon.";
+});
+
+// ------------------ REGISTER ------------------
+document.getElementById('registerBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  registerError.innerText = "";
+
+  const name = registerName.value.trim();
+  const role = registerRole.value;
+  const email = registerEmail.value.trim();
+  const password = registerPassword.value;
+
+  if (!name || !role || !email || !password) {
+    registerError.innerText = "Please fill all required fields.";
+    return;
+  }
+
+  const payload = { name, role, email, password };
+  if (role === 'Agent' || role === 'Admin') {
+    if (!bankName.value || !accountNumber.value || !accountHolderName.value) {
+      registerError.innerText = "Please provide bank details for Agent/Admin.";
+      return;
+    }
+    // backend accepts flat bank fields (getBankDetailsFromBody handles it)
+    payload.bankName = bankName.value;
+    payload.accountNumber = accountNumber.value;
+    payload.accountHolderName = accountHolderName.value;
+    if (phone.value) payload.phone = phone.value;
+  }
+
+  try {
+    const res = await apiFetch('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+
+    // backend returns message and user (no token), so switch to login and prefill name
+    // If your backend returns token, this will still work because we check res.token below.
+    if (res.token) {
+      localStorage.setItem('su_token', res.token);
+      localStorage.setItem('su_user', JSON.stringify(res.user || {}));
+      window.location.href = 'home.html';
+      return;
     }
 
-    // Attempt to POST to first valid path in array
-    async function tryPost(paths, body) {
-      for (const p of paths) {
-        const url = API_HOST + p;
-        try {
-          const res = await doFetch(url, { method: "POST", body: JSON.stringify(body) });
-          return { url, res };
-        } catch (e) {
-          // console debug and continue trying other paths
-          console.warn(`POST ${url} failed:`, e.message);
-        }
-      }
-      throw new Error("All registration/login endpoints failed. Check backend routes and console.");
+    // show success and switch to login tab
+    registerError.style.color = "green";
+    registerError.innerText = (res.message || "Registration successful! Please login.");
+    // switch to login tab & prefill name
+    loginTab.click();
+    loginName.value = name;
+    loginPassword.value = "";
+    setTimeout(() => { registerError.style.color="red"; registerError.innerText=""; }, 6000);
+  } catch (err) {
+    console.error("Register error:", err);
+    registerError.style.color = "red";
+    registerError.innerText = err.message || "Registration failed.";
+  }
+});
+
+// ------------------ LOGIN (name + password) ------------------
+document.getElementById('loginBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  loginError.innerText = "";
+
+  const role = loginRole.value;
+  const name = loginName.value.trim();
+  const password = loginPassword.value;
+
+  if (!role || !name || !password) {
+    loginError.innerText = "Please pick a role and fill name & password.";
+    return;
+  }
+
+  try {
+    // login endpoint expects { name, password } per your authroutes.js
+    const res = await apiFetch('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ name, password })
+    });
+
+    if (!res.token) {
+      loginError.innerText = res.message || "Login failed.";
+      return;
     }
 
-    // Attempt to GET a list of URLs until one returns JSON object
-    async function tryGet(paths) {
-      for (const p of paths) {
-        const url = API_HOST + p;
-        try {
-          const res = await doFetch(url, { method: "GET" });
-          return { url, res };
-        } catch (e) {
-          console.warn(`GET ${url} failed:`, e.message);
-        }
-      }
-      return null;
-    }
+    // store token + user and redirect to home
+    localStorage.setItem('su_token', res.token);
+    localStorage.setItem('su_user', JSON.stringify(res.user || { id:res.id, name: res.name, role: res.role }));
+    // go to universal home
+    window.location.href = 'home.html';
+  } catch (err) {
+    console.error("Login error:", err);
+    loginError.innerText = err.message || "Login failed.";
+  }
+});
 
-    // UI elements
-    const loginTab = document.getElementById('loginTab');
-    const registerTab = document.getElementById('registerTab');
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const bankFields = document.getElementById('bankFields');
-    const forgotPasswordForm = document.getElementById('forgotPasswordForm');
-    const loginError = document.getElementById('loginError');
-    const registerError = document.getElementById('registerError');
-
-    // Role dropdowns
-    const loginRoleSelect = document.getElementById('loginRole');
-    const registerRoleSelect = document.getElementById('registerRole');
-
-    // splash -> auth transition
-    window.addEventListener('load', async () => {
-      // try to fetch flags & populate role dropdowns before showing UI
-      await loadRoleFlags();
-      setTimeout(() => {
-        document.getElementById('splash').classList.add('hidden');
-        document.getElementById('authCard').classList.remove('hidden');
-      }, 3000);
-    });
-
-    // Tab switching
-    loginTab.addEventListener('click', () => {
-      loginForm.classList.remove('hidden');
-      registerForm.classList.add('hidden');
-      forgotPasswordForm.classList.add('hidden');
-      loginTab.classList.add('border-red-600'); loginTab.classList.remove('text-gray-500');
-      registerTab.classList.remove('border-red-600'); registerTab.classList.add('text-gray-500');
-    });
-
-    registerTab.addEventListener('click', () => {
-      loginForm.classList.add('hidden');
-      registerForm.classList.remove('hidden');
-      forgotPasswordForm.classList.add('hidden');
-      registerTab.classList.add('border-red-600'); registerTab.classList.remove('text-gray-500');
-      loginTab.classList.remove('border-red-600'); loginTab.classList.add('text-gray-500');
-    });
-
-    // password toggles
-    document.getElementById('loginTogglePassword').addEventListener('click', () => {
-      const p = document.getElementById('loginPassword');
-      p.type = p.type === 'password' ? 'text' : 'password';
-    });
-    document.getElementById('registerTogglePassword').addEventListener('click', () => {
-      const p = document.getElementById('registerPassword');
-      p.type = p.type === 'password' ? 'text' : 'password';
-    });
-
-    // show bank fields for Agent/Admin in reg form
-    document.getElementById('registerRole').addEventListener('change', (e) => {
-      const v = e.target.value.toLowerCase();
-      if (v === 'agent' || v === 'admin') {
-        bankFields.classList.remove('hidden');
-      } else {
-        bankFields.classList.add('hidden');
-      }
-    });
-
-    // forgot password placeholder handling
-    document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
-      e.preventDefault();
-      loginForm.classList.add('hidden');
-      forgotPasswordForm.classList.remove('hidden');
-    });
-    document.getElementById('backToLogin').addEventListener('click', () => {
-      forgotPasswordForm.classList.add('hidden');
-      loginForm.classList.remove('hidden');
-    });
-    document.getElementById('sendResetLink').addEventListener('click', () => {
-      document.getElementById('forgotMsg').innerText = "This feature is coming soon.";
-    });
-
-    // normalize role text for payload (keep lowercase forms many backends expect)
-    function normalizeRoleForBackend(raw) {
-      if (!raw) return 'customer';
-      const s = String(raw).toLowerCase();
-      if (s.includes('customer')) return 'customer';
-      if (s.includes('agent')) return 'agent';
-      if (s.includes('admin') && !s.includes('super')) return 'admin';
-      if (s.includes('super')) return 'super-admin';
-      return s;
-    }
-
-    // --- load role flags from backend and populate dropdowns ---
-    async function loadRoleFlags() {
-      // possible endpoints that might expose the flags or super admin existence:
-      const flagPaths = [
-        "/api/public/flags",
-        "/api/flags",
-        "/api/auth/flags",
-        "/api/public/flags/",
-        "/api/check-for-super-admin",
-        "/api/auth/check-for-super-admin",
-        "/check-for-super-admin",
-      ];
-
-      let adminRegistrationEnabled = false;
-      let allowSuperAdminRegistration = false;
-
-      const found = await tryGet(flagPaths);
-      if (found && found.res) {
-        const res = found.res;
-        // flexible parsing for different shapes
-        adminRegistrationEnabled = !!(res.adminRegistrationEnabled || res.allowAdminRegistration || res.admin_registration_enabled);
-        allowSuperAdminRegistration = !!(res.allowSuperAdminRegistration || res.allow_super_admin_registration || res.allowSuperAdmin || res.exists || res.allowSuperAdmin);
-        // some endpoints return { exists: true } for super-admin - if exists is true that means a super admin exists - invert logic
-        if (typeof res.exists === "boolean") {
-          // if a super admin exists, then NOT allowed to register a new one
-          allowSuperAdminRegistration = !res.exists;
-        }
-      } else {
-        // fallback: attempt a direct "check-for-super-admin" endpoint that returns { exists: true/false }
-        try {
-          const chk = await doFetch(API_HOST + "/check-for-super-admin", { method: "GET" });
-          if (chk && typeof chk.exists === "boolean") allowSuperAdminRegistration = !chk.exists;
-        } catch (e) {
-          // ignore, fallback to defaults
-          console.warn("No flags endpoint found; defaulting to conservative dropdown (Customer+Agent).");
-        }
-      }
-
-      // populate the dropdowns (customer & agent are always shown)
-      populateRoleDropdowns(adminRegistrationEnabled, allowSuperAdminRegistration);
-    }
-
-    function populateRoleDropdowns(adminRegistrationEnabled, allowSuperAdminRegistration) {
-      // clear selects
-      loginRoleSelect.innerHTML = '';
-      registerRoleSelect.innerHTML = '';
-
-      // desired default order: Customer, Agent, Admin (only if enabled), Super Admin (only if first-time)
-      const roles = ['Customer', 'Agent'];
-      if (adminRegistrationEnabled) roles.push('Admin');
-      if (allowSuperAdminRegistration) roles.push('SuperAdmin');
-
-      // populate each select
-      for (const r of roles) {
-        const opt1 = document.createElement('option');
-        opt1.value = r;
-        opt1.textContent = r;
-        loginRoleSelect.appendChild(opt1);
-
-        const opt2 = document.createElement('option');
-        opt2.value = r;
-        opt2.textContent = r;
-        registerRoleSelect.appendChild(opt2);
-      }
-
-      // for login we show "Use email instead" toggle if needed (hidden by default)
-      // Keep login email field hidden (only shown if user toggles or if we detect backend needs it)
-      // No UI toggle created now — email input exists hidden; if you need we can show a "use email" link later.
-    }
-
-    // ----------------- SUBMIT HANDLERS -----------------
-
-    // LOGIN: send name & password & role. For compatibility include email if user added it.
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      loginError.innerText = '';
-      const roleRaw = document.getElementById('loginRole').value;
-      const role = normalizeRoleForBackend(roleRaw);
-      const name = document.getElementById('loginName').value.trim();
-      const email = (document.getElementById('loginEmail')?.value || '').trim();
-      const password = document.getElementById('loginPassword').value;
-
-      if (!name || !password) { loginError.innerText = 'All fields are required.'; return; }
-
-      const payload = { role, name, password };
-      // include email too if user provided it to improve compatibility with older backend
-      if (email) payload.email = email;
-
-      try {
-        const { url, res } = await tryPost(tryLoginPaths, payload);
-        // Expected a token and user object, but some backends return different shapes.
-        const token = res.token || res.accessToken || res.data?.token || res?.data?.token;
-        const user = res.user || res.data?.user || res?.user || null;
-
-        if (token) {
-          localStorage.setItem('su_token', token);
-          if (user) localStorage.setItem('su_user', JSON.stringify(user));
-          window.location.href = 'home.html';
-          return;
-        }
-
-        // If no token but successful JSON, maybe server returns message + user & token in different key
-        if (res && (res.message && (res.user || res.role))) {
-          // if backend returned token inside nested structure
-          const nestedToken = res.token || (res.user && res.user.token) || null;
-          if (nestedToken) {
-            localStorage.setItem('su_token', nestedToken);
-            localStorage.setItem('su_user', JSON.stringify(res.user || {}));
-            window.location.href = 'home.html';
-            return;
-          }
-        }
-
-        // fallback: success but no token
-        loginError.innerText = "Login succeeded but no token returned. Check backend response.";
-        console.warn("Login response", url, res);
-      } catch (err) {
-        console.error("Login error:", err);
-        loginError.innerText = err.message || "Invalid credentials. Please check your role and login details.";
-      }
-    });
-
-    // REGISTER
-    registerForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      registerError.innerText = '';
-      const name = document.getElementById('registerName').value.trim();
-      const email = document.getElementById('registerEmail').value.trim();
-      const roleRaw = document.getElementById('registerRole').value;
-      const role = normalizeRoleForBackend(roleRaw);
-      const password = document.getElementById('registerPassword').value;
-      const bankName = document.getElementById('bankName').value.trim();
-      const accountNumber = document.getElementById('accountNumber').value.trim();
-      const accountHolderName = document.getElementById('accountHolderName').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-
-      if (!name || !email || !password) { registerError.innerText = 'Please fill all required fields.'; return; }
-
-      const payload = { name, email, role, password };
-      if (role === 'agent' || role === 'admin') {
-        // include bank details - some backends expect nested bankDetails or flat fields
-        payload.bankDetails = { bankName, accountNumber, accountHolderName };
-        // also include flat keys in case backend expects them
-        payload.bankName = bankName;
-        payload.accountNumber = accountNumber;
-        payload.accountHolderName = accountHolderName;
-        payload.phone = phone;
-      }
-
-      try {
-        const { url, res } = await tryPost(tryRegisterPaths, payload);
-
-        // On success some backends return token immediately, some just success message.
-        const token = res.token || res.accessToken || res.data?.token;
-        const user = res.user || res.data?.user || null;
-
-        if (token) {
-          localStorage.setItem('su_token', token);
-          if (user) localStorage.setItem('su_user', JSON.stringify(user));
-          window.location.href = 'home.html';
-          return;
-        }
-
-        // If server returned success but no token, switch to login tab and prefill name/email
-        loginTab.click();
-        document.getElementById('loginName').value = name;
-        document.getElementById('loginEmail') && (document.getElementById('loginEmail').value = email);
-        registerError.innerText = "Registration successful! Please login.";
-      } catch (err) {
-        console.error("Registration error:", err);
-        registerError.innerText = err.message || "An account with this email already exists, please Login.";
-      }
-    });
-
-    // Accessibility helper: show login email wrapper if user wants (not shown by default)
-    // (You can add UI toggle if desired later.)
-
-  </script>
+</script>
 </body>
-</html>
+        </html>
