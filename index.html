@@ -3,267 +3,396 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SkyUltimate — Fast & Reliable Delivery</title>
-  <meta name="theme-color" content="#C00000" />
+  <title>SkyUltimate — Login & Registration</title>
+  <meta name="theme-color" content="#c00000" />
+  <!-- Tailwind CDN kept optional — design uses simple CSS so it looks identical across setups -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    /* keep your visual look — logo on red background, rounded card, rounded controls */
+    * { box-sizing: border-box; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+    body { background: #c00000; min-height: 100vh; margin: 0; display: flex; align-items: start; justify-content: center; padding: 40px 16px; }
+    .splash { position: fixed; inset:0; display:flex; align-items:center; justify-content:center; background:#c00000; z-index:60; transition:opacity .4s ease; }
+    .splash.hidden { opacity:0; pointer-events:none; }
+    .logo-wrap{ text-align:center; margin-bottom: 18px; }
+    .logo-circle { width:120px; height:120px; border-radius:9999px; background:white; display:inline-flex; align-items:center; justify-content:center; overflow:hidden; }
+    .logo-circle img{ width:100%; height:100%; object-fit:contain; }
+    .brand { margin-top:10px; color:white; font-weight:700; font-size:20px; letter-spacing:0.2px; }
 
-    body {
-      background-color: #c00000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-    }
+    .card { width:100%; max-width:420px; background: rgba(255,255,255,0.95); border-radius:16px; padding:26px; box-shadow:0 8px 30px rgba(0,0,0,0.16); }
+    .tabs { display:flex; gap:8px; margin-bottom:18px; }
+    .tab { flex:1; padding:10px 12px; text-align:center; border-radius:9999px; font-weight:600; cursor:pointer; }
+    .tab.active { background:#c00000; color:white; box-shadow: inset 0 -3px 0 rgba(0,0,0,0.08); }
 
-    .logo {
-      margin: 40px 0 20px;
-      text-align: center;
-    }
-    .logo img {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: white;
-      padding: 10px;
-    }
-    .logo h1 {
-      margin-top: 10px;
-      color: white;
-      font-weight: bold;
-      font-size: 22px;
-    }
+    .form-row { margin-bottom:12px; text-align:left; }
+    label { display:block; font-size:13px; color:#333; margin-bottom:6px; }
+    select, input { width:100%; padding:10px 12px; border-radius:12px; border:1px solid #ddd; font-size:14px; }
+    .rounded-btn { width:100%; padding:12px; background:#c00000; color:#fff; border:none; border-radius:12px; font-weight:700; cursor:pointer; margin-top:8px; }
+    .rounded-btn:active { transform:translateY(1px); }
+    .muted { font-size:13px; color:#666; text-align:center; margin-top:8px; }
+    .error { color:#b91c1c; font-size:13px; margin-top:8px; text-align:center; }
+    .success { color:#166534; font-size:13px; margin-top:8px; text-align:center; }
+    .small-link { color:#c00000; cursor:pointer; text-decoration:underline; font-size:13px; }
+    .password-toggle { position:relative; }
+    .password-toggle button { position:absolute; right:10px; top:8px; background:transparent; border:0; cursor:pointer; font-size:16px; color:#666; }
 
-    .card {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 16px;
-      padding: 30px 20px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-      animation: fadeIn 0.5s ease-in-out;
-    }
-
-    .tabs {
-      display: flex;
-      justify-content: space-around;
-      margin-bottom: 20px;
-    }
-    .tab {
-      flex: 1;
-      padding: 10px;
-      text-align: center;
-      cursor: pointer;
-      font-weight: bold;
-      border-radius: 25px;
-      margin: 0 5px;
-    }
-    .tab.active {
-      background: #c00000;
-      color: white;
-    }
-
-    .form-group { margin-bottom: 15px; text-align: left; }
-    .form-group label { font-size: 14px; color: #333; display: block; margin-bottom: 5px; }
-
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 25px;
-      outline: none;
-      font-size: 14px;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 12px;
-      background: #c00000;
-      color: white;
-      border: none;
-      border-radius: 25px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    .btn:hover { background: #a30000; }
-
-    .error, .success {
-      margin-top: 10px;
-      font-size: 14px;
-      text-align: center;
-    }
-    .error { color: red; }
-    .success { color: green; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeInUp { from { opacity:0; transform: translateY(10px) } to { opacity:1; transform:none } }
+    .card { animation: fadeInUp .35s ease both; }
   </style>
 </head>
 <body>
-  <div class="logo">
-    <img src="logo.png" alt="SkyUltimate Logo" />
-    <h1>SkyUltimate</h1>
+  <!-- Splash -->
+  <div id="splash" class="splash">
+    <div style="text-align:center;">
+      <div class="logo-circle">
+        <!-- replace src with your repo raw image path or keep same link -->
+        <img src="https://github.com/Nelson192006/SkyUltimate-/raw/main/logo.png" alt="logo" />
+      </div>
+      <div style="color:white; margin-top:10px; font-weight:800; font-size:20px">SkyUltimate</div>
+    </div>
   </div>
 
-  <div class="card">
+  <!-- Main card wrapper -->
+  <div class="card" id="authCard" style="display:none;">
+    <!-- Tabs -->
     <div class="tabs">
       <div id="loginTab" class="tab active">Login</div>
       <div id="registerTab" class="tab">Register</div>
     </div>
 
-    <!-- Role dropdown always on top -->
-    <div class="form-group" id="role-group">
-      <label for="role">Select Role</label>
-      <select id="role">
-        <option value="">-- Select Role --</option>
+    <!-- Role dropdown on top (always visible) -->
+    <div class="form-row">
+      <label for="roleSelect">Select role</label>
+      <select id="roleSelect" aria-label="Select role">
+        <option value="">Loading roles...</option>
       </select>
     </div>
 
-    <!-- Login Form -->
-    <div id="loginForm">
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="loginEmail" placeholder="Enter your email" />
+    <!-- Login form (Name + Password) -->
+    <div id="loginPane">
+      <div class="form-row">
+        <label for="loginName">Name</label>
+        <input id="loginName" type="text" placeholder="Enter your name" />
       </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="loginPassword" placeholder="Enter your password" />
+      <div class="form-row password-toggle">
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" type="password" placeholder="Enter your password" />
+        <button id="loginToggle" title="Show / Hide password">👁️</button>
       </div>
-      <button class="btn" onclick="handleLogin()">Login</button>
-      <p id="loginMessage" class="error"></p>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="muted small-link" id="forgotLink">Forgot password?</div>
+        <button id="loginBtn" class="rounded-btn">Login</button>
+      </div>
+      <div id="loginMsg" class="error" role="status" aria-live="polite"></div>
     </div>
 
-    <!-- Register Form -->
-    <div id="registerForm" style="display:none;">
-      <div class="form-group">
-        <label>Full Name</label>
-        <input type="text" id="regName" placeholder="Enter full name" />
+    <!-- Register form -->
+    <div id="registerPane" style="display:none;">
+      <div class="form-row">
+        <label for="regName">Full name</label>
+        <input id="regName" type="text" placeholder="Enter full name" />
       </div>
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="regEmail" placeholder="Enter email" />
+      <div class="form-row">
+        <label for="regEmail">Email</label>
+        <input id="regEmail" type="email" placeholder="Enter email" />
       </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="regPassword" placeholder="Enter password" />
+      <div class="form-row password-toggle">
+        <label for="regPassword">Password</label>
+        <input id="regPassword" type="password" placeholder="Create password" />
+        <button id="regToggle" title="Show / Hide password">👁️</button>
       </div>
-      <div class="form-group" id="agentFields" style="display:none;">
-        <label>Vehicle Type</label>
-        <input type="text" id="vehicleType" placeholder="Enter vehicle type" />
+
+      <!-- Bank fields: shown when Agent or Admin selected -->
+      <div id="bankFields" style="display:none;">
+        <div class="form-row">
+          <label for="bankName">Bank name</label>
+          <input id="bankName" type="text" placeholder="Bank name" />
+        </div>
+        <div class="form-row">
+          <label for="accountNumber">Account number</label>
+          <input id="accountNumber" type="text" placeholder="Account number" />
+        </div>
+        <div class="form-row">
+          <label for="accountHolderName">Account holder</label>
+          <input id="accountHolderName" type="text" placeholder="Account holder name" />
+        </div>
+        <div class="form-row">
+          <label for="phone">Phone number</label>
+          <input id="phone" type="text" placeholder="Phone number" />
+        </div>
       </div>
-      <button class="btn" onclick="handleRegister()">Register</button>
-      <p id="registerMessage" class="error"></p>
+
+      <button id="registerBtn" class="rounded-btn">Register</button>
+      <div id="registerMsg" class="error" role="status" aria-live="polite"></div>
     </div>
+
+    <!-- Forgot password panel (hidden) -->
+    <div id="forgotPane" style="display:none; margin-top:14px;">
+      <div class="form-row">
+        <label for="forgotEmail">Enter your account email</label>
+        <input id="forgotEmail" type="email" placeholder="Email for reset link" />
+      </div>
+      <button id="sendResetBtn" class="rounded-btn">Send Reset Link</button>
+      <div id="forgotMsg" class="muted" role="status" aria-live="polite"></div>
+      <div style="text-align:center; margin-top:8px;"><span class="small-link" id="backToAuth">Back</span></div>
+    </div>
+
   </div>
 
 <script>
-const apiBase = "https://skyultimate-backend-api-structure.onrender.com/api/auth";
+/*
+  index.html logic notes:
+  - API_BASE must point to your deployed backend (Render) root /api route.
+  - This file expects these backend endpoints (mounted exactly like this):
+    GET  /api/public/flags                     -> returns { adminRegistrationEnabled, allowSuperAdminRegistration }
+    POST /api/auth/register                    -> register
+    POST /api/auth/login                       -> login (by name & password)
+    POST /api/auth/forgot-password             -> optional reset flow
+  If your backend uses different mount points, update API_BASE and paths below.
+*/
 
-// Toggle tabs
-document.getElementById("loginTab").onclick = () => {
-  document.getElementById("loginForm").style.display = "block";
-  document.getElementById("registerForm").style.display = "none";
-  document.getElementById("loginTab").classList.add("active");
-  document.getElementById("registerTab").classList.remove("active");
-};
-document.getElementById("registerTab").onclick = () => {
-  document.getElementById("loginForm").style.display = "none";
-  document.getElementById("registerForm").style.display = "block";
-  document.getElementById("registerTab").classList.add("active");
-  document.getElementById("loginTab").classList.remove("active");
-};
+const API_BASE = "https://skyultimate-backend-api-structure.onrender.com/api";
 
-// Load roles dynamically
-async function loadRoles() {
+// small helper to fetch and gracefully handle HTML error pages (avoids Unexpected token '<')
+async function apiFetch(path, opts = {}) {
+  const headers = opts.headers || {};
+  headers["Content-Type"] = "application/json";
+  const token = localStorage.getItem("su_token");
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  let res;
   try {
-    const res = await fetch(apiBase + "/roles");
-    const roles = await res.json();
+    res = await fetch(API_BASE + path, { ...opts, headers });
+  } catch (networkErr) {
+    console.error("Network error:", networkErr);
+    throw new Error("Network error: " + networkErr.message);
+  }
 
-    let roleSelect = document.getElementById("role");
-    roleSelect.innerHTML = `<option value="">-- Select Role --</option>`;
+  const text = await res.text();
+  // Try parse JSON, otherwise return text (or throw)
+  try {
+    const data = text ? JSON.parse(text) : null;
+    if (!res.ok) {
+      // include server message if available
+      const msg = data && (data.message || data.error) ? (data.message || data.error) : `Server error ${res.status}`;
+      throw new Error(msg);
+    }
+    return data;
+  } catch (e) {
+    // Not JSON — likely HTML error page or plain text
+    if (!res.ok) {
+      console.error("Server returned non-JSON error:", text.slice(0, 1000));
+      throw new Error(`Server returned an error (status ${res.status}). Check console for response snippet.`);
+    }
+    // OK but not JSON — return raw text
+    return text;
+  }
+}
+
+// UI references
+const splash = document.getElementById("splash");
+const authCard = document.getElementById("authCard");
+const roleSelect = document.getElementById("roleSelect");
+
+const loginTab = document.getElementById("loginTab");
+const registerTab = document.getElementById("registerTab");
+const loginPane = document.getElementById("loginPane");
+const registerPane = document.getElementById("registerPane");
+const forgotPane = document.getElementById("forgotPane");
+
+const loginName = document.getElementById("loginName");
+const loginPassword = document.getElementById("loginPassword");
+const loginToggle = document.getElementById("loginToggle");
+const loginBtn = document.getElementById("loginBtn");
+const loginMsg = document.getElementById("loginMsg");
+
+const regName = document.getElementById("regName");
+const regEmail = document.getElementById("regEmail");
+const regPassword = document.getElementById("regPassword");
+const regToggle = document.getElementById("regToggle");
+const registerBtn = document.getElementById("registerBtn");
+const registerMsg = document.getElementById("registerMsg");
+
+const bankFields = document.getElementById("bankFields");
+const bankName = document.getElementById("bankName");
+const accountNumber = document.getElementById("accountNumber");
+const accountHolderName = document.getElementById("accountHolderName");
+const phone = document.getElementById("phone");
+
+const forgotLink = document.getElementById("forgotLink");
+const forgotEmail = document.getElementById("forgotEmail");
+const sendResetBtn = document.getElementById("sendResetBtn");
+const forgotMsg = document.getElementById("forgotMsg");
+const backToAuth = document.getElementById("backToAuth");
+
+// Tab switching
+loginTab.onclick = () => { loginTab.classList.add("active"); registerTab.classList.remove("active"); loginPane.style.display = "block"; registerPane.style.display = "none"; forgotPane.style.display = "none"; clearMessages(); };
+registerTab.onclick = () => { registerTab.classList.add("active"); loginTab.classList.remove("active"); loginPane.style.display = "none"; registerPane.style.display = "block"; forgotPane.style.display = "none"; clearMessages(); };
+
+// password toggles
+loginToggle.addEventListener("click", () => { loginPassword.type = loginPassword.type === "password" ? "text" : "password"; });
+regToggle.addEventListener("click", () => { regPassword.type = regPassword.type === "password" ? "text" : "password"; });
+
+// forgot password show/hide
+forgotLink.addEventListener("click", () => { loginPane.style.display = "none"; registerPane.style.display = "none"; forgotPane.style.display = "block"; clearMessages(); });
+backToAuth.addEventListener("click", () => { loginTab.click(); });
+
+// clear messages helper
+function clearMessages() {
+  loginMsg.textContent = ""; registerMsg.textContent = ""; forgotMsg.textContent = "";
+}
+
+// load roles from backend flags endpoint
+async function loadRoles() {
+  roleSelect.innerHTML = `<option value="">Loading roles...</option>`;
+  try {
+    const flags = await apiFetch("/public/flags"); // expects { adminRegistrationEnabled, allowSuperAdminRegistration }
+    // Always show Customer & Agent
+    const roles = [{ value: "Customer", label: "Customer" }, { value: "Agent", label: "Agent" }];
+    if (flags?.adminRegistrationEnabled) roles.push({ value: "Admin", label: "Admin" });
+    if (flags?.allowSuperAdminRegistration) roles.push({ value: "SuperAdmin", label: "Super Admin" });
+
+    // populate select
+    roleSelect.innerHTML = `<option value="">-- select role --</option>`;
     roles.forEach(r => {
-      let opt = document.createElement("option");
-      opt.value = r;
-      opt.textContent = r.charAt(0).toUpperCase() + r.slice(1);
+      const opt = document.createElement("option");
+      opt.value = r.value;
+      opt.textContent = r.label;
       roleSelect.appendChild(opt);
     });
   } catch (err) {
-    console.error("Failed to load roles", err);
+    console.error("Failed to load roles:", err);
+    // fallback: show common roles — but Admin / SuperAdmin might be hidden server-side
+    roleSelect.innerHTML = `
+      <option value="">-- select role --</option>
+      <option value="Customer">Customer</option>
+      <option value="Agent">Agent</option>
+    `;
   }
 }
-loadRoles();
 
-// Login
-async function handleLogin() {
-  const role = document.getElementById("role").value;
-  const email = document.getElementById("loginEmail").value;
-  const password = document.getElementById("loginPassword").value;
+// show/hide bank fields when Agent or Admin selected in register
+roleSelect.addEventListener("change", () => {
+  const role = roleSelect.value;
+  if (role === "Agent" || role === "Admin") {
+    bankFields.style.display = "block";
+  } else {
+    bankFields.style.display = "none";
+  }
+});
 
-  if (!role || !email || !password) {
-    document.getElementById("loginMessage").textContent = "All fields required";
-    return;
+// Splash logic (3s) then show card
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    splash.classList.add("hidden");
+    authCard.style.display = "block";
+  }, 3000);
+  // load roles ASAP
+  loadRoles();
+  // If someone prefilled token (session), you might want to redirect — but per flow we stay on login
+});
+
+// REGISTER
+registerBtn.addEventListener("click", async (e) => {
+  registerMsg.textContent = ""; registerMsg.className = "error";
+  const role = roleSelect.value;
+  const name = regName.value && regName.value.trim();
+  const email = regEmail.value && regEmail.value.trim();
+  const password = regPassword.value;
+
+  if (!role) { registerMsg.textContent = "Please select a role at top."; return; }
+  if (!name || !email || !password) { registerMsg.textContent = "Please fill required fields."; return; }
+
+  const payload = { role, name, email, password, phone: phone.value || undefined };
+  // include bank details for Agent/Admin
+  if (role === "Agent" || role === "Admin") {
+    if (!bankName.value || !accountNumber.value || !accountHolderName.value) {
+      registerMsg.textContent = "Bank details are required for Agent/Admin registration.";
+      return;
+    }
+    payload.bankName = bankName.value;
+    payload.accountNumber = accountNumber.value;
+    payload.accountHolderName = accountHolderName.value;
   }
 
   try {
-    const res = await fetch(apiBase + "/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role, email, password })
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Login failed");
-
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-
-    document.getElementById("loginMessage").className = "success";
-    document.getElementById("loginMessage").textContent = "Login successful!";
-    // redirect based on role
+    registerBtn.disabled = true;
+    const data = await apiFetch("/auth/register", { method: "POST", body: JSON.stringify(payload) });
+    // Success: backend may return { message: 'Registered. Please login.' }
+    registerMsg.className = "success";
+    registerMsg.textContent = (data && data.message) ? data.message : "Registration successful. Please login.";
+    // auto-switch to login and prefill name for name-based login
+    setTimeout(() => {
+      loginTab.click();
+      loginName.value = name;
+      regName.value = ""; regEmail.value = ""; regPassword.value = "";
+      bankName.value = ""; accountNumber.value = ""; accountHolderName.value = ""; phone.value = "";
+      registerMsg.textContent = "";
+    }, 900);
   } catch (err) {
-    document.getElementById("loginMessage").className = "error";
-    document.getElementById("loginMessage").textContent = err.message;
+    console.error("Register error:", err);
+    registerMsg.className = "error";
+    registerMsg.textContent = err.message || "Registration failed. Check console for details.";
+  } finally {
+    registerBtn.disabled = false;
   }
-}
+});
 
-// Register
-async function handleRegister() {
-  const role = document.getElementById("role").value;
-  const name = document.getElementById("regName").value;
-  const email = document.getElementById("regEmail").value;
-  const password = document.getElementById("regPassword").value;
-  const vehicleType = document.getElementById("vehicleType").value;
-
-  if (!role || !name || !email || !password) {
-    document.getElementById("registerMessage").textContent = "All fields required";
-    return;
-  }
-
-  let body = { role, name, email, password };
-  if (role === "agent") body.vehicleType = vehicleType;
+// LOGIN (by Name + Password)
+loginBtn.addEventListener("click", async (e) => {
+  loginMsg.textContent = ""; loginMsg.className = "error";
+  const role = roleSelect.value;
+  const name = loginName.value && loginName.value.trim();
+  const password = loginPassword.value;
+  if (!role) { loginMsg.textContent = "Please select your role."; return; }
+  if (!name || !password) { loginMsg.textContent = "Please enter name and password."; return; }
 
   try {
-    const res = await fetch(apiBase + "/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
+    loginBtn.disabled = true;
+    // backend's authroutes.js expects { name, password }
+    const data = await apiFetch("/auth/login", { method: "POST", body: JSON.stringify({ name, password, role }) });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Registration failed");
-
-    document.getElementById("registerMessage").className = "success";
-    document.getElementById("registerMessage").textContent = "Registration successful! Please login.";
+    // expected: { token, role, name, user }
+    if (data && data.token) {
+      // store token & user
+      localStorage.setItem("su_token", data.token);
+      localStorage.setItem("su_user", JSON.stringify(data.user || { name: data.name, role: data.role }));
+      loginMsg.className = "success";
+      loginMsg.textContent = "Login successful — redirecting...";
+      setTimeout(() => {
+        // redirect to homepage where user picks role-specific dashboard via action buttons
+        window.location.href = "home.html";
+      }, 700);
+    } else {
+      throw new Error((data && (data.message || data.error)) || "Login failed");
+    }
   } catch (err) {
-    document.getElementById("registerMessage").className = "error";
-    document.getElementById("registerMessage").textContent = err.message;
+    console.error("Login error:", err);
+    loginMsg.className = "error";
+    loginMsg.textContent = err.message || "Invalid name or password";
+  } finally {
+    loginBtn.disabled = false;
   }
-}
+});
+
+// FORGOT PASSWORD (calls backend, if backend has route)
+sendResetBtn.addEventListener("click", async () => {
+  forgotMsg.textContent = ""; forgotMsg.className = "muted";
+  const email = forgotEmail.value && forgotEmail.value.trim();
+  if (!email) { forgotMsg.textContent = "Enter your account email."; return; }
+
+  try {
+    sendResetBtn.disabled = true;
+    const data = await apiFetch("/auth/forgot-password", { method: "POST", body: JSON.stringify({ email }) });
+    forgotMsg.className = "success";
+    forgotMsg.textContent = data?.message || "If an account exists, a reset link has been sent.";
+  } catch (err) {
+    console.error("Forgot password error:", err);
+    forgotMsg.className = "error";
+    forgotMsg.textContent = err.message || "Failed to send reset link.";
+  } finally {
+    sendResetBtn.disabled = false;
+  }
+});
 </script>
 </body>
   </html>
