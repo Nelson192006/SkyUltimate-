@@ -140,7 +140,6 @@
 
       <!-- LOGIN -->
       <form id="form-login">
-        <!-- Role (always include SuperAdmin in LOGIN dropdown) -->
         <div class="form-row">
           <select id="login-role" class="select" required></select>
         </div>
@@ -158,7 +157,6 @@
 
       <!-- REGISTER -->
       <form id="form-register" style="display:none;">
-        <!-- Role (top) -->
         <div class="form-row">
           <select id="register-role" class="select" required></select>
         </div>
@@ -219,7 +217,7 @@
     forgot: "/api/auth/forgot-password"     // backend must implement this
   };
 
-  // ---------- UTIL: resilient fetch that handles HTML error pages ----------
+  // ---------- UTIL: resilient fetch ----------
   async function apiFetch(path, opts = {}) {
     const headers = opts.headers || {};
     if (!headers["Content-Type"]) headers["Content-Type"] = "application/json";
@@ -229,7 +227,6 @@
     try { data = raw ? JSON.parse(raw) : null; }
     catch { /* non-JSON */ }
     if (!res.ok) {
-      // expose helpful snippet in console to debug 400/403/404 HTML pages
       console.error("API error", res.status, raw?.slice(0, 600));
       throw new Error((data && (data.message || data.error)) || `HTTP ${res.status}`);
     }
@@ -250,15 +247,9 @@
     wireTabs();
     wireEyes();
     wireForgot();
-
-    // Fill role dropdowns
     await buildRoleDropdowns();
-
-    // React to register role changes
     document.getElementById("register-role").addEventListener("change", onRegisterRoleChange);
     onRegisterRoleChange();
-
-    // Submit handlers
     document.getElementById("form-login").addEventListener("submit", onLogin);
     document.getElementById("form-register").addEventListener("submit", onRegister);
   }
@@ -300,7 +291,7 @@
     });
   }
 
-  // ---------- FORGOT PASSWORD ----------
+  // ---------- FORGOT ----------
   function wireForgot(){
     const open = document.getElementById("link-forgot");
     const modal = document.getElementById("forgot-modal");
@@ -327,20 +318,16 @@
     }
   }
 
-  // ---------- ROLES (dynamic) ----------
+  // ---------- ROLES ----------
   async function buildRoleDropdowns(){
-    // LOGIN dropdown always shows all roles INCLUDING SuperAdmin
     const loginRoles = ["Customer","Agent","Admin","SuperAdmin"];
     fillSelect(document.getElementById("login-role"), loginRoles, "Select role");
-
-    // REGISTER dropdown honors backend flags
     let regRoles = ["Customer","Agent"];
     try {
       const flags = await apiFetch(PATHS.flags);
       if (flags && flags.adminRegistrationEnabled) regRoles.push("Admin");
       if (flags && flags.allowSuperAdminRegistration) regRoles.push("SuperAdmin");
     } catch {
-      // If flags can’t be fetched, include all to avoid locking out first setup.
       regRoles = ["Customer","Agent","Admin","SuperAdmin"];
     }
     fillSelect(document.getElementById("register-role"), regRoles, "Select role");
@@ -358,23 +345,22 @@
     });
   }
 
-  // ---------- REGISTER FORM BEHAVIOR ----------
+  // ---------- REGISTER ROLE CHANGE ----------
   function onRegisterRoleChange(){
     const role = (document.getElementById("register-role").value || "").toLowerCase();
     const bank = document.getElementById("bank-section");
     const agentExtra = document.getElementById("agent-extra");
-
     const needsBank = role === "agent" || role === "admin";
     bank.classList.toggle("show", needsBank);
     agentExtra.classList.toggle("show", role === "agent");
   }
 
-  // ---------- LOGIN SUBMIT (NAME + PASSWORD) ----------
+  // ---------- LOGIN SUBMIT (UPDATED) ----------
   async function onLogin(e){
     e.preventDefault();
     const name = document.getElementById("login-name").value.trim();
     const password = document.getElementById("login-password").value;
-    const roleForRedirect = document.getElementById("login-role").value; // UX only
+    const roleForRedirect = document.getElementById("login-role").value;
     const msg = document.getElementById("login-msg");
     msg.textContent = "";
 
@@ -393,10 +379,11 @@
         msg.textContent = data?.message || "Login failed";
         return;
       }
+
       localStorage.setItem("su_token", data.token);
       localStorage.setItem("su_user", JSON.stringify(data.user || { name: data.name, role: data.role }));
 
-      // universal home, then role-specific from there
+      // universal redirect (your routers can branch by role later)
       window.location.href = "home.html";
     }catch(err){
       msg.textContent = err.message || "Invalid credentials. Please check your role and login details.";
@@ -429,7 +416,6 @@
     const payload = { role, name, email, password, phone };
     if (role.toLowerCase() === "agent"){
       if (vehicleType) payload.vehicleType = vehicleType;
-      // bank required by backend for Agent/Admin
       payload.bankName = bankName;
       payload.accountNumber = accountNumber;
       payload.accountHolderName = accountHolderName;
@@ -446,18 +432,15 @@
         body: JSON.stringify(payload)
       });
 
-      // success → switch to login tab, prefill NAME (since we login by name)
       okEl.textContent = "Registration successful! Please login.";
       document.getElementById("tab-login").click();
       document.getElementById("login-name").value = name;
       document.getElementById("login-password").value = "";
-      // keep role on login as a convenience
       document.getElementById("login-role").value = (role || "Customer");
     }catch(err){
-      // Typical: "User already exists" or policy errors from backend
       errEl.textContent = err.message || "Registration failed. Please try a different email.";
     }
   }
 </script>
 </body>
-  </html>
+            </html>
