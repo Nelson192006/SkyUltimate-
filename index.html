@@ -143,8 +143,9 @@
         <div class="form-row">
           <select id="login-role" class="select" required></select>
         </div>
+        <!-- Changed to Email input (frontend will now POST email+password) -->
         <div class="form-row">
-          <input id="login-name" class="input" type="text" placeholder="Name" required />
+          <input id="login-email" class="input" type="email" placeholder="Email" required />
         </div>
         <div class="form-row">
           <input id="login-password" class="input padded-right" type="password" placeholder="Password" required />
@@ -213,7 +214,7 @@
   const PATHS = {
     flags: "/api/public/flags",
     register: "/api/auth/register",
-    login: "/api/auth/login",               // (name + password)
+    login: "/api/auth/login",               // now expects { email, password } (backend also accepts name)
     forgot: "/api/auth/forgot-password"     // backend must implement this
   };
 
@@ -355,16 +356,16 @@
     agentExtra.classList.toggle("show", role === "agent");
   }
 
-  // ---------- LOGIN SUBMIT (UPDATED) ----------
+  // ---------- LOGIN SUBMIT (EMAIL + PASSWORD) ----------
   async function onLogin(e){
     e.preventDefault();
-    const name = document.getElementById("login-name").value.trim();
+    const email = document.getElementById("login-email").value.trim();
     const password = document.getElementById("login-password").value;
     const roleForRedirect = document.getElementById("login-role").value;
     const msg = document.getElementById("login-msg");
     msg.textContent = "";
 
-    if (!name || !password || !roleForRedirect){
+    if (!email || !password || !roleForRedirect){
       msg.textContent = "All fields are required.";
       return;
     }
@@ -372,7 +373,7 @@
     try{
       const data = await apiFetch(PATHS.login, {
         method: "POST",
-        body: JSON.stringify({ name, password }) // backend validates by name + password only
+        body: JSON.stringify({ email, password }) // backend supports email (and name as fallback)
       });
 
       if (!data || !data.token){
@@ -381,12 +382,13 @@
       }
 
       localStorage.setItem("su_token", data.token);
+      // store returned user object (backend returns user with name)
       localStorage.setItem("su_user", JSON.stringify(data.user || { name: data.name, role: data.role }));
 
       // universal redirect (your routers can branch by role later)
       window.location.href = "home.html";
     }catch(err){
-      msg.textContent = err.message || "Invalid credentials. Please check your role and login details.";
+      msg.textContent = err.message || "Invalid credentials. Please check your details.";
     }
   }
 
@@ -434,7 +436,8 @@
 
       okEl.textContent = "Registration successful! Please login.";
       document.getElementById("tab-login").click();
-      document.getElementById("login-name").value = name;
+      // prefill login email now (we switched to email login)
+      document.getElementById("login-email").value = email;
       document.getElementById("login-password").value = "";
       document.getElementById("login-role").value = (role || "Customer");
     }catch(err){
@@ -443,4 +446,4 @@
   }
 </script>
 </body>
-            </html>
+          </html>
