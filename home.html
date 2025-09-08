@@ -4,589 +4,337 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SkyUltimate — Home</title>
-
-  <!-- Tailwind CDN (for compact, readable markup) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
   <style>
-    /* small custom styles */
-    .glass { background: rgba(255,255,255,0.85); backdrop-filter: blur(6px); }
-    .red-bg { background: #C00000; } /* brand red (adjust if necessary) */
-    .slide-in { animation: slideIn .35s ease; }
-    @keyframes slideIn { from { transform: translateX(-8px); opacity: 0 } to { transform: translateX(0); opacity: 1 } }
-    /* drawer overlay */
-    .drawer-backdrop { background: rgba(0,0,0,0.35); }
+    :root{
+      --brand-red:#B00000;
+      --brand-red-dark:#900000;
+      --card-bg: rgba(255,255,255,0.98);
+      --muted:#666;
+      --shadow: 0 12px 34px rgba(0,0,0,0.18);
+      --radius-lg:20px;
+      --radius-md:12px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0}
+    body{
+      background:var(--brand-red);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      -webkit-font-smoothing:antialiased;
+      display:flex; align-items:flex-start; justify-content:center; padding:28px;
+      color:#111;
+    }
+
+    /* page layout */
+    .wrap{ width:min(1100px,96vw); display:grid; grid-template-columns: 300px 1fr; gap:22px; align-items:start; }
+    @media (max-width:920px){ .wrap{ grid-template-columns: 1fr; } }
+
+    /* left column */
+    .panel { background:var(--card-bg); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:18px; }
+    .profile-top{ display:flex; align-items:center; gap:12px; }
+    .logo{
+      width:88px; height:88px; border-radius:9999px; object-fit:cover;
+      flex-shrink:0; box-shadow:0 10px 30px rgba(0,0,0,0.18);
+      border:4px solid rgba(255,255,255,0.6);
+    }
+    .greet { font-size:18px; font-weight:800; }
+    .small { color:var(--muted); font-size:13px; margin-top:4px; }
+
+    .role-badge { margin-left:auto; background:var(--brand-red-dark); color:#fff; padding:6px 10px; border-radius:14px; font-weight:700; font-size:13px; }
+
+    .info { margin-top:14px; display:grid; gap:8px; }
+    .info .row { display:flex; justify-content:space-between; font-size:14px; color:#333; }
+    .actions { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+
+    .btn {
+      background:#fff; border-radius:14px; padding:10px 14px; font-weight:800; border:none;
+      box-shadow:0 8px 22px rgba(0,0,0,0.08); cursor:pointer;
+    }
+    .btn.primary{ background:var(--brand-red); color:#fff; }
+    .btn.ghost{ background:transparent; color:#111; border:1px solid rgba(0,0,0,0.06); }
+
+    /* right column header */
+    .header {
+      display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;
+    }
+    .brand { color:white; font-weight:900; font-size:20px; letter-spacing:0.4px; }
+    .nav-actions { display:flex; gap:8px; align-items:center; }
+
+    /* hamburger for mobile */
+    .hamburger { display:none; background:transparent; border:none; color:white; font-size:20px; cursor:pointer; }
+    @media (max-width:920px){ .hamburger{ display:block } .nav-actions{ display:none } }
+
+    /* main content cards */
+    .content { display:grid; gap:12px; }
+    .card { background:var(--card-bg); border-radius:16px; padding:14px; box-shadow:var(--shadow); }
+    .card-row { display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+
+    .summary-grid { display:grid; grid-template-columns: repeat(2,1fr); gap:12px; margin-top:10px; }
+    @media (max-width:520px){ .summary-grid{ grid-template-columns: 1fr } }
+
+    .summary { padding:12px; border-radius:12px; background:white; box-shadow:0 8px 20px rgba(0,0,0,0.06); }
+    .summary .title{ color:var(--muted); font-size:13px }
+    .summary .value{ font-weight:800; font-size:20px; margin-top:6px }
+
+    /* mission/vision, about */
+    .section-title{ font-weight:800; margin-bottom:8px; font-size:16px }
+    .muted { color:var(--muted); font-size:14px; line-height:1.5 }
+
+    /* FAQ */
+    .faq .q{ cursor:pointer; padding:10px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f0f0f0; }
+    .faq .a{ padding:10px; color:var(--muted); display:none; }
+    .faq .q.open + .a{ display:block; }
+
+    /* footer */
+    .footer { margin-top:14px; display:flex; justify-content:space-between; align-items:center; gap:8px; color:var(--muted); font-size:13px; }
+
+    /* small niceties */
+    .pill { display:inline-block; padding:6px 10px; border-radius:999px; background:#f7f7f7; font-weight:700 }
   </style>
 </head>
-<body class="min-h-screen red-bg text-gray-900">
+<body>
+  <div class="wrap">
 
-  <!-- Top bar -->
-  <header class="w-full">
-    <div class="max-w-4xl mx-auto flex items-center justify-between p-4">
-      <div class="flex items-center gap-3">
-        <button id="hamburgerBtn" class="p-2 rounded-md hover:bg-white/20">
-          <!-- simple hamburger -->
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
-        </button>
-        <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true"
-             alt="SkyUltimate" class="w-14 h-14 object-contain">
-        <div class="text-white ml-2">
-          <div class="text-lg font-semibold">SkyUltimate</div>
-          <div class="text-xs opacity-90">Welcome home</div>
+    <!-- LEFT: Profile panel -->
+    <aside class="panel" id="left-panel">
+      <div class="profile-top">
+        <img id="profile-logo" class="logo" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="SkyUltimate logo">
+        <div>
+          <div id="greeting" class="greet">Welcome, User</div>
+          <div id="sub" class="small">Deliveries | Payouts | Ratings</div>
         </div>
+        <div id="roleBadge" class="role-badge">Customer</div>
       </div>
 
-      <div class="flex items-center gap-3">
-        <button id="profileBtn" class="text-white text-sm px-3 py-2 rounded-md hover:bg-white/20">My Profile</button>
-        <button id="logoutBtn" class="text-white text-sm px-3 py-2 rounded-md hover:bg-white/20">Logout</button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main content -->
-  <main class="max-w-4xl mx-auto py-6 px-4 space-y-6">
-
-    <!-- Welcome / Hero -->
-    <section class="bg-white/90 glass rounded-2xl p-6 shadow-md">
-      <h1 id="welcomeMsg" class="text-2xl font-bold text-gray-900">Welcome!</h1>
-      <p id="welcomeSub" class="text-sm text-gray-700 mt-1">Welcome to SkyUltimate!</p>
-      <div class="mt-4 flex gap-3 items-center">
-        <div id="announceBanner" class="hidden flex-1 bg-red-600 text-white rounded-lg p-3 shadow-sm">
-          <div class="font-semibold" id="announceTitle"></div>
-          <div class="text-sm opacity-90" id="announceMsg"></div>
-        </div>
-        <div class="w-40">
-          <button id="referralBtn" class="w-full bg-white border border-red-600 text-red-600 py-2 rounded-lg font-semibold hover:bg-red-50">
-            Refer & Earn
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Info Cards: About / Mission / Vision / FAQ -->
-    <section class="grid grid-cols-1 gap-4">
-
-      <div id="aboutCard" class="bg-white/90 glass rounded-2xl p-5 shadow-md slide-in">
-        <div class="flex justify-between items-start">
-          <h2 class="text-lg font-semibold text-gray-900">About Us</h2>
-          <button class="text-sm text-red-600" data-toggle="about">Read</button>
-        </div>
-        <p class="text-sm text-gray-700 mt-3">
-          Welcome to SkyUltimate Delivery Services, your trusted partner for swift, secure, and reliable delivery solutions right here in the heart of Lagos...
-        </p>
+      <div class="info" style="margin-top:12px;">
+        <div class="row"><span>Full name</span><span id="info-name">—</span></div>
+        <div class="row"><span>Email</span><span id="info-email">—</span></div>
+        <div class="row"><span>Phone</span><span id="info-phone">—</span></div>
       </div>
 
-      <div id="missionCard" class="bg-white/90 glass rounded-2xl p-5 shadow-md slide-in">
-        <div class="flex justify-between items-start">
-          <h2 class="text-lg font-semibold text-gray-900">Our Mission & Vision</h2>
-          <button class="text-sm text-red-600" data-toggle="mission">Read</button>
-        </div>
-        <p class="text-sm text-gray-700 mt-3">
-          Our mission is to provide the most efficient, transparent, and reliable delivery services in Lagos...
-        </p>
+      <div class="actions" style="margin-top:14px;">
+        <button id="btn-dashboard" class="btn primary">Go to Dashboard</button>
+        <button id="btn-logout" class="btn">Logout</button>
       </div>
 
-      <div id="faqCard" class="bg-white/90 glass rounded-2xl p-5 shadow-md slide-in">
-        <div class="flex justify-between items-start">
-          <h2 class="text-lg font-semibold text-gray-900">FAQ / Support</h2>
-          <button class="text-sm text-red-600" data-toggle="faq">Open</button>
-        </div>
-
-        <div class="mt-3 space-y-2">
-          <!-- FAQ list interactive -->
-          <div class="border rounded-lg overflow-hidden">
-            <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
-              <span class="font-medium">What are your operating hours?</span>
-              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
-            </button>
-            <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">We operate from 8:00 AM to 6:00 PM, Monday to Saturday...</div>
-          </div>
-
-          <div class="border rounded-lg overflow-hidden">
-            <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
-              <span class="font-medium">What areas in Lagos do you cover?</span>
-              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
-            </button>
-            <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">We provide extensive coverage across all major areas in Lagos, including Ikeja, Victoria Island, Lekki...</div>
-          </div>
-
-          <!-- Add remaining FAQ items similarly -->
-          <div class="border rounded-lg overflow-hidden">
-            <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
-              <span class="font-medium">How can I place a delivery order?</span>
-              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
-            </button>
-            <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">Place an order from the Customer Dashboard or call our support hotline. You will be required to provide pickup/drop addresses...</div>
-          </div>
-
-          <!-- more FAQ items can be appended -->
-        </div>
-      </div>
-
-    </section>
-
-    <!-- Sticky bottom action button -->
-    <div class="fixed left-0 right-0 bottom-6 flex justify-center">
-      <div class="max-w-4xl w-full px-4">
-        <button id="roleActionBtn" class="w-full py-4 rounded-3xl bg-red-700 text-white font-bold shadow-xl">
-          Continue
-        </button>
-      </div>
-    </div>
-
-    <!-- Contact Footer (always visible) -->
-    <footer class="max-w-4xl mx-auto p-4 pb-24 text-center text-white text-sm">
-      <div class="space-x-4">
-        <a id="phoneLink" href="tel:+2349128884830" class="underline">Call: +234 912 888 4830</a>
-        <span>·</span>
-        <a id="whatsappLink" href="https://wa.me/2349128884830" target="_blank" class="underline">WhatsApp</a>
-        <span>·</span>
-        <a id="emailLink" href="mailto:nelsongodspower24@gmail.com" class="underline">Email</a>
-      </div>
-    </footer>
-
-  </main>
-
-  <!-- Drawer / Hamburger Menu (hidden by default) -->
-  <div id="drawer" class="fixed inset-0 z-50 hidden">
-    <div id="drawerBackdrop" class="absolute inset-0 drawer-backdrop"></div>
-    <aside class="absolute left-0 top-0 bottom-0 w-80 bg-white p-6 overflow-auto">
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-3">
-          <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="logo" class="w-12 h-12">
-          <div>
-            <div id="drawerName" class="font-bold text-gray-800">User</div>
-            <div id="drawerRole" class="text-xs text-gray-600">Role</div>
-          </div>
-        </div>
-        <button id="drawerClose" class="p-1 rounded hover:bg-gray-100">✕</button>
-      </div>
-
-      <nav class="space-y-3 text-gray-700">
-        <button data-nav="about" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">About Us</button>
-        <button data-nav="mission" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Mission & Vision</button>
-        <button data-nav="faq" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">FAQ / Support</button>
-        <button id="navProfile" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">My Profile</button>
-        <button id="navSettings" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Settings</button>
-        <button id="navHelp" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Help Center</button>
-        <button id="rateApp" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Rate the App</button>
-        <button id="navLogout" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50 text-red-600">Logout</button>
-      </nav>
-
-      <div class="mt-6 text-xs text-gray-500">
-        Contact: +234 912 888 4830 · nelsongodspower24@gmail.com
+      <div style="margin-top:12px; display:flex; gap:8px;">
+        <div class="pill">Safe · Reliable</div>
+        <div class="pill">Fast</div>
       </div>
     </aside>
-  </div>
 
-  <!-- Profile Modal (hidden by default) -->
-  <div id="profileModal" class="fixed inset-0 z-60 hidden items-center justify-center">
-    <div class="absolute inset-0 drawer-backdrop"></div>
-    <div class="bg-white w-96 rounded-2xl p-6 z-70">
-      <h3 class="text-lg font-semibold mb-3">My Profile</h3>
-      <div class="space-y-3">
-        <label class="text-xs text-gray-600">Full name</label>
-        <input id="profileName" class="w-full border rounded px-3 py-2" type="text" />
-        <label class="text-xs text-gray-600">Email (readonly)</label>
-        <input id="profileEmail" class="w-full border rounded px-3 py-2 bg-gray-50" type="email" readonly />
-        <label class="text-xs text-gray-600">Phone</label>
-        <input id="profilePhone" class="w-full border rounded px-3 py-2" type="text" />
-        <div id="profileBankFields" class="hidden space-y-2">
-          <label class="text-xs text-gray-600">Bank Name</label>
-          <input id="profileBankName" class="w-full border rounded px-3 py-2" type="text" />
-          <label class="text-xs text-gray-600">Account Number</label>
-          <input id="profileAccountNumber" class="w-full border rounded px-3 py-2" type="text" />
-          <label class="text-xs text-gray-600">Account Holder</label>
-          <input id="profileAccountHolder" class="w-full border rounded px-3 py-2" type="text" />
+    <!-- RIGHT: content -->
+    <main>
+      <div class="header">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <button class="hamburger" id="hambBtn" aria-label="open menu">☰</button>
+          <div class="brand">SkyUltimate</div>
         </div>
-
-        <div class="flex gap-3 mt-4">
-          <button id="saveProfileBtn" class="flex-1 bg-red-600 text-white py-2 rounded">Save Changes</button>
-          <button id="closeProfileBtn" class="flex-1 border border-gray-300 py-2 rounded">Close</button>
+        <div class="nav-actions">
+          <button id="btn-announcements" class="btn ghost">Announcements</button>
+          <button id="btn-profile" class="btn ghost">Profile</button>
         </div>
-
-        <p id="profileMsg" class="text-sm text-green-600"></p>
       </div>
-    </div>
+
+      <div class="content">
+        <!-- quick actions -->
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-weight:900; font-size:18px">Quick Actions</div>
+              <div class="muted" style="margin-top:6px">Go to role-specific areas or create orders quickly.</div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button id="btn-create-order" class="btn primary">Create Order</button>
+              <button id="btn-my-orders" class="btn">My Orders</button>
+            </div>
+          </div>
+
+          <div class="summary-grid">
+            <div class="summary">
+              <div class="title">Pending Payout</div>
+              <div class="value" id="pending-payout">₦0</div>
+            </div>
+            <div class="summary">
+              <div class="title">Completed Orders</div>
+              <div class="value" id="completed-orders">0</div>
+            </div>
+            <div class="summary">
+              <div class="title">Rating</div>
+              <div class="value" id="rating">—</div>
+            </div>
+            <div class="summary">
+              <div class="title">Account Status</div>
+              <div class="value" id="account-status">Active</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- mission & vision -->
+        <div class="card">
+          <div class="section-title">Our Mission</div>
+          <div class="muted">Our mission at SkyUltimate Delivery Service is to provide a seamless, reliable, and efficient delivery experience that exceeds our customers' expectations. We are committed to leveraging innovative technology and exceptional customer service to simplify logistics for businesses and individuals alike. We strive to be the most trusted and preferred delivery service, one package at a time.</div>
+
+          <hr style="margin:12px 0; border:none; border-top:1px solid #f2f2f2">
+
+          <div class="section-title">Our Vision</div>
+          <div class="muted">To be the industry leader in delivery services, known for our speed, reliability, and unwavering commitment to customer satisfaction. We envision a future where SkyUltimate Delivery Service is synonymous with excellence, setting the standard for logistics solutions and positively impacting the communities we serve.</div>
+        </div>
+
+        <!-- about & FAQ -->
+        <div class="card">
+          <div class="section-title">About</div>
+          <div class="muted" style="margin-bottom:12px">
+            Welcome to SkyUltimate Delivery Service, where we're dedicated to taking your delivery experience to new heights! Founded in 2024, our company was born from a simple idea: to create a delivery service that's not just fast and reliable, but also puts the customer first. We understand the importance of your packages, whether it's a crucial document for your business or a thoughtful gift for a loved one.
+          </div>
+
+          <div class="section-title" style="margin-top:8px">FAQ</div>
+          <div class="faq" id="faq">
+            <div class="q">How do I track my package? <span>▸</span></div>
+            <div class="a">Use your tracking number on our tracking page for real-time updates.</div>
+
+            <div class="q">What are your delivery hours? <span>▸</span></div>
+            <div class="a">9:00 AM to 6:00 PM, Monday–Saturday. Contact support for urgent after-hours.</div>
+
+            <div class="q">What items can you deliver? <span>▸</span></div>
+            <div class="a">Documents, parcels, general goods. No hazardous/illegal items or live animals.</div>
+
+            <div class="q">What if my package is lost or damaged? <span>▸</span></div>
+            <div class="a">Contact support immediately. We will investigate and work on a solution.</div>
+
+            <div class="q">How can I contact support? <span>▸</span></div>
+            <div class="a">Phone, email, or live chat on the website (see Contact Us page).</div>
+          </div>
+        </div>
+
+        <div class="footer card">
+          <div>© SkyUltimate</div>
+          <div class="muted">Logged in via your SkyUltimate account</div>
+        </div>
+      </div>
+    </main>
   </div>
 
 <script>
-/*
-  home.html
-  - Uses API_BASE for calls to:
-    GET /api/announcements/latest
-    GET /api/users/profile
-    PUT /api/users/me/bank   (used when saving profile bank/phone)
-  - Auth: expects JWT in localStorage.su_token and user object in localStorage.su_user
-*/
+  // API base — matches your deployed backend
+  const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
+  const PROFILE_PATH = "/api/users/profile";
 
-const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
+  // util: get token
+  function getToken(){ return localStorage.getItem("su_token") || localStorage.getItem("token"); }
 
-// Helper for requests: attaches JWT when present
-async function apiFetch(path, opts = {}) {
-  const token = localStorage.getItem('su_token');
-  const headers = opts.headers || {};
-  headers['Content-Type'] = 'application/json';
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(API_BASE + path, { ...opts, headers });
-  if (res.status === 401) {
-    // session expired or unauthorized - logout
-    doLogout();
-    throw new Error('Unauthorized - please log in again.');
+  // first name helper
+  function firstName(full){
+    if(!full) return "";
+    return String(full).split(" ").filter(Boolean)[0] || full;
   }
-  const data = await res.json().catch(() => null);
-  if (!res.ok) {
-    throw new Error((data && data.message) || 'Request failed');
-  }
-  return data;
-}
 
-// Utility: format first name
-function firstName(full) {
-  if (!full) return '';
-  return String(full).split(' ')[0];
-}
-
-/* ---------- Initialization & Loading ---------- */
-
-document.addEventListener('DOMContentLoaded', async () => {
-  setupUIHandlers();
-  populateFromLocalUser();
-  await loadProfileIfNeeded();
-  await loadAnnouncement();
-});
-
-// Fill UI from localStorage user if present
-function populateFromLocalUser() {
-  const raw = localStorage.getItem('su_user');
-  if (!raw) return;
-  try {
-    const user = JSON.parse(raw);
-    const name = user.name || user._id || 'User';
-    document.getElementById('welcomeMsg').innerText = `Hello, ${firstName(name)}!`;
-    document.getElementById('drawerName').innerText = name;
-    document.getElementById('drawerRole').innerText = user.role || 'Customer';
-  } catch(e) {
-    // ignore
-  }
-}
-
-// If token exists but no local user data, fetch profile
-async function loadProfileIfNeeded() {
-  const token = localStorage.getItem('su_token');
-  const raw = localStorage.getItem('su_user');
-  if (!token) return;
-  if (raw) return; // already populated by login
-  try {
-    const profile = await apiFetch('/api/users/profile');
-    localStorage.setItem('su_user', JSON.stringify(profile));
-    populateFromLocalUser();
-  } catch(err) {
-    console.warn('Could not fetch profile:', err.message);
-  }
-}
-
-/* ---------- Announcements ---------- */
-
-// Fetch latest announcement and show banner if present
-async function loadAnnouncement() {
-  try {
-    // Using the path you asked for: /api/announcements/latest
-    const res = await fetch(API_BASE + '/api/announcements/latest');
-    if (!res.ok) {
-      // If endpoint doesn't exist or no announcement, just hide banner
-      return hideAnnouncement();
+  // populate UI from localStorage then refresh from API
+  async function init(){
+    const stored = localStorage.getItem("su_user") || localStorage.getItem("user");
+    if (!stored && !getToken()){
+      // not logged in
+      window.location.href = "index.html";
+      return;
     }
-    const data = await res.json();
-    if (!data || !data.isActive) return hideAnnouncement();
-    showAnnouncement(data);
-  } catch (e) {
-    // silence errors - no announcement shown
-    hideAnnouncement();
-    console.info('Announcement load failed:', e.message);
+
+    // use stored user immediately to avoid flicker
+    let user = stored ? JSON.parse(stored) : null;
+    if (user) populateUser(user);
+
+    // refresh from backend if token
+    const token = getToken();
+    if (token){
+      try {
+        const res = await fetch(API_BASE + PROFILE_PATH, {
+          headers: { "Content-Type":"application/json", "Authorization":"Bearer " + token }
+        });
+        if (res.ok){
+          const profile = await res.json();
+          if (profile && profile._id){
+            localStorage.setItem("su_user", JSON.stringify(profile));
+            populateUser(profile);
+          }
+        } else {
+          // silently ignore profile refresh failures (token might be invalid)
+          console.warn("Profile fetch failed", res.status);
+        }
+      } catch (e){
+        console.warn("Profile fetch error", e);
+      }
+    }
   }
-}
 
-function showAnnouncement(a) {
-  const banner = document.getElementById('announceBanner');
-  document.getElementById('announceTitle').innerText = a.title || 'Announcement';
-  document.getElementById('announceMsg').innerText = a.message || '';
-  banner.classList.remove('hidden');
-}
+  function populateUser(user){
+    document.getElementById("greeting").textContent = `Welcome, ${firstName(user.name)}!`;
+    document.getElementById("info-name").textContent = user.name || "—";
+    document.getElementById("info-email").textContent = user.email || "—";
+    document.getElementById("info-phone").textContent = user.phone || "—";
+    document.getElementById("roleBadge").textContent = user.role || "Customer";
+    document.getElementById("pending-payout").textContent = "₦" + (user.pendingPayout || 0);
+    document.getElementById("completed-orders").textContent = user.completedOrders || 0;
+    document.getElementById("rating").textContent = (user.ratingAverage !== undefined ? (Number(user.ratingAverage).toFixed ? Number(user.ratingAverage).toFixed(1) : user.ratingAverage) : "—");
+    document.getElementById("account-status").textContent = user.isSuspended ? "Suspended" : "Active";
+  }
 
-function hideAnnouncement() {
-  const banner = document.getElementById('announceBanner');
-  banner.classList.add('hidden');
-}
-
-/* ---------- UI Handlers ---------- */
-
-function setupUIHandlers() {
-  // Drawer/hamburger
-  document.getElementById('hamburgerBtn').addEventListener('click', openDrawer);
-  document.getElementById('drawerClose').addEventListener('click', closeDrawer);
-  document.getElementById('drawerBackdrop').addEventListener('click', closeDrawer);
-  document.getElementById('navLogout').addEventListener('click', () => { closeDrawer(); doLogout(); });
-
-  // Drawer nav buttons
-  document.querySelectorAll('[data-nav]').forEach(btn => {
-    btn.addEventListener('click', (ev) => {
-      const nav = ev.currentTarget.getAttribute('data-nav');
-      closeDrawer();
-      if (nav === 'about') scrollToCard('aboutCard');
-      if (nav === 'mission') scrollToCard('missionCard');
-      if (nav === 'faq') scrollToCard('faqCard');
-    });
-  });
-
-  document.getElementById('navProfile').addEventListener('click', () => { openProfileModal(); });
-  document.getElementById('navSettings').addEventListener('click', () => { closeDrawer(); openSettings(); });
-  document.getElementById('navHelp').addEventListener('click', () => { closeDrawer(); openHelp(); });
-  document.getElementById('rateApp').addEventListener('click', () => { openAppStore(); });
-
-  // Quick buttons
-  document.getElementById('profileBtn').addEventListener('click', openProfileModal);
-  document.getElementById('logoutBtn').addEventListener('click', doLogout);
-
-  // Role action button - will redirect based on user's role
-  document.getElementById('roleActionBtn').addEventListener('click', handleRoleAction);
-
-  // Referral button
-  document.getElementById('referralBtn').addEventListener('click', handleReferral);
-
-  // FAQ toggles
-  document.querySelectorAll('.faq-q').forEach((q) => {
+  // FAQ toggle
+  document.querySelectorAll('#faq .q').forEach(q => {
     q.addEventListener('click', () => {
-      const a = q.nextElementSibling;
-      if (!a) return;
-      a.classList.toggle('hidden');
+      const open = q.classList.contains('open');
+      // close all
+      document.querySelectorAll('#faq .q').forEach(x => x.classList.remove('open'));
+      document.querySelectorAll('#faq .a').forEach(a => a.style.display = 'none');
+      if (!open) {
+        q.classList.add('open');
+        q.nextElementSibling.style.display = 'block';
+      }
     });
   });
 
-  // About / mission / faq read buttons
-  document.querySelectorAll('[data-toggle]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const which = e.currentTarget.getAttribute('data-toggle');
-      if (which === 'about') scrollToCard('aboutCard');
-      if (which === 'mission') scrollToCard('missionCard');
-      if (which === 'faq') scrollToCard('faqCard');
-    });
-  });
-
-  // Drawer uses dynamic user info populate
-  updateDrawerUserInfo();
-
-  // Profile modal buttons
-  document.getElementById('closeProfileBtn').addEventListener('click', closeProfileModal);
-  document.getElementById('saveProfileBtn').addEventListener('click', saveProfileChanges);
-}
-
-/* ---------- Drawer & Navigation Helpers ---------- */
-
-function openDrawer() {
-  document.getElementById('drawer').classList.remove('hidden');
-}
-function closeDrawer() {
-  document.getElementById('drawer').classList.add('hidden');
-}
-function scrollToCard(id) {
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-/* ---------- Role Action Button ---------- */
-
-function updateRoleActionButton() {
-  const raw = localStorage.getItem('su_user');
-  if (!raw) {
-    document.getElementById('roleActionBtn').innerText = 'Login';
-    return;
-  }
-  const user = JSON.parse(raw || '{}');
-  const role = (user.role || 'Customer').toLowerCase();
-  const btn = document.getElementById('roleActionBtn');
-
-  switch (role) {
-    case 'agent':
-      btn.innerText = 'Go to Agent Dashboard';
-      break;
-    case 'admin':
-      btn.innerText = 'Go to Operations Hub';
-      break;
-    case 'superadmin':
-    case 'super admin':
-      btn.innerText = 'Go to Master Control Panel';
-      break;
-    default:
-      btn.innerText = 'Go to My Dashboard';
-      break;
-  }
-}
-
-// The handler redirects to the dashboard files you specified
-function handleRoleAction() {
-  const raw = localStorage.getItem('su_user');
-  if (!raw) { window.location.href = 'index.html'; return; }
-  const user = JSON.parse(raw || '{}');
-  const role = (user.role || 'Customer').toLowerCase();
-  if (role === 'agent') window.location.href = 'Agent-dashboard.html';
-  else if (role === 'admin') window.location.href = 'Admin-dashboard.html';
-  else if (role === 'superadmin' || role === 'super admin') window.location.href = 'Superadmin-dashboard.html';
-  else window.location.href = 'Customer-dashboard.html';
-}
-
-/* ---------- Referral / Sharing ---------- */
-
-async function handleReferral() {
-  const raw = localStorage.getItem('su_user');
-  const user = raw ? JSON.parse(raw) : null;
-  const refLink = `${location.origin}/?ref=${user ? (user._id || user.id) : 'guest'}`;
-  try {
-    if (navigator.share) {
-      await navigator.share({ title: 'SkyUltimate - Refer & Earn', text: 'Join SkyUltimate!', url: refLink });
+  // hamburger toggles visibility of left panel on small screens
+  document.getElementById('hambBtn').addEventListener('click', () => {
+    const left = document.getElementById('left-panel');
+    if (left.style.display === 'none' || getComputedStyle(left).display === 'none') {
+      left.style.display = 'block';
+      left.style.position = 'absolute';
+      left.style.zIndex = 999;
+      left.style.left = '12px';
+      left.style.top = '80px';
+      left.style.width = '86%';
     } else {
-      await navigator.clipboard.writeText(refLink);
-      alert('Referral link copied to clipboard: ' + refLink);
+      left.style.display = 'none';
+      left.style.position = '';
+      left.style.zIndex = '';
+      left.style.left = '';
+      left.style.top = '';
+      left.style.width = '';
     }
-  } catch (e) {
-    alert('Could not share referral link. Link: ' + refLink);
-  }
-}
+  });
 
-/* ---------- Profile Modal (save phone & bank fields) ---------- */
+  // navigation buttons
+  document.getElementById('btn-logout').addEventListener('click', () => {
+    localStorage.removeItem('su_token');
+    localStorage.removeItem('token');
+    localStorage.removeItem('su_user');
+    localStorage.removeItem('user');
+    window.location.href = 'index.html';
+  });
 
-function openProfileModal() {
-  const raw = localStorage.getItem('su_user');
-  if (!raw) { window.location.href = 'index.html'; return; }
-  const user = JSON.parse(raw);
-  document.getElementById('profileName').value = user.name || '';
-  document.getElementById('profileEmail').value = user.email || '';
-  document.getElementById('profilePhone').value = user.phone || '';
-  // If role is Agent or Admin show bank fields
-  const role = (user.role || '').toLowerCase();
-  if (role === 'agent' || role === 'admin') {
-    document.getElementById('profileBankFields').classList.remove('hidden');
-    const bd = (user.bankDetails || {});
-    document.getElementById('profileBankName').value = bd.bankName || '';
-    document.getElementById('profileAccountNumber').value = bd.accountNumber || '';
-    document.getElementById('profileAccountHolder').value = bd.accountHolderName || '';
-  } else {
-    document.getElementById('profileBankFields').classList.add('hidden');
-  }
-  document.getElementById('profileMsg').innerText = '';
-  document.getElementById('profileModal').classList.remove('hidden');
-}
+  document.getElementById('btn-dashboard').addEventListener('click', () => {
+    const user = JSON.parse(localStorage.getItem('su_user') || localStorage.getItem('user') || '{}');
+    const role = (user.role || '').toLowerCase();
+    if (role === 'superadmin' || role === 'super-admin') window.location.href = 'superadmin-dashboard.html';
+    else if (role === 'admin') window.location.href = 'admin-dashboard.html';
+    else if (role === 'agent') window.location.href = 'agent-dashboard.html';
+    else window.location.href = 'customer-dashboard.html';
+  });
 
-function closeProfileModal() {
-  document.getElementById('profileModal').classList.add('hidden');
-}
+  document.getElementById('btn-create-order').addEventListener('click', () => window.location.href = 'create-order.html');
+  document.getElementById('btn-my-orders').addEventListener('click', () => window.location.href = 'orders.html');
+  document.getElementById('btn-announcements').addEventListener('click', () => window.location.href = 'announcements.html');
+  document.getElementById('btn-profile').addEventListener('click', () => window.location.href = 'profile.html');
 
-async function saveProfileChanges() {
-  // NOTE: backend only exposes PUT /api/users/me/bank for updating bank + phone per earlier routes.
-  // We will send phone & bank details to that endpoint. If you later implement full profile update,
-  // change this call to the appropriate endpoint.
-  const phone = document.getElementById('profilePhone').value;
-  const bankName = document.getElementById('profileBankName').value;
-  const accountNumber = document.getElementById('profileAccountNumber').value;
-  const accountHolderName = document.getElementById('profileAccountHolder').value;
-
-  try {
-    const payload = { phone };
-    if (bankName || accountNumber || accountHolderName) {
-      payload.bankName = bankName;
-      payload.accountNumber = accountNumber;
-      payload.accountHolderName = accountHolderName;
-    }
-    await apiFetch('/api/users/me/bank', { method: 'PUT', body: JSON.stringify(payload) });
-    // Update localStorage user copy to reflect changes so UI updates instantly
-    const raw = localStorage.getItem('su_user') || '{}';
-    const user = JSON.parse(raw);
-    user.phone = phone || user.phone;
-    user.bankDetails = user.bankDetails || {};
-    if (bankName) user.bankDetails.bankName = bankName;
-    if (accountNumber) user.bankDetails.accountNumber = accountNumber;
-    if (accountHolderName) user.bankDetails.accountHolderName = accountHolderName;
-    localStorage.setItem('su_user', JSON.stringify(user));
-    document.getElementById('profileMsg').innerText = 'Profile updated.';
-    updateDrawerUserInfo();
-    populateFromLocalUser();
-    setTimeout(closeProfileModal, 900);
-  } catch (err) {
-    document.getElementById('profileMsg').innerText = err.message || 'Update failed.';
-  }
-}
-
-/* ---------- Other small helpers ---------- */
-
-function updateDrawerUserInfo() {
-  const raw = localStorage.getItem('su_user');
-  if (!raw) return;
-  const user = JSON.parse(raw);
-  document.getElementById('drawerName').innerText = user.name || 'User';
-  document.getElementById('drawerRole').innerText = user.role || 'Customer';
-}
-
-/* ---------- Settings, Help, Rate ---------- */
-
-function openSettings() {
-  alert('Settings page (placeholder). Notification toggles and language selection can be implemented here.');
-}
-function openHelp() {
-  alert('Help Center (placeholder). You can add video tutorials, contact form and live chat integration here.');
-}
-function openAppStore() {
-  // placeholder for opening native store - change to your app's store URL if available
-  const url = 'https://example.com/your-app-store-link';
-  window.open(url, '_blank');
-}
-
-/* ---------- Logout ---------- */
-
-function doLogout() {
-  localStorage.removeItem('su_token');
-  localStorage.removeItem('su_user');
-  // redirect to login
-  window.location.href = 'index.html';
-}
-
-/* ---------- Fetch full profile on load to personalize ----------- */
-
-async function fetchAndApplyProfile() {
-  try {
-    const profile = await apiFetch('/api/users/profile');
-    // store local copy (frontend expects su_user)
-    localStorage.setItem('su_user', JSON.stringify(profile));
-    populateFromLocalUser();
-    updateRoleActionButton();
-    updateDrawerUserInfo();
-  } catch (e) {
-    console.warn('Profile fetch failed:', e.message);
-  }
-}
-
-// On initial load: try to fetch profile and update role button
-(async function init() {
-  // If su_user exists, apply immediately
-  populateFromLocalUser();
-  updateRoleActionButton();
-  // Attempt to fetch fresh profile (if token present)
-  const token = localStorage.getItem('su_token');
-  if (token) {
-    try {
-      await fetchAndApplyProfile();
-    } catch (_) {}
-  }
-})();
-
+  // start
+  init();
 </script>
 </body>
 </html>
