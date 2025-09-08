@@ -4,337 +4,432 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SkyUltimate — Home</title>
+
+  <!-- Tailwind CDN (keeps markup compact) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
   <style>
     :root{
-      --brand-red:#B00000;
-      --brand-red-dark:#900000;
-      --card-bg: rgba(255,255,255,0.98);
-      --muted:#666;
-      --shadow: 0 12px 34px rgba(0,0,0,0.18);
-      --radius-lg:20px;
-      --radius-md:12px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0}
-    body{
-      background:var(--brand-red);
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      -webkit-font-smoothing:antialiased;
-      display:flex; align-items:flex-start; justify-content:center; padding:28px;
-      color:#111;
+      --brand-red: #B00000;
+      --brand-red-deep: #900000;
+      --glass: rgba(255,255,255,0.92);
+      --card-radius: 20px;
+      --soft-shadow: 0 12px 30px rgba(0,0,0,0.16);
     }
 
-    /* page layout */
-    .wrap{ width:min(1100px,96vw); display:grid; grid-template-columns: 300px 1fr; gap:22px; align-items:start; }
-    @media (max-width:920px){ .wrap{ grid-template-columns: 1fr; } }
+    body { background: var(--brand-red); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+    .glass { background: var(--glass); backdrop-filter: blur(6px); }
+    .premium-card { border-radius: var(--card-radius); box-shadow: var(--soft-shadow); }
 
-    /* left column */
-    .panel { background:var(--card-bg); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:18px; }
-    .profile-top{ display:flex; align-items:center; gap:12px; }
-    .logo{
-      width:88px; height:88px; border-radius:9999px; object-fit:cover;
-      flex-shrink:0; box-shadow:0 10px 30px rgba(0,0,0,0.18);
-      border:4px solid rgba(255,255,255,0.6);
+    /* hero layout tweaks */
+    .hero-logo {
+      width: 92px; height: 92px; border-radius: 9999px; object-fit:cover; box-shadow: 0 10px 30px rgba(0,0,0,0.22);
     }
-    .greet { font-size:18px; font-weight:800; }
-    .small { color:var(--muted); font-size:13px; margin-top:4px; }
+    .hero-title { font-size: 1.25rem; letter-spacing: 0.2px; }
+    .hero-sub { font-size: .95rem; color: rgba(15,15,15,0.75); }
 
-    .role-badge { margin-left:auto; background:var(--brand-red-dark); color:#fff; padding:6px 10px; border-radius:14px; font-weight:700; font-size:13px; }
+    /* FAQ toggles */
+    .faq-q { transition: background .18s, color .15s; }
+    .faq-q:active { transform: translateY(1px); }
 
-    .info { margin-top:14px; display:grid; gap:8px; }
-    .info .row { display:flex; justify-content:space-between; font-size:14px; color:#333; }
-    .actions { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+    /* sticky CTA */
+    .cta-wrap { pointer-events: auto; }
 
-    .btn {
-      background:#fff; border-radius:14px; padding:10px 14px; font-weight:800; border:none;
-      box-shadow:0 8px 22px rgba(0,0,0,0.08); cursor:pointer;
+    /* small-screen adapt */
+    @media (max-width:640px){
+      .hero-logo { width:78px; height:78px }
+      .hero-title { font-size:1.1rem }
     }
-    .btn.primary{ background:var(--brand-red); color:#fff; }
-    .btn.ghost{ background:transparent; color:#111; border:1px solid rgba(0,0,0,0.06); }
-
-    /* right column header */
-    .header {
-      display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;
-    }
-    .brand { color:white; font-weight:900; font-size:20px; letter-spacing:0.4px; }
-    .nav-actions { display:flex; gap:8px; align-items:center; }
-
-    /* hamburger for mobile */
-    .hamburger { display:none; background:transparent; border:none; color:white; font-size:20px; cursor:pointer; }
-    @media (max-width:920px){ .hamburger{ display:block } .nav-actions{ display:none } }
-
-    /* main content cards */
-    .content { display:grid; gap:12px; }
-    .card { background:var(--card-bg); border-radius:16px; padding:14px; box-shadow:var(--shadow); }
-    .card-row { display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
-
-    .summary-grid { display:grid; grid-template-columns: repeat(2,1fr); gap:12px; margin-top:10px; }
-    @media (max-width:520px){ .summary-grid{ grid-template-columns: 1fr } }
-
-    .summary { padding:12px; border-radius:12px; background:white; box-shadow:0 8px 20px rgba(0,0,0,0.06); }
-    .summary .title{ color:var(--muted); font-size:13px }
-    .summary .value{ font-weight:800; font-size:20px; margin-top:6px }
-
-    /* mission/vision, about */
-    .section-title{ font-weight:800; margin-bottom:8px; font-size:16px }
-    .muted { color:var(--muted); font-size:14px; line-height:1.5 }
-
-    /* FAQ */
-    .faq .q{ cursor:pointer; padding:10px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f0f0f0; }
-    .faq .a{ padding:10px; color:var(--muted); display:none; }
-    .faq .q.open + .a{ display:block; }
-
-    /* footer */
-    .footer { margin-top:14px; display:flex; justify-content:space-between; align-items:center; gap:8px; color:var(--muted); font-size:13px; }
-
-    /* small niceties */
-    .pill { display:inline-block; padding:6px 10px; border-radius:999px; background:#f7f7f7; font-weight:700 }
   </style>
 </head>
-<body>
-  <div class="wrap">
 
-    <!-- LEFT: Profile panel -->
-    <aside class="panel" id="left-panel">
-      <div class="profile-top">
-        <img id="profile-logo" class="logo" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="SkyUltimate logo">
-        <div>
-          <div id="greeting" class="greet">Welcome, User</div>
-          <div id="sub" class="small">Deliveries | Payouts | Ratings</div>
+<body class="min-h-screen text-gray-900 antialiased">
+
+  <!-- Top bar -->
+  <header class="w-full py-4">
+    <div class="max-w-4xl mx-auto px-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button id="hamburgerBtn" class="p-2 rounded-md hover:bg-white/10 text-white">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+
+        <div class="flex items-center gap-3">
+          <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true"
+               alt="SkyUltimate" class="hero-logo bg-white">
+
+          <div class="text-white">
+            <div class="text-lg font-semibold">SkyUltimate</div>
+            <div class="text-xs opacity-90">Information hub</div>
+          </div>
         </div>
-        <div id="roleBadge" class="role-badge">Customer</div>
       </div>
 
-      <div class="info" style="margin-top:12px;">
-        <div class="row"><span>Full name</span><span id="info-name">—</span></div>
-        <div class="row"><span>Email</span><span id="info-email">—</span></div>
-        <div class="row"><span>Phone</span><span id="info-phone">—</span></div>
+      <div class="flex items-center gap-3">
+        <button id="profileBtn" class="text-white text-sm px-3 py-2 rounded-md hover:bg-white/10">My Profile</button>
+        <button id="logoutBtn" class="text-white text-sm px-3 py-2 rounded-md hover:bg-white/10">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="max-w-4xl mx-auto py-6 px-4 space-y-6">
+
+    <!-- Welcome / Hero -->
+    <section class="glass premium-card p-6">
+      <div class="flex items-center gap-4">
+        <img class="hero-logo" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="logo" />
+        <div>
+          <h1 id="welcomeMsg" class="hero-title font-bold text-gray-900">Welcome!</h1>
+          <p id="welcomeSub" class="hero-sub mt-1">You're on SkyUltimate — fast, reliable delivery solutions built for you.</p>
+        </div>
       </div>
 
-      <div class="actions" style="margin-top:14px;">
-        <button id="btn-dashboard" class="btn primary">Go to Dashboard</button>
-        <button id="btn-logout" class="btn">Logout</button>
+      <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:gap-4">
+        <div id="announceBanner" class="hidden flex-1 bg-red-600 text-white rounded-lg p-3 shadow-sm">
+          <div class="font-semibold" id="announceTitle"></div>
+          <div class="text-sm opacity-95" id="announceMsg"></div>
+        </div>
+
+        <div class="mt-3 sm:mt-0 sm:w-48">
+          <button id="referralBtn" class="w-full bg-white border border-red-600 text-red-600 py-2 rounded-lg font-semibold hover:bg-red-50">
+            Refer & Earn
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section id="aboutCard" class="glass premium-card p-6">
+      <div class="flex items-start justify-between">
+        <h2 class="text-lg font-semibold text-gray-900">About SkyUltimate</h2>
+        <button class="text-sm text-red-600" data-toggle="about">Read</button>
+      </div>
+      <p class="text-sm text-gray-700 mt-3">
+        SkyUltimate is a modern delivery service focused on speed, security and exceptional customer care.
+        Founded to bridge the gap between efficient logistics and everyday users, we blend human couriers with technology
+        to deliver parcels, documents and commerce goods across Lagos and nearby regions. Our promise is on-time delivery,
+        transparent pricing and 24/7 customer support.
+      </p>
+      <ul class="mt-3 text-sm text-gray-700 space-y-1 pl-4 list-disc">
+        <li>Same-day deliveries across major zones</li>
+        <li>Live tracking & real-time notifications</li>
+        <li>Insurance options for valuable items</li>
+      </ul>
+    </section>
+
+    <!-- Mission & Vision -->
+    <section id="missionCard" class="glass premium-card p-6">
+      <div class="flex items-start justify-between">
+        <h2 class="text-lg font-semibold text-gray-900">Mission & Vision</h2>
+        <button class="text-sm text-red-600" data-toggle="mission">Read</button>
       </div>
 
-      <div style="margin-top:12px; display:flex; gap:8px;">
-        <div class="pill">Safe · Reliable</div>
-        <div class="pill">Fast</div>
+      <div class="mt-3 text-sm text-gray-700 space-y-3">
+        <div>
+          <strong class="font-medium">Our Mission</strong>
+          <p class="mt-1">To provide a dependable delivery experience that makes sending and receiving items effortless — powered by friendly people and reliable technology.</p>
+        </div>
+        <div>
+          <strong class="font-medium">Our Vision</strong>
+          <p class="mt-1">To be the trusted logistics partner across West Africa — known for punctuality, safety and excellent customer support — enabling commerce and connection.</p>
+        </div>
+        <div>
+          <strong class="font-medium">Values</strong>
+          <p class="mt-1">Reliability · Integrity · Customer-first · Continuous improvement</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ / Support -->
+    <section id="faqCard" class="glass premium-card p-6">
+      <div class="flex items-start justify-between">
+        <h2 class="text-lg font-semibold text-gray-900">FAQ & Support</h2>
+        <button class="text-sm text-red-600" data-toggle="faq">Open</button>
+      </div>
+
+      <div class="mt-4 space-y-3">
+        <!-- Q1 -->
+        <div class="border rounded-lg overflow-hidden">
+          <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center bg-white/0">
+            <span class="font-medium">What are your operating hours?</span>
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">
+            We operate from <strong>8:00 AM — 6:00 PM</strong>, Monday to Saturday. Urgent after-hours deliveries can be arranged via support (extra fees may apply).
+          </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="border rounded-lg overflow-hidden">
+          <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
+            <span class="font-medium">What areas in Lagos do you cover?</span>
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">
+            We cover most major local government areas including Ikeja, Victoria Island, Lekki, Yaba, Surulere, and environs. For remote areas we provide a pick-up & transfer service — contact support for confirmation.
+          </div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="border rounded-lg overflow-hidden">
+          <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
+            <span class="font-medium">How can I place a delivery order?</span>
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">
+            Use the Customer dashboard -> New Order: provide pickup & drop-off addresses, parcel details, and preferred delivery speed. Confirm and pay using our secure gateway (or request cash on delivery where available).
+          </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="border rounded-lg overflow-hidden">
+          <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
+            <span class="font-medium">What happens if my parcel is lost or damaged?</span>
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">
+            Contact support immediately. We investigate, track the delivery, and if found our claims process covers compensation depending on the service and insurance selected at checkout.
+          </div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="border rounded-lg overflow-hidden">
+          <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
+            <span class="font-medium">How do I track my delivery?</span>
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">
+            After placing an order you'll receive a tracking link and live status updates. You can also check the Orders area in your dashboard for ETA and current courier location.
+          </div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="border rounded-lg overflow-hidden">
+          <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
+            <span class="font-medium">How can I contact support?</span>
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">
+            Phone: <a href="tel:+2349128884830" class="text-red-600 underline">+234 912 888 4830</a> — Email: <a href="mailto:nelsongodspower24@gmail.com" class="text-red-600 underline">nelsongodspower24@gmail.com</a>.
+            Support is available by phone, email and in-app chat during operating hours.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sticky bottom action button -->
+    <div class="fixed left-0 right-0 bottom-6 flex justify-center cta-wrap pointer-events-none">
+      <div class="max-w-4xl w-full px-4">
+        <button id="roleActionBtn" class="w-full py-4 rounded-3xl bg-red-700 text-white font-bold shadow-xl pointer-events-auto">
+          Continue
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer (always visible) -->
+    <footer class="max-w-4xl mx-auto p-4 pb-28 text-center text-white text-sm">
+      <div class="space-x-4">
+        <a id="phoneLink" href="tel:+2349128884830" class="underline">Call: +234 912 888 4830</a>
+        <span>·</span>
+        <a id="whatsappLink" href="https://wa.me/2349128884830" target="_blank" class="underline">WhatsApp</a>
+        <span>·</span>
+        <a id="emailLink" href="mailto:nelsongodspower24@gmail.com" class="underline">Email</a>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- Drawer / Hamburger Menu (hidden by default; kept for parity with your app) -->
+  <div id="drawer" class="fixed inset-0 z-50 hidden">
+    <div id="drawerBackdrop" class="absolute inset-0" style="background:rgba(0,0,0,0.35)"></div>
+    <aside class="absolute left-0 top-0 bottom-0 w-80 bg-white p-6 overflow-auto">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="logo" class="w-12 h-12 rounded-full">
+          <div>
+            <div id="drawerName" class="font-bold text-gray-800">User</div>
+            <div id="drawerRole" class="text-xs text-gray-600">Role</div>
+          </div>
+        </div>
+        <button id="drawerClose" class="p-1 rounded hover:bg-gray-100">✕</button>
+      </div>
+
+      <nav class="space-y-3 text-gray-700">
+        <button data-nav="about" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">About Us</button>
+        <button data-nav="mission" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Mission & Vision</button>
+        <button data-nav="faq" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">FAQ / Support</button>
+        <button id="navProfile" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">My Profile</button>
+        <button id="navSettings" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Settings</button>
+        <button id="navHelp" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Help Center</button>
+        <button id="rateApp" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Rate the App</button>
+        <button id="navLogout" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50 text-red-600">Logout</button>
+      </nav>
+
+      <div class="mt-6 text-xs text-gray-500">
+        Contact: +234 912 888 4830 · nelsongodspower24@gmail.com
       </div>
     </aside>
+  </div>
 
-    <!-- RIGHT: content -->
-    <main>
-      <div class="header">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <button class="hamburger" id="hambBtn" aria-label="open menu">☰</button>
-          <div class="brand">SkyUltimate</div>
+  <!-- Profile Modal -->
+  <div id="profileModal" class="fixed inset-0 z-60 hidden items-center justify-center">
+    <div class="absolute inset-0" style="background:rgba(0,0,0,0.35)"></div>
+    <div class="bg-white w-96 rounded-2xl p-6 z-70">
+      <h3 class="text-lg font-semibold mb-3">My Profile</h3>
+      <div class="space-y-3">
+        <label class="text-xs text-gray-600">Full name</label>
+        <input id="profileName" class="w-full border rounded px-3 py-2" type="text" />
+        <label class="text-xs text-gray-600">Email (readonly)</label>
+        <input id="profileEmail" class="w-full border rounded px-3 py-2 bg-gray-50" type="email" readonly />
+        <label class="text-xs text-gray-600">Phone</label>
+        <input id="profilePhone" class="w-full border rounded px-3 py-2" type="text" />
+        <div id="profileBankFields" class="hidden space-y-2">
+          <label class="text-xs text-gray-600">Bank Name</label>
+          <input id="profileBankName" class="w-full border rounded px-3 py-2" type="text" />
+          <label class="text-xs text-gray-600">Account Number</label>
+          <input id="profileAccountNumber" class="w-full border rounded px-3 py-2" type="text" />
+          <label class="text-xs text-gray-600">Account Holder</label>
+          <input id="profileAccountHolder" class="w-full border rounded px-3 py-2" type="text" />
         </div>
-        <div class="nav-actions">
-          <button id="btn-announcements" class="btn ghost">Announcements</button>
-          <button id="btn-profile" class="btn ghost">Profile</button>
+
+        <div class="flex gap-3 mt-4">
+          <button id="saveProfileBtn" class="flex-1 bg-red-600 text-white py-2 rounded">Save Changes</button>
+          <button id="closeProfileBtn" class="flex-1 border border-gray-300 py-2 rounded">Close</button>
         </div>
+        <p id="profileMsg" class="text-sm text-green-600"></p>
       </div>
-
-      <div class="content">
-        <!-- quick actions -->
-        <div class="card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-              <div style="font-weight:900; font-size:18px">Quick Actions</div>
-              <div class="muted" style="margin-top:6px">Go to role-specific areas or create orders quickly.</div>
-            </div>
-            <div style="display:flex; gap:8px;">
-              <button id="btn-create-order" class="btn primary">Create Order</button>
-              <button id="btn-my-orders" class="btn">My Orders</button>
-            </div>
-          </div>
-
-          <div class="summary-grid">
-            <div class="summary">
-              <div class="title">Pending Payout</div>
-              <div class="value" id="pending-payout">₦0</div>
-            </div>
-            <div class="summary">
-              <div class="title">Completed Orders</div>
-              <div class="value" id="completed-orders">0</div>
-            </div>
-            <div class="summary">
-              <div class="title">Rating</div>
-              <div class="value" id="rating">—</div>
-            </div>
-            <div class="summary">
-              <div class="title">Account Status</div>
-              <div class="value" id="account-status">Active</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- mission & vision -->
-        <div class="card">
-          <div class="section-title">Our Mission</div>
-          <div class="muted">Our mission at SkyUltimate Delivery Service is to provide a seamless, reliable, and efficient delivery experience that exceeds our customers' expectations. We are committed to leveraging innovative technology and exceptional customer service to simplify logistics for businesses and individuals alike. We strive to be the most trusted and preferred delivery service, one package at a time.</div>
-
-          <hr style="margin:12px 0; border:none; border-top:1px solid #f2f2f2">
-
-          <div class="section-title">Our Vision</div>
-          <div class="muted">To be the industry leader in delivery services, known for our speed, reliability, and unwavering commitment to customer satisfaction. We envision a future where SkyUltimate Delivery Service is synonymous with excellence, setting the standard for logistics solutions and positively impacting the communities we serve.</div>
-        </div>
-
-        <!-- about & FAQ -->
-        <div class="card">
-          <div class="section-title">About</div>
-          <div class="muted" style="margin-bottom:12px">
-            Welcome to SkyUltimate Delivery Service, where we're dedicated to taking your delivery experience to new heights! Founded in 2024, our company was born from a simple idea: to create a delivery service that's not just fast and reliable, but also puts the customer first. We understand the importance of your packages, whether it's a crucial document for your business or a thoughtful gift for a loved one.
-          </div>
-
-          <div class="section-title" style="margin-top:8px">FAQ</div>
-          <div class="faq" id="faq">
-            <div class="q">How do I track my package? <span>▸</span></div>
-            <div class="a">Use your tracking number on our tracking page for real-time updates.</div>
-
-            <div class="q">What are your delivery hours? <span>▸</span></div>
-            <div class="a">9:00 AM to 6:00 PM, Monday–Saturday. Contact support for urgent after-hours.</div>
-
-            <div class="q">What items can you deliver? <span>▸</span></div>
-            <div class="a">Documents, parcels, general goods. No hazardous/illegal items or live animals.</div>
-
-            <div class="q">What if my package is lost or damaged? <span>▸</span></div>
-            <div class="a">Contact support immediately. We will investigate and work on a solution.</div>
-
-            <div class="q">How can I contact support? <span>▸</span></div>
-            <div class="a">Phone, email, or live chat on the website (see Contact Us page).</div>
-          </div>
-        </div>
-
-        <div class="footer card">
-          <div>© SkyUltimate</div>
-          <div class="muted">Logged in via your SkyUltimate account</div>
-        </div>
-      </div>
-    </main>
+    </div>
   </div>
 
 <script>
-  // API base — matches your deployed backend
-  const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
-  const PROFILE_PATH = "/api/users/profile";
+/*
+  home.html client logic kept as before.
+  - Uses API_BASE for calls:
+    GET /api/announcements/latest
+    GET /api/users/profile
+    PUT /api/users/me/bank
+  - Auth: expects JWT in localStorage.su_token and user object in localStorage.su_user
+*/
+const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
 
-  // util: get token
-  function getToken(){ return localStorage.getItem("su_token") || localStorage.getItem("token"); }
-
-  // first name helper
-  function firstName(full){
-    if(!full) return "";
-    return String(full).split(" ").filter(Boolean)[0] || full;
+// Helper for requests: attaches JWT when present
+async function apiFetch(path, opts = {}) {
+  const token = localStorage.getItem('su_token');
+  const headers = opts.headers || {};
+  headers['Content-Type'] = 'application/json';
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(API_BASE + path, { ...opts, headers });
+  if (res.status === 401) {
+    doLogout();
+    throw new Error('Unauthorized - please log in again.');
   }
-
-  // populate UI from localStorage then refresh from API
-  async function init(){
-    const stored = localStorage.getItem("su_user") || localStorage.getItem("user");
-    if (!stored && !getToken()){
-      // not logged in
-      window.location.href = "index.html";
-      return;
-    }
-
-    // use stored user immediately to avoid flicker
-    let user = stored ? JSON.parse(stored) : null;
-    if (user) populateUser(user);
-
-    // refresh from backend if token
-    const token = getToken();
-    if (token){
-      try {
-        const res = await fetch(API_BASE + PROFILE_PATH, {
-          headers: { "Content-Type":"application/json", "Authorization":"Bearer " + token }
-        });
-        if (res.ok){
-          const profile = await res.json();
-          if (profile && profile._id){
-            localStorage.setItem("su_user", JSON.stringify(profile));
-            populateUser(profile);
-          }
-        } else {
-          // silently ignore profile refresh failures (token might be invalid)
-          console.warn("Profile fetch failed", res.status);
-        }
-      } catch (e){
-        console.warn("Profile fetch error", e);
-      }
-    }
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    throw new Error((data && data.message) || 'Request failed');
   }
+  return data;
+}
 
-  function populateUser(user){
-    document.getElementById("greeting").textContent = `Welcome, ${firstName(user.name)}!`;
-    document.getElementById("info-name").textContent = user.name || "—";
-    document.getElementById("info-email").textContent = user.email || "—";
-    document.getElementById("info-phone").textContent = user.phone || "—";
-    document.getElementById("roleBadge").textContent = user.role || "Customer";
-    document.getElementById("pending-payout").textContent = "₦" + (user.pendingPayout || 0);
-    document.getElementById("completed-orders").textContent = user.completedOrders || 0;
-    document.getElementById("rating").textContent = (user.ratingAverage !== undefined ? (Number(user.ratingAverage).toFixed ? Number(user.ratingAverage).toFixed(1) : user.ratingAverage) : "—");
-    document.getElementById("account-status").textContent = user.isSuspended ? "Suspended" : "Active";
+// Utility: format first name
+function firstName(full) {
+  if (!full) return '';
+  return String(full).split(' ')[0];
+}
+
+/* ---------- Initialization & Loading ---------- */
+document.addEventListener('DOMContentLoaded', async () => {
+  setupUIHandlers();
+  populateFromLocalUser();
+  await loadProfileIfNeeded();
+  await loadAnnouncement();
+  updateRoleActionButton();
+});
+
+// Fill UI from localStorage user if present
+function populateFromLocalUser() {
+  const raw = localStorage.getItem('su_user');
+  if (!raw) return;
+  try {
+    const user = JSON.parse(raw);
+    const name = user.name || user._id || 'User';
+    document.getElementById('welcomeMsg').innerText = `Hello, ${firstName(name)}!`;
+    document.getElementById('drawerName').innerText = name;
+    document.getElementById('drawerRole').innerText = user.role || 'Customer';
+  } catch(e) {}
+}
+
+// If token exists but no local user data, fetch profile
+async function loadProfileIfNeeded() {
+  const token = localStorage.getItem('su_token');
+  const raw = localStorage.getItem('su_user');
+  if (!token) return;
+  if (raw) return;
+  try {
+    const profile = await apiFetch('/api/users/profile');
+    localStorage.setItem('su_user', JSON.stringify(profile));
+    populateFromLocalUser();
+  } catch(err) {
+    console.warn('Could not fetch profile:', err.message);
   }
+}
 
-  // FAQ toggle
-  document.querySelectorAll('#faq .q').forEach(q => {
-    q.addEventListener('click', () => {
-      const open = q.classList.contains('open');
-      // close all
-      document.querySelectorAll('#faq .q').forEach(x => x.classList.remove('open'));
-      document.querySelectorAll('#faq .a').forEach(a => a.style.display = 'none');
-      if (!open) {
-        q.classList.add('open');
-        q.nextElementSibling.style.display = 'block';
-      }
+/* ---------- Announcements ---------- */
+async function loadAnnouncement() {
+  try {
+    const res = await fetch(API_BASE + '/api/announcements/latest');
+    if (!res.ok) return hideAnnouncement();
+    const data = await res.json();
+    if (!data || !data.isActive) return hideAnnouncement();
+    showAnnouncement(data);
+  } catch (e) {
+    hideAnnouncement();
+    console.info('Announcement load failed:', e.message);
+  }
+}
+
+function showAnnouncement(a) {
+  const banner = document.getElementById('announceBanner');
+  document.getElementById('announceTitle').innerText = a.title || 'Announcement';
+  document.getElementById('announceMsg').innerText = a.message || '';
+  banner.classList.remove('hidden');
+}
+function hideAnnouncement() {
+  const banner = document.getElementById('announceBanner');
+  banner.classList.add('hidden');
+}
+
+/* ---------- UI Handlers ---------- */
+function setupUIHandlers() {
+  // Drawer/hamburger
+  document.getElementById('hamburgerBtn').addEventListener('click', openDrawer);
+  document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+  document.getElementById('drawerBackdrop').addEventListener('click', closeDrawer);
+  document.getElementById('navLogout').addEventListener('click', () => { closeDrawer(); doLogout(); });
+
+  // Drawer nav buttons
+  document.querySelectorAll('[data-nav]').forEach(btn => {
+    btn.addEventListener('click', (ev) => {
+      const nav = ev.currentTarget.getAttribute('data-nav');
+      closeDrawer();
+      if (nav === 'about') scrollToCard('aboutCard');
+      if (nav === 'mission') scrollToCard('missionCard');
+      if (nav === 'faq') scrollToCard('faqCard');
     });
   });
 
-  // hamburger toggles visibility of left panel on small screens
-  document.getElementById('hambBtn').addEventListener('click', () => {
-    const left = document.getElementById('left-panel');
-    if (left.style.display === 'none' || getComputedStyle(left).display === 'none') {
-      left.style.display = 'block';
-      left.style.position = 'absolute';
-      left.style.zIndex = 999;
-      left.style.left = '12px';
-      left.style.top = '80px';
-      left.style.width = '86%';
-    } else {
-      left.style.display = 'none';
-      left.style.position = '';
-      left.style.zIndex = '';
-      left.style.left = '';
-      left.style.top = '';
-      left.style.width = '';
-    }
-  });
-
-  // navigation buttons
-  document.getElementById('btn-logout').addEventListener('click', () => {
-    localStorage.removeItem('su_token');
-    localStorage.removeItem('token');
-    localStorage.removeItem('su_user');
-    localStorage.removeItem('user');
-    window.location.href = 'index.html';
-  });
-
-  document.getElementById('btn-dashboard').addEventListener('click', () => {
-    const user = JSON.parse(localStorage.getItem('su_user') || localStorage.getItem('user') || '{}');
-    const role = (user.role || '').toLowerCase();
-    if (role === 'superadmin' || role === 'super-admin') window.location.href = 'superadmin-dashboard.html';
-    else if (role === 'admin') window.location.href = 'admin-dashboard.html';
-    else if (role === 'agent') window.location.href = 'agent-dashboard.html';
-    else window.location.href = 'customer-dashboard.html';
-  });
-
-  document.getElementById('btn-create-order').addEventListener('click', () => window.location.href = 'create-order.html');
-  document.getElementById('btn-my-orders').addEventListener('click', () => window.location.href = 'orders.html');
-  document.getElementById('btn-announcements').addEventListener('click', () => window.location.href = 'announcements.html');
-  document.getElementById('btn-profile').addEventListener('click', () => window.location.href = 'profile.html');
-
-  // start
-  init();
-</script>
-</body>
-</html>
+  //
