@@ -1,435 +1,440 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SkyUltimate — Home</title>
 
-  <!-- Tailwind CDN (keeps markup compact) -->
+  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
     :root{
-      --brand-red: #B00000;
-      --brand-red-deep: #900000;
+      --brand-red:#B00000;
+      --brand-red-600:#C21919;
       --glass: rgba(255,255,255,0.92);
       --card-radius: 20px;
-      --soft-shadow: 0 12px 30px rgba(0,0,0,0.16);
+      --shadow-soft: 0 12px 28px rgba(0,0,0,0.16);
     }
-
-    body { background: var(--brand-red); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
-    .glass { background: var(--glass); backdrop-filter: blur(6px); }
-    .premium-card { border-radius: var(--card-radius); box-shadow: var(--soft-shadow); }
-
-    /* hero layout tweaks */
-    .hero-logo {
-      width: 92px; height: 92px; border-radius: 9999px; object-fit:cover; box-shadow: 0 10px 30px rgba(0,0,0,0.22);
-    }
-    .hero-title { font-size: 1.25rem; letter-spacing: 0.2px; }
-    .hero-sub { font-size: .95rem; color: rgba(15,15,15,0.75); }
-
-    /* FAQ toggles */
-    .faq-q { transition: background .18s, color .15s; }
-    .faq-q:active { transform: translateY(1px); }
-
-    /* sticky CTA */
-    .cta-wrap { pointer-events: auto; }
-
-    /* small-screen adapt */
-    @media (max-width:640px){
-      .hero-logo { width:78px; height:78px }
-      .hero-title { font-size:1.1rem }
-    }
+    html,body { height:100%; margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: linear-gradient(180deg,#B00000 0%, #900000 100%); -webkit-font-smoothing:antialiased; }
+    .glass { background: var(--glass); backdrop-filter: blur(6px); border-radius: var(--card-radius); box-shadow: var(--shadow-soft); }
+    .logo-round { width:96px; height:96px; border-radius:9999px; object-fit:cover; box-shadow: 0 10px 30px rgba(0,0,0,0.22); border:6px solid rgba(255,255,255,0.06); }
+    .accent { color: var(--brand-red); }
+    .cta { background: linear-gradient(90deg,var(--brand-red) 0%, var(--brand-red-600) 100%); }
+    .faq-q { cursor:pointer; }
+    .muted { color: #374151; } /* tailwind gray-700 */
+    @media (max-width:640px){ .logo-round { width:78px; height:78px } }
   </style>
 </head>
+<body>
 
-<body class="min-h-screen text-gray-900 antialiased">
+  <!-- Container -->
+  <div class="min-h-screen flex items-start justify-center pt-8 pb-24 px-4">
+    <div class="w-full max-w-4xl">
 
-  <!-- Top bar -->
-  <header class="w-full py-4">
-    <div class="max-w-4xl mx-auto px-4 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <button id="hamburgerBtn" class="p-2 rounded-md hover:bg-white/10 text-white">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
-        </button>
-
-        <div class="flex items-center gap-3">
+      <!-- Header -->
+      <header class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-4">
           <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true"
-               alt="SkyUltimate" class="hero-logo bg-white">
-
-          <div class="text-white">
-            <div class="text-lg font-semibold">SkyUltimate</div>
-            <div class="text-xs opacity-90">Information hub</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-3">
-        <button id="profileBtn" class="text-white text-sm px-3 py-2 rounded-md hover:bg-white/10">My Profile</button>
-        <button id="logoutBtn" class="text-white text-sm px-3 py-2 rounded-md hover:bg-white/10">Logout</button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main content -->
-  <main class="max-w-4xl mx-auto py-6 px-4 space-y-6">
-
-    <!-- Welcome / Hero -->
-    <section class="glass premium-card p-6">
-      <div class="flex items-center gap-4">
-        <img class="hero-logo" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="logo" />
-        <div>
-          <h1 id="welcomeMsg" class="hero-title font-bold text-gray-900">Welcome!</h1>
-          <p id="welcomeSub" class="hero-sub mt-1">You're on SkyUltimate — fast, reliable delivery solutions built for you.</p>
-        </div>
-      </div>
-
-      <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:gap-4">
-        <div id="announceBanner" class="hidden flex-1 bg-red-600 text-white rounded-lg p-3 shadow-sm">
-          <div class="font-semibold" id="announceTitle"></div>
-          <div class="text-sm opacity-95" id="announceMsg"></div>
-        </div>
-
-        <div class="mt-3 sm:mt-0 sm:w-48">
-          <button id="referralBtn" class="w-full bg-white border border-red-600 text-red-600 py-2 rounded-lg font-semibold hover:bg-red-50">
-            Refer & Earn
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- About -->
-    <section id="aboutCard" class="glass premium-card p-6">
-      <div class="flex items-start justify-between">
-        <h2 class="text-lg font-semibold text-gray-900">About SkyUltimate</h2>
-        <button class="text-sm text-red-600" data-toggle="about">Read</button>
-      </div>
-      <p class="text-sm text-gray-700 mt-3">
-        SkyUltimate is a modern delivery service focused on speed, security and exceptional customer care.
-        Founded to bridge the gap between efficient logistics and everyday users, we blend human couriers with technology
-        to deliver parcels, documents and commerce goods across Lagos and nearby regions. Our promise is on-time delivery,
-        transparent pricing and 24/7 customer support.
-      </p>
-      <ul class="mt-3 text-sm text-gray-700 space-y-1 pl-4 list-disc">
-        <li>Same-day deliveries across major zones</li>
-        <li>Live tracking & real-time notifications</li>
-        <li>Insurance options for valuable items</li>
-      </ul>
-    </section>
-
-    <!-- Mission & Vision -->
-    <section id="missionCard" class="glass premium-card p-6">
-      <div class="flex items-start justify-between">
-        <h2 class="text-lg font-semibold text-gray-900">Mission & Vision</h2>
-        <button class="text-sm text-red-600" data-toggle="mission">Read</button>
-      </div>
-
-      <div class="mt-3 text-sm text-gray-700 space-y-3">
-        <div>
-          <strong class="font-medium">Our Mission</strong>
-          <p class="mt-1">To provide a dependable delivery experience that makes sending and receiving items effortless — powered by friendly people and reliable technology.</p>
-        </div>
-        <div>
-          <strong class="font-medium">Our Vision</strong>
-          <p class="mt-1">To be the trusted logistics partner across West Africa — known for punctuality, safety and excellent customer support — enabling commerce and connection.</p>
-        </div>
-        <div>
-          <strong class="font-medium">Values</strong>
-          <p class="mt-1">Reliability · Integrity · Customer-first · Continuous improvement</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- FAQ / Support -->
-    <section id="faqCard" class="glass premium-card p-6">
-      <div class="flex items-start justify-between">
-        <h2 class="text-lg font-semibold text-gray-900">FAQ & Support</h2>
-        <button class="text-sm text-red-600" data-toggle="faq">Open</button>
-      </div>
-
-      <div class="mt-4 space-y-3">
-        <!-- Q1 -->
-        <div class="border rounded-lg overflow-hidden">
-          <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center bg-white/0">
-            <span class="font-medium">What are your operating hours?</span>
-            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </button>
-          <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">
-            We operate from <strong>8:00 AM — 6:00 PM</strong>, Monday to Saturday. Urgent after-hours deliveries can be arranged via support (extra fees may apply).
-          </div>
-        </div>
-
-        <!-- Q2 -->
-        <div class="border rounded-lg overflow-hidden">
-          <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
-            <span class="font-medium">What areas in Lagos do you cover?</span>
-            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </button>
-          <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">
-            We cover most major local government areas including Ikeja, Victoria Island, Lekki, Yaba, Surulere, and environs. For remote areas we provide a pick-up & transfer service — contact support for confirmation.
-          </div>
-        </div>
-
-        <!-- Q3 -->
-        <div class="border rounded-lg overflow-hidden">
-          <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
-            <span class="font-medium">How can I place a delivery order?</span>
-            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </button>
-          <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">
-            Use the Customer dashboard -> New Order: provide pickup & drop-off addresses, parcel details, and preferred delivery speed. Confirm and pay using our secure gateway (or request cash on delivery where available).
-          </div>
-        </div>
-
-        <!-- Q4 -->
-        <div class="border rounded-lg overflow-hidden">
-          <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
-            <span class="font-medium">What happens if my parcel is lost or damaged?</span>
-            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </button>
-          <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">
-            Contact support immediately. We investigate, track the delivery, and if found our claims process covers compensation depending on the service and insurance selected at checkout.
-          </div>
-        </div>
-
-        <!-- Q5 -->
-        <div class="border rounded-lg overflow-hidden">
-          <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
-            <span class="font-medium">How do I track my delivery?</span>
-            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </button>
-          <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">
-            After placing an order you'll receive a tracking link and live status updates. You can also check the Orders area in your dashboard for ETA and current courier location.
-          </div>
-        </div>
-
-        <!-- Q6 -->
-        <div class="border rounded-lg overflow-hidden">
-          <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
-            <span class="font-medium">How can I contact support?</span>
-            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </button>
-          <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">
-            Phone: <a href="tel:+2349128884830" class="text-red-600 underline">+234 912 888 4830</a> — Email: <a href="mailto:nelsongodspower24@gmail.com" class="text-red-600 underline">nelsongodspower24@gmail.com</a>.
-            Support is available by phone, email and in-app chat during operating hours.
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Sticky bottom action button -->
-    <div class="fixed left-0 right-0 bottom-6 flex justify-center cta-wrap pointer-events-none">
-      <div class="max-w-4xl w-full px-4">
-        <button id="roleActionBtn" class="w-full py-4 rounded-3xl bg-red-700 text-white font-bold shadow-xl pointer-events-auto">
-          Continue
-        </button>
-      </div>
-    </div>
-
-    <!-- Footer (always visible) -->
-    <footer class="max-w-4xl mx-auto p-4 pb-28 text-center text-white text-sm">
-      <div class="space-x-4">
-        <a id="phoneLink" href="tel:+2349128884830" class="underline">Call: +234 912 888 4830</a>
-        <span>·</span>
-        <a id="whatsappLink" href="https://wa.me/2349128884830" target="_blank" class="underline">WhatsApp</a>
-        <span>·</span>
-        <a id="emailLink" href="mailto:nelsongodspower24@gmail.com" class="underline">Email</a>
-      </div>
-    </footer>
-
-  </main>
-
-  <!-- Drawer / Hamburger Menu (hidden by default; kept for parity with your app) -->
-  <div id="drawer" class="fixed inset-0 z-50 hidden">
-    <div id="drawerBackdrop" class="absolute inset-0" style="background:rgba(0,0,0,0.35)"></div>
-    <aside class="absolute left-0 top-0 bottom-0 w-80 bg-white p-6 overflow-auto">
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-3">
-          <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="logo" class="w-12 h-12 rounded-full">
+               class="logo-round" alt="SkyUltimate logo" id="topLogo">
           <div>
-            <div id="drawerName" class="font-bold text-gray-800">User</div>
-            <div id="drawerRole" class="text-xs text-gray-600">Role</div>
+            <div class="text-white text-xl font-semibold">SkyUltimate</div>
+            <div class="text-white text-sm opacity-90">Information & Support</div>
           </div>
         </div>
-        <button id="drawerClose" class="p-1 rounded hover:bg-gray-100">✕</button>
+
+        <div class="flex items-center gap-3">
+          <button id="loginBtn" class="px-4 py-2 rounded-md bg-white/10 text-white text-sm hover:bg-white/20">Login</button>
+          <div id="userControls" class="hidden items-center gap-3">
+            <button id="profileBtn" class="px-3 py-2 rounded-md bg-white/10 text-white text-sm hover:bg-white/20">My Profile</button>
+            <button id="logoutBtn" class="px-3 py-2 rounded-md border border-white/20 text-white text-sm hover:bg-white/10">Logout</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- HERO CARD -->
+      <section class="glass p-6 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 id="welcomeMsg" class="text-2xl font-bold text-gray-900">Welcome to SkyUltimate</h1>
+            <p id="welcomeSub" class="mt-2 text-sm text-gray-700">
+              Fast, reliable delivery — built for businesses and customers across Lagos. Explore service info, FAQ, and support here.
+            </p>
+            <div class="mt-4 flex gap-3">
+              <button id="referBtn" class="px-4 py-2 rounded-lg bg-white border border-red-600 text-red-600 font-semibold hover:bg-red-50">Refer & Earn</button>
+              <button id="ctaExplore" class="px-4 py-2 rounded-lg cta text-white font-semibold">Explore Services</button>
+            </div>
+          </div>
+
+          <div class="w-full sm:w-56">
+            <div id="announceBanner" class="hidden bg-red-600 text-white p-3 rounded-lg shadow-sm">
+              <div id="announceTitle" class="font-semibold"></div>
+              <div id="announceMsg" class="text-sm mt-1"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABOUT + MISSION/VISION -->
+      <div class="grid grid-cols-1 gap-5">
+
+        <article id="aboutCard" class="glass p-5">
+          <div class="flex items-start justify-between">
+            <h2 class="text-lg font-semibold text-gray-900">About SkyUltimate</h2>
+            <button class="text-sm text-red-600" data-scroll="aboutCard">Read</button>
+          </div>
+          <p id="aboutText" class="mt-3 text-sm text-gray-700">Loading…</p>
+        </article>
+
+        <article id="missionCard" class="glass p-5">
+          <div class="flex items-start justify-between">
+            <h2 class="text-lg font-semibold text-gray-900">Mission & Vision</h2>
+            <button class="text-sm text-red-600" data-scroll="missionCard">Read</button>
+          </div>
+          <div class="mt-3 text-sm text-gray-700" id="missionVision">
+            Loading…
+          </div>
+        </article>
+
+        <!-- FAQ -->
+        <article id="faqCard" class="glass p-5">
+          <div class="flex items-start justify-between">
+            <h2 class="text-lg font-semibold text-gray-900">FAQ & Support</h2>
+            <button class="text-sm text-red-600" data-scroll="faqCard">Open</button>
+          </div>
+
+          <div id="faqList" class="mt-4 space-y-3">
+            <!-- FAQ items will be inserted here -->
+          </div>
+        </article>
+
       </div>
 
-      <nav class="space-y-3 text-gray-700">
-        <button data-nav="about" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">About Us</button>
-        <button data-nav="mission" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Mission & Vision</button>
-        <button data-nav="faq" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">FAQ / Support</button>
-        <button id="navProfile" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">My Profile</button>
-        <button id="navSettings" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Settings</button>
-        <button id="navHelp" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Help Center</button>
-        <button id="rateApp" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Rate the App</button>
-        <button id="navLogout" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50 text-red-600">Logout</button>
-      </nav>
-
-      <div class="mt-6 text-xs text-gray-500">
-        Contact: +234 912 888 4830 · nelsongodspower24@gmail.com
+      <!-- Bottom CTA -->
+      <div class="fixed left-0 right-0 bottom-6 flex justify-center pointer-events-none">
+        <div class="max-w-4xl w-full px-4 pointer-events-auto">
+          <button id="roleActionBtn" class="w-full py-4 rounded-3xl cta text-white text-lg font-bold shadow-xl">Continue</button>
+        </div>
       </div>
-    </aside>
+
+      <!-- Footer -->
+      <footer class="mt-12 text-center text-white text-sm pb-10">
+        <div class="space-x-4">
+          <a href="tel:+2349128884830" class="underline">Call: +234 912 888 4830</a>
+          <span>·</span>
+          <a href="https://wa.me/2349128884830" target="_blank" class="underline">WhatsApp</a>
+          <span>·</span>
+          <a href="mailto:nelsongodspower24@gmail.com" class="underline">Email</a>
+        </div>
+      </footer>
+    </div>
   </div>
 
   <!-- Profile Modal -->
-  <div id="profileModal" class="fixed inset-0 z-60 hidden items-center justify-center">
-    <div class="absolute inset-0" style="background:rgba(0,0,0,0.35)"></div>
-    <div class="bg-white w-96 rounded-2xl p-6 z-70">
-      <h3 class="text-lg font-semibold mb-3">My Profile</h3>
-      <div class="space-y-3">
-        <label class="text-xs text-gray-600">Full name</label>
-        <input id="profileName" class="w-full border rounded px-3 py-2" type="text" />
-        <label class="text-xs text-gray-600">Email (readonly)</label>
-        <input id="profileEmail" class="w-full border rounded px-3 py-2 bg-gray-50" type="email" readonly />
-        <label class="text-xs text-gray-600">Phone</label>
-        <input id="profilePhone" class="w-full border rounded px-3 py-2" type="text" />
-        <div id="profileBankFields" class="hidden space-y-2">
-          <label class="text-xs text-gray-600">Bank Name</label>
-          <input id="profileBankName" class="w-full border rounded px-3 py-2" type="text" />
-          <label class="text-xs text-gray-600">Account Number</label>
-          <input id="profileAccountNumber" class="w-full border rounded px-3 py-2" type="text" />
-          <label class="text-xs text-gray-600">Account Holder</label>
-          <input id="profileAccountHolder" class="w-full border rounded px-3 py-2" type="text" />
-        </div>
-
-        <div class="flex gap-3 mt-4">
-          <button id="saveProfileBtn" class="flex-1 bg-red-600 text-white py-2 rounded">Save Changes</button>
-          <button id="closeProfileBtn" class="flex-1 border border-gray-300 py-2 rounded">Close</button>
-        </div>
-        <p id="profileMsg" class="text-sm text-green-600"></p>
+  <div id="profileModal" class="fixed inset-0 z-50 hidden items-center justify-center">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="relative bg-white rounded-xl w-full max-w-md p-6">
+      <h3 class="font-semibold text-lg mb-3">My Profile</h3>
+      <label class="text-xs text-gray-600">Full name</label>
+      <input id="profileName" class="w-full border rounded px-3 py-2 mb-2" type="text" />
+      <label class="text-xs text-gray-600">Email (readonly)</label>
+      <input id="profileEmail" class="w-full border rounded px-3 py-2 mb-2 bg-gray-50" type="email" readonly />
+      <label class="text-xs text-gray-600">Phone</label>
+      <input id="profilePhone" class="w-full border rounded px-3 py-2 mb-2" type="text" />
+      <div id="profileBankFields" class="hidden">
+        <label class="text-xs text-gray-600">Bank name</label>
+        <input id="profileBankName" class="w-full border rounded px-3 py-2 mb-2" type="text" />
+        <label class="text-xs text-gray-600">Account number</label>
+        <input id="profileAccountNumber" class="w-full border rounded px-3 py-2 mb-2" type="text" />
+        <label class="text-xs text-gray-600">Account holder</label>
+        <input id="profileAccountHolder" class="w-full border rounded px-3 py-2 mb-3" type="text" />
       </div>
+      <div class="flex gap-3">
+        <button id="saveProfileBtn" class="flex-1 py-2 rounded-lg cta text-white">Save changes</button>
+        <button id="closeProfileBtn" class="flex-1 py-2 rounded-lg border">Close</button>
+      </div>
+      <p id="profileMsg" class="text-sm text-green-600 mt-2"></p>
     </div>
   </div>
 
 <script>
-/*
-  home.html client logic kept as before.
-  - Uses API_BASE for calls:
-    GET /api/announcements/latest
-    GET /api/users/profile
-    PUT /api/users/me/bank
-  - Auth: expects JWT in localStorage.su_token and user object in localStorage.su_user
-*/
+/* -------------- CONFIG -------------- */
 const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
+const PATHS = {
+  flags: "/api/public/flags",
+  content: "/api/public/content",
+  announcements: "/api/announcements/latest", // optional
+  profile: "/api/users/profile",
+  updateBank: "/api/users/me/bank",
+  login: "/api/auth/login",
+  register: "/api/auth/register"
+};
 
-// Helper for requests: attaches JWT when present
-async function apiFetch(path, opts = {}) {
-  const token = localStorage.getItem('su_token');
+/* -------------- UTIL: fetch with JSON parse & error handling -------------- */
+async function fetchJson(path, opts = {}) {
   const headers = opts.headers || {};
-  headers['Content-Type'] = 'application/json';
-  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (!headers['Content-Type']) headers['Content-Type'] = 'application/json';
   const res = await fetch(API_BASE + path, { ...opts, headers });
-  if (res.status === 401) {
-    doLogout();
-    throw new Error('Unauthorized - please log in again.');
-  }
-  const data = await res.json().catch(() => null);
+  const raw = await res.text();
+  let data = null;
+  try { data = raw ? JSON.parse(raw) : null; } catch(e) {}
   if (!res.ok) {
-    throw new Error((data && data.message) || 'Request failed');
+    const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
+    throw new Error(msg);
   }
   return data;
 }
 
-// Utility: format first name
-function firstName(full) {
-  if (!full) return '';
-  return String(full).split(' ')[0];
+/* -------------- PAGE LOAD -------------- */
+document.addEventListener('DOMContentLoaded', initPage);
+
+async function initPage(){
+  wireButtons();
+  populateLocalUser();
+  loadContent();
+  loadFlags();
+  loadAnnouncement();
+  updateRoleActionButton();
+  try { await loadProfileIfNeeded(); } catch(e){ /* ignore */ }
 }
 
-/* ---------- Initialization & Loading ---------- */
-document.addEventListener('DOMContentLoaded', async () => {
-  setupUIHandlers();
-  populateFromLocalUser();
-  await loadProfileIfNeeded();
-  await loadAnnouncement();
-  updateRoleActionButton();
-});
+/* -------------- WIRING -------------- */
+function wireButtons(){
+  document.getElementById('loginBtn').addEventListener('click', ()=> location.href = 'index.html');
+  document.getElementById('referBtn').addEventListener('click', handleReferral);
+  document.getElementById('ctaExplore').addEventListener('click', ()=> scrollTo('aboutCard'));
+  document.getElementById('roleActionBtn').addEventListener('click', handleRoleAction);
 
-// Fill UI from localStorage user if present
-function populateFromLocalUser() {
+  // Profile modal
+  document.getElementById('profileBtn').addEventListener('click', openProfileModal);
+  document.getElementById('logoutBtn').addEventListener('click', doLogout);
+  document.getElementById('closeProfileBtn').addEventListener('click', closeProfileModal);
+  document.getElementById('saveProfileBtn').addEventListener('click', saveProfileChanges);
+
+  // small read buttons (anchor style)
+  document.querySelectorAll('[data-scroll]').forEach(btn => btn.addEventListener('click', e => scrollTo(e.currentTarget.dataset.scroll)));
+}
+
+/* -------------- ROLE / AUTH UI -------------- */
+function populateLocalUser(){
   const raw = localStorage.getItem('su_user');
-  if (!raw) return;
+  if (!raw) {
+    document.getElementById('userControls').classList.add('hidden');
+    document.getElementById('loginBtn').classList.remove('hidden');
+    return;
+  }
   try {
     const user = JSON.parse(raw);
-    const name = user.name || user._id || 'User';
+    const name = user.name || 'User';
     document.getElementById('welcomeMsg').innerText = `Hello, ${firstName(name)}!`;
-    document.getElementById('drawerName').innerText = name;
-    document.getElementById('drawerRole').innerText = user.role || 'Customer';
-  } catch(e) {}
+    document.getElementById('welcomeSub').innerText = `You're signed in as ${user.role || 'Customer'}.`;
+    document.getElementById('profileBtn').classList.remove('hidden');
+    document.getElementById('userControls').classList.remove('hidden');
+    document.getElementById('loginBtn').classList.add('hidden');
+  } catch(e) { /* ignore */ }
 }
 
-// If token exists but no local user data, fetch profile
-async function loadProfileIfNeeded() {
+function firstName(full){ if (!full) return ''; return String(full).split(' ')[0]; }
+
+async function loadProfileIfNeeded(){
   const token = localStorage.getItem('su_token');
   const raw = localStorage.getItem('su_user');
   if (!token) return;
-  if (raw) return;
+  if (raw) return; // already set by login
   try {
-    const profile = await apiFetch('/api/users/profile');
+    const profile = await fetchJson(PATHS.profile, { method: 'GET', headers: { Authorization: `Bearer ${token}` }});
     localStorage.setItem('su_user', JSON.stringify(profile));
-    populateFromLocalUser();
-  } catch(err) {
-    console.warn('Could not fetch profile:', err.message);
-  }
+    populateLocalUser();
+  } catch (e) { console.info('profile load failed:', e.message); }
 }
 
-/* ---------- Announcements ---------- */
-async function loadAnnouncement() {
+function doLogout(){
+  localStorage.removeItem('su_token');
+  localStorage.removeItem('su_user');
+  // reload to reset UI
+  location.href = 'index.html';
+}
+
+/* -------------- CONTENT & FLAGS -------------- */
+async function loadContent(){
+  // Try server content, fallback to built-in
+  const fallback = {
+    about: `SkyUltimate Delivery Service is dedicated to fast, secure and customer-first deliveries across Lagos. We blend technology and human care to ensure your packages arrive safely and on time.`,
+    mission: `Provide the most efficient, transparent and reliable delivery services.`,
+    vision: `To be the most trusted logistics partner in West Africa.`,
+    faq: [
+      { q: "What are your operating hours?", a: "We operate Mon–Sat from 8:00 AM to 6:00 PM. After-hours service can be arranged for urgent deliveries." },
+      { q: "What areas do you cover?", a: "We cover major zones in Lagos including Ikeja, Victoria Island, Lekki, Yaba, Surulere and nearby suburbs." },
+      { q: "How to place an order?", a: "Use the Customer dashboard to place a delivery, provide pickup/drop addresses, details and choose payment option." },
+      { q: "What if shipment is damaged?", a: "Contact support immediately. We investigate and follow claims/compensation procedures based on selected service and insurance." },
+      { q: "How do I track my parcel?", a: "After placing an order you'll get a tracking link or use the Orders screen in your dashboard to monitor the delivery." },
+      { q: "How can I contact support?", a: "Phone: +234 912 888 4830 — Email: nelsongodspower24@gmail.com" }
+    ]
+  };
+
   try {
-    const res = await fetch(API_BASE + '/api/announcements/latest');
-    if (!res.ok) return hideAnnouncement();
-    const data = await res.json();
-    if (!data || !data.isActive) return hideAnnouncement();
-    showAnnouncement(data);
+    const data = await fetchJson(PATHS.content);
+    document.getElementById('aboutText').innerText = data.about || fallback.about;
+    const mv = [];
+    if (data.mission) mv.push(`<strong>Mission:</strong> ${escapeHtml(data.mission)}`);
+    if (data.vision) mv.push(`<strong>Vision:</strong> ${escapeHtml(data.vision)}`);
+    if (mv.length === 0) mv.push(escapeHtml(fallback.mission + " " + fallback.vision));
+    document.getElementById('missionVision').innerHTML = mv.join('<br/><br/>');
+
+    const faq = data.faq && data.faq.length ? data.faq : fallback.faq;
+    renderFaq(faq);
   } catch (e) {
-    hideAnnouncement();
-    console.info('Announcement load failed:', e.message);
+    // fallback
+    document.getElementById('aboutText').innerText = fallback.about;
+    document.getElementById('missionVision').innerHTML = `<strong>Mission:</strong> ${fallback.mission}<br/><br/><strong>Vision:</strong> ${fallback.vision}`;
+    renderFaq(fallback.faq);
   }
 }
 
-function showAnnouncement(a) {
-  const banner = document.getElementById('announceBanner');
-  document.getElementById('announceTitle').innerText = a.title || 'Announcement';
-  document.getElementById('announceMsg').innerText = a.message || '';
-  banner.classList.remove('hidden');
-}
-function hideAnnouncement() {
-  const banner = document.getElementById('announceBanner');
-  banner.classList.add('hidden');
+async function loadFlags(){
+  try {
+    const f = await fetchJson(PATHS.flags);
+    // If admin registration toggling used by UI, we could display hints; for now we just keep flags for potential future UI tweaks
+    console.info('flags', f);
+  } catch (e) {
+    console.info('flags load failed', e.message);
+  }
 }
 
-/* ---------- UI Handlers ---------- */
-function setupUIHandlers() {
-  // Drawer/hamburger
-  document.getElementById('hamburgerBtn').addEventListener('click', openDrawer);
-  document.getElementById('drawerClose').addEventListener('click', closeDrawer);
-  document.getElementById('drawerBackdrop').addEventListener('click', closeDrawer);
-  document.getElementById('navLogout').addEventListener('click', () => { closeDrawer(); doLogout(); });
+/* -------------- ANNOUNCEMENTS (optional) -------------- */
+async function loadAnnouncement(){
+  try {
+    const a = await fetchJson(PATHS.announcements);
+    if (a && a.isActive) {
+      document.getElementById('announceTitle').innerText = a.title || 'Announcement';
+      document.getElementById('announceMsg').innerText = a.message || '';
+      document.getElementById('announceBanner').classList.remove('hidden');
+    }
+  } catch (e) {
+    // ignore; optional endpoint
+  }
+}
 
-  // Drawer nav buttons
-  document.querySelectorAll('[data-nav]').forEach(btn => {
-    btn.addEventListener('click', (ev) => {
-      const nav = ev.currentTarget.getAttribute('data-nav');
-      closeDrawer();
-      if (nav === 'about') scrollToCard('aboutCard');
-      if (nav === 'mission') scrollToCard('missionCard');
-      if (nav === 'faq') scrollToCard('faqCard');
-    });
+/* -------------- FAQ RENDERING -------------- */
+function renderFaq(items){
+  const container = document.getElementById('faqList');
+  container.innerHTML = '';
+  items.forEach((it, idx) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'border rounded-lg overflow-hidden';
+    const q = document.createElement('button');
+    q.className = 'faq-q w-full text-left px-4 py-3 flex justify-between items-center bg-white/0';
+    q.innerHTML = `<span class="font-medium">${escapeHtml(it.q)}</span>
+                   <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                   </svg>`;
+    const a = document.createElement('div');
+    a.className = 'faq-a px-4 py-3 hidden text-sm text-gray-700';
+    a.innerHTML = escapeHtml(it.a);
+    q.addEventListener('click', ()=> a.classList.toggle('hidden'));
+    wrapper.appendChild(q);
+    wrapper.appendChild(a);
+    container.appendChild(wrapper);
   });
+}
 
-  //
+/* -------------- Profile Modal -------------- */
+function openProfileModal(){
+  const raw = localStorage.getItem('su_user');
+  if (!raw) { location.href = 'index.html'; return; }
+  const user = JSON.parse(raw);
+  document.getElementById('profileName').value = user.name || '';
+  document.getElementById('profileEmail').value = user.email || '';
+  document.getElementById('profilePhone').value = user.phone || '';
+  const role = (user.role||'').toLowerCase();
+  if (role === 'agent' || role === 'admin') {
+    document.getElementById('profileBankFields').classList.remove('hidden');
+    const bd = user.bankDetails || {};
+    document.getElementById('profileBankName').value = bd.bankName || '';
+    document.getElementById('profileAccountNumber').value = bd.accountNumber || '';
+    document.getElementById('profileAccountHolder').value = bd.accountHolderName || '';
+  } else {
+    document.getElementById('profileBankFields').classList.add('hidden');
+  }
+  document.getElementById('profileMsg').innerText = '';
+  document.getElementById('profileModal').classList.remove('hidden');
+}
+function closeProfileModal(){ document.getElementById('profileModal').classList.add('hidden'); }
+
+async function saveProfileChanges(){
+  const token = localStorage.getItem('su_token');
+  if (!token) { alert('Not authenticated'); return; }
+  const payload = { phone: document.getElementById('profilePhone').value.trim() };
+  const bankName = document.getElementById('profileBankName').value.trim();
+  const accNum = document.getElementById('profileAccountNumber').value.trim();
+  const accHolder = document.getElementById('profileAccountHolder').value.trim();
+  if (bankName || accNum || accHolder) {
+    payload.bankName = bankName;
+    payload.accountNumber = accNum;
+    payload.accountHolderName = accHolder;
+  }
+  try {
+    await fetchJson(PATHS.updateBank, { method:'PUT', headers:{ Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
+    // update local copy
+    const raw = localStorage.getItem('su_user') || '{}';
+    const user = JSON.parse(raw);
+    user.phone = payload.phone || user.phone;
+    user.bankDetails = user.bankDetails || {};
+    if (payload.bankName) user.bankDetails.bankName = payload.bankName;
+    if (payload.accountNumber) user.bankDetails.accountNumber = payload.accountNumber;
+    if (payload.accountHolderName) user.bankDetails.accountHolderName = payload.accountHolderName;
+    localStorage.setItem('su_user', JSON.stringify(user));
+    document.getElementById('profileMsg').innerText = 'Profile updated';
+    setTimeout(()=>{ closeProfileModal(); populateLocalUser(); }, 900);
+  } catch (e) {
+    document.getElementById('profileMsg').innerText = e.message || 'Update failed';
+  }
+}
+
+/* -------------- Role action (redirect to dashboard) -------------- */
+function updateRoleActionButton(){
+  const raw = localStorage.getItem('su_user');
+  const btn = document.getElementById('roleActionBtn');
+  if (!raw) { btn.innerText = 'Login'; return; }
+  const user = JSON.parse(raw || '{}');
+  const role = (user.role || 'Customer').toLowerCase();
+  switch (role) {
+    case 'agent': btn.innerText = 'Go to Agent Dashboard'; break;
+    case 'admin': btn.innerText = 'Go to Operations Hub'; break;
+    case 'superadmin': case 'super admin': btn.innerText = 'Go to Master Control Panel'; break;
+    default: btn.innerText = 'Go to My Dashboard'; break;
+  }
+}
+
+function handleRoleAction(){
+  const raw = localStorage.getItem('su_user');
+  if (!raw) { location.href = 'index.html'; return; }
+  const user = JSON.parse(raw || '{}');
+  const role = (user.role || 'Customer').toLowerCase();
+  if (role === 'agent') location.href = 'Agent-dashboard.html';
+  else if (role === 'admin') location.href = 'Admin-dashboard.html';
+  else if (role === 'superadmin' || role === 'super admin') location.href = 'Superadmin-dashboard.html';
+  else location.href = 'Customer-dashboard.html';
+}
+
+/* -------------- Referral (copy/share) -------------- */
+async function handleReferral(){
+  const raw = localStorage.getItem('su_user');
+  const user = raw ? JSON.parse(raw) : null;
+  const refLink = `${location.origin}/?ref=${user ? (user._id || user.id) : 'guest'}`;
+  try {
+  if (navigator.share) await navigator.share({ title:'SkyUltimate - Refer', text:'Join SkyUltimate!', url: refLink });
+    else { await navigator.clipboard.writeText(refLink); alert('Referral link copied to clipboard'); }
+  } catch (e) { alert('Could not share referral link'); }
+}
+
+/* -------------- Small helpers -------------- */
+function scrollTo(id){
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior:'smooth', block:'center' });
+}
+function escapeHtml(s){ if (!s) return ''; return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
+
+</script>
+</body>
+</html>
