@@ -4,373 +4,487 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SkyUltimate — Home</title>
+
+  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+
   <style>
     :root{
       --brand-red:#B00000;
       --brand-red-dark:#900000;
+      --card-radius:20px;
       --glass-bg: rgba(255,255,255,0.92);
-      --card-radius: 20px;
-      --soft-shadow: 0 10px 30px rgba(0,0,0,0.15);
     }
-    body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--brand-red); color:#111; min-height:100vh; }
-    .container { max-width:1000px; margin:20px auto; padding:20px; }
-    .glass { background: var(--glass-bg); border-radius: var(--card-radius); box-shadow: var(--soft-shadow); }
-    .logo-round { width:86px; height:86px; border-radius:9999px; object-fit:cover; box-shadow:0 8px 20px rgba(0,0,0,0.18); }
-    .header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-    .header-left { display:flex; align-items:center; gap:12px; }
-    .action-btn { background:var(--brand-red); color:#fff; padding:14px 18px; border-radius:14px; font-weight:700; box-shadow:0 8px 18px rgba(0,0,0,0.15); }
-    .muted { color:#5b5b5b; }
+    body{ background:var(--brand-red); min-height:100vh; font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color:#111; margin:0; }
+    .container{ max-width:960px; margin:0 auto; padding:22px; }
+    .top-logo{ width:72px; height:72px; border-radius:18px; object-fit:cover; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+    .glass { background: var(--glass-bg); border-radius: var(--card-radius); box-shadow: 0 12px 30px rgba(0,0,0,0.18); padding:18px; }
+    .small-glass { background: var(--glass-bg); border-radius:14px; box-shadow: 0 8px 20px rgba(0,0,0,0.12); padding:12px; }
+    .action-btn{ background:var(--brand-red-dark); color:#fff; border-radius:16px; padding:14px 18px; font-weight:700; box-shadow: 0 8px 22px rgba(0,0,0,0.2); }
+    .muted { color: #444; }
     .faq-q { cursor:pointer; }
-    .small { font-size:13px; }
-    .drawer { position: fixed; left:0; top:0; bottom:0; width:320px; background:#fff; transform: translateX(-100%); transition: transform .25s ease; z-index:60; box-shadow: 8px 0 30px rgba(0,0,0,0.2); padding:18px; overflow:auto; }
-    .drawer.open { transform: translateX(0); }
-    .drawer-backdrop { position:fixed; inset:0; background: rgba(0,0,0,0.4); z-index:50; display:none; }
-    .drawer-backdrop.show { display:block; }
-    .kbd { background:#f3f3f3; padding:4px 8px; border-radius:8px; font-weight:600; font-size:12px; }
-    .card-padding { padding:20px; }
-    .floating-footer { position:fixed; left:0; right:0; bottom:14px; display:flex; justify-content:center; z-index:40; }
-    .contact-link { color:#fff; text-decoration:underline; }
-    @media (max-width:768px){ .container{ padding:12px } .logo-round{ width:72px; height:72px } .drawer{ width:86%; } }
+    .chip { background:#fff; border-radius:999px; padding:6px 10px; box-shadow:0 6px 18px rgba(0,0,0,0.12); }
+    @media (max-width:640px){
+      .container{ padding:14px; }
+      .top-logo{ width:64px; height:64px; }
+    }
   </style>
 </head>
 <body>
-
   <div class="container">
-    <!-- Header -->
-    <header class="header glass p-4 mb-6">
-      <div class="header-left">
-        <button id="hamburger" aria-label="Open menu" class="p-2 rounded-md hover:bg-black/6">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-        </button>
-
-        <img id="topLogo" class="logo-round" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="SkyUltimate"/>
-
+    <!-- HEADER -->
+    <header class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-4">
+        <img class="top-logo" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="SkyUltimate"/>
         <div>
-          <div id="welcomeTitle" class="text-lg font-semibold">Welcome!</div>
-          <div id="welcomeSub" class="small muted">Your SkyUltimate hub</div>
+          <div id="brand-title" class="text-white text-xl font-semibold">SkyUltimate</div>
+          <div id="brand-sub" class="text-white text-xs opacity-90">Universal Home</div>
         </div>
       </div>
 
       <div class="flex items-center gap-3">
-        <button id="profileOpen" class="small glass px-3 py-2 rounded-md">My Profile</button>
-        <button id="logoutBtn" class="small glass px-3 py-2 rounded-md text-red-700">Logout</button>
+        <div id="welcomeSmall" class="text-white text-sm mr-2">Welcome</div>
+        <button id="hamburger" class="chip">☰</button>
       </div>
     </header>
 
-    <!-- Announcement (if any) -->
-    <div id="announcement" class="glass p-4 mb-6 hidden">
-      <div class="flex items-start justify-between gap-4">
+    <!-- MAIN CARD -->
+    <main class="glass">
+      <div class="flex items-center justify-between gap-6">
         <div>
+          <h1 id="welcomeMsg" class="text-2xl font-bold">Hello!</h1>
+          <p id="welcomeSub" class="muted mt-1">Your unified hub — jump to your dashboard or learn about SkyUltimate.</p>
+        </div>
+
+        <div id="announceBanner" class="hidden small-glass text-white bg-gradient-to-r from-rose-600 to-red-700" style="min-width:240px;">
           <div id="announceTitle" class="font-semibold"></div>
-          <div id="announceBody" class="muted small"></div>
+          <div id="announceMsg" class="text-sm opacity-90"></div>
         </div>
-        <div id="announceClose" class="muted small" style="cursor:pointer">✕</div>
       </div>
-    </div>
 
-    <!-- Main cards -->
-    <main class="grid gap-6">
-      <!-- Hero / CTA -->
-      <section class="glass card-padding flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <div id="heroHeading" class="text-2xl font-bold">Welcome back!</div>
-          <div id="heroSub" class="muted small mt-1">You're signed in. Use the button to go to your dashboard or explore company information below.</div>
-        </div>
-
-        <div style="min-width:220px">
-          <button id="roleBtn" class="action-btn w-full">Go to My Dashboard</button>
-        </div>
-      </section>
-
-      <!-- Company info (About / Mission / Vision) -->
-      <section class="grid gap-4">
-        <div class="glass card-padding">
-          <div class="flex items-center justify-between">
-            <h2 class="text-lg font-semibold">About SkyUltimate</h2>
-            <button id="aboutRead" class="small text-red-700">Read more</button>
-          </div>
-          <p class="muted small mt-3">
-            Welcome to SkyUltimate Delivery Services — your trusted partner for swift, secure, and reliable delivery solutions in Lagos. We deliver promises, not just parcels.
+      <!-- INFO: Mission / Vision -->
+      <section class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="small-glass">
+          <h2 class="font-semibold text-lg">Our Mission</h2>
+          <p id="missionText" class="mt-2 text-sm muted">
+            <!-- filled from /api/public/content or fallback -->
           </p>
         </div>
-
-        <div class="glass card-padding">
-          <div class="flex items-center justify-between">
-            <h2 class="text-lg font-semibold">Our Mission & Vision</h2>
-            <button id="missionRead" class="small text-red-700">Read more</button>
-          </div>
-          <div class="mt-3 small muted">
-            <strong>Mission:</strong> To provide the most efficient, transparent, and reliable delivery services in Lagos.<br/>
-            <strong>Vision:</strong> To be the leading and most preferred delivery service provider in Nigeria.
-          </div>
+        <div class="small-glass">
+          <h2 class="font-semibold text-lg">Our Vision</h2>
+          <p id="visionText" class="mt-2 text-sm muted"></p>
         </div>
+      </section>
 
-        <!-- FAQ -->
-        <div class="glass card-padding">
+      <!-- ABOUT -->
+      <section class="mt-6 small-glass">
+        <h2 class="font-semibold text-lg">About SkyUltimate</h2>
+        <p id="aboutText" class="mt-2 text-sm muted"></p>
+      </section>
+
+      <!-- FAQ -->
+      <section class="mt-6">
+        <div class="small-glass">
           <div class="flex items-center justify-between">
-            <h2 class="text-lg font-semibold">FAQ / Support</h2>
-            <button id="faqOpen" class="small text-red-700">Open</button>
+            <h2 class="font-semibold text-lg">FAQ / Support</h2>
+            <button id="supportBtn" class="text-sm text-red-700">Contact Support</button>
           </div>
 
-          <div class="mt-4 space-y-3">
-            <!-- Q1 -->
-            <div class="border rounded-lg overflow-hidden">
-              <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
-                <span class="font-medium">What are your operating hours?</span>
-                <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-              </button>
-              <div class="faq-a px-4 py-3 hidden small muted">We operate from 8:00 AM to 6:00 PM, Monday to Saturday. Deliveries can be scheduled within these hours.</div>
-            </div>
-
-            <!-- Q2 -->
-            <div class="border rounded-lg overflow-hidden">
-              <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
-                <span class="font-medium">What areas in Lagos do you cover?</span>
-                <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-              </button>
-              <div class="faq-a px-4 py-3 hidden small muted">We cover Ikeja, Victoria Island, Lekki, Surulere and other major Lagos areas. Contact support for a specific location check.</div>
-            </div>
-
-            <!-- Q3 -->
-            <div class="border rounded-lg overflow-hidden">
-              <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
-                <span class="font-medium">How can I place a delivery order?</span>
-                <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-              </button>
-              <div class="faq-a px-4 py-3 hidden small muted">Place an order from your dashboard (Customer). Provide pickup and drop addresses, type and dimensions. Or call our support line.</div>
-            </div>
-
-            <!-- Q4 -->
-            <div class="border rounded-lg overflow-hidden">
-              <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
-                <span class="font-medium">What items do you deliver?</span>
-                <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-              </button>
-              <div class="faq-a px-4 py-3 hidden small muted">We handle documents, parcels, food, and general goods. We don't transport hazardous items, firearms, illegal substances or live animals.</div>
-            </div>
-
-            <!-- Q5 -->
-            <div class="border rounded-lg overflow-hidden">
-              <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
-                <span class="font-medium">How are delivery fees calculated?</span>
-                <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-              </button>
-              <div class="faq-a px-4 py-3 hidden small muted">Fees are based on distance and package size/weight. You'll see a quote before confirming.</div>
-            </div>
-
-            <!-- Q6 -->
-            <div class="border rounded-lg overflow-hidden">
-              <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">
-                <span class="font-medium">What payment methods do you accept?</span>
-                <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-              </button>
-              <div class="faq-a px-4 py-3 hidden small muted">We accept bank transfer for now; online payments will be added. Contact support for assistance.</div>
-            </div>
-
-            <div class="mt-3 small muted">
-              <strong>Support:</strong> Phone: <a class="contact-link" href="tel:+2349128884830">+234 912 888 4830</a> · Email: <a class="contact-link" href="mailto:nelsongodspower24@gmail.com">nelsongodspower24@gmail.com</a>
-            </div>
+          <div id="faqList" class="mt-4 space-y-3">
+            <!-- FAQ items injected here -->
           </div>
         </div>
       </section>
+
+      <!-- Referral / Action -->
+      <section class="mt-6 flex flex-col md:flex-row items-stretch gap-4">
+        <div class="flex-1 small-glass">
+          <h3 class="font-semibold">Refer & Earn</h3>
+          <p class="text-sm muted mt-2">Share your unique link and earn rewards when friends complete actions.</p>
+          <div class="mt-3 flex gap-2">
+            <input id="refLink" readonly class="w-full px-3 py-2 rounded border" />
+            <button id="copyRef" class="action-btn">Copy</button>
+          </div>
+        </div>
+
+        <div class="w-full md:w-60 flex-shrink-0">
+          <button id="roleActionBtn" class="action-btn w-full">Go to Dashboard</button>
+        </div>
+      </section>
+
+      <!-- Footer contact -->
+      <footer class="mt-6 text-sm muted">
+        <div>Need help? <a id="whatsapp" href="#" target="_blank" class="text-white underline">WhatsApp</a> · <a id="callLink" href="#" class="text-white underline">Call</a> · <a id="emailLink" href="#" class="text-white underline">Email</a></div>
+      </footer>
     </main>
   </div>
 
-  <!-- Floating role action (sticky) -->
-  <div class="floating-footer">
-    <div class="container" style="max-width:1000px; padding:0 20px;">
-      <button id="roleAction" class="action-btn w-full">Continue</button>
-    </div>
+  <!-- HAMBURGER DRAWER -->
+  <div id="drawer" class="fixed inset-0 hidden z-50">
+    <div id="backdrop" class="absolute inset-0 bg-black/50" style="backdrop-filter:blur(2px)"></div>
+    <aside class="absolute right-0 top-0 bottom-0 w-80 bg-white p-6 overflow-auto">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <img class="w-14 h-14 rounded-lg" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="logo" />
+          <div>
+            <div id="drawerName" class="font-bold">User</div>
+            <div id="drawerRole" class="text-xs muted">Role</div>
+          </div>
+        </div>
+        <button id="closeDrawer" class="text-gray-600">✕</button>
+      </div>
+
+      <nav class="space-y-3">
+        <button id="navProfile" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">My Profile</button>
+        <button id="navRefer" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Refer & Earn</button>
+        <button id="navAbout" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">About Us</button>
+        <button id="navMission" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Mission & Vision</button>
+        <button id="navFAQ" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">FAQ / Support</button>
+        <button id="navLogout" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50 text-red-600">Logout</button>
+      </nav>
+
+      <div class="mt-6 text-xs text-gray-500">
+        Contact: +234 912 888 4830 · nelsongodspower24@gmail.com
+      </div>
+    </aside>
   </div>
 
-  <!-- Drawer & Backdrop -->
-  <div id="drawerBackdrop" class="drawer-backdrop"></div>
-  <nav id="drawer" class="drawer">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <div style="display:flex; gap:12px; align-items:center;">
-        <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" class="w-12 h-12 rounded-full" alt="logo" />
-        <div>
-          <div id="drawerName" class="font-semibold">User</div>
-          <div id="drawerRole" class="small muted">Role</div>
-        </div>
+  <!-- PROFILE MODAL (only via drawer) -->
+  <div id="profileModal" class="fixed inset-0 hidden z-60 items-center justify-center">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="bg-white w-96 rounded-2xl p-6 z-70">
+      <h3 class="text-lg font-semibold mb-3">My Profile</h3>
+
+      <label class="text-xs text-gray-600">Full name</label>
+      <input id="profileName" class="w-full border rounded px-3 py-2 mb-2" type="text" />
+
+      <label class="text-xs text-gray-600">Email (readonly)</label>
+      <input id="profileEmail" class="w-full border rounded px-3 py-2 mb-2 bg-gray-50" type="email" readonly />
+
+      <label class="text-xs text-gray-600">Phone</label>
+      <input id="profilePhone" class="w-full border rounded px-3 py-2 mb-2" type="text" />
+
+      <div id="profileBankFields" class="hidden">
+        <label class="text-xs text-gray-600">Bank Name</label>
+        <input id="profileBankName" class="w-full border rounded px-3 py-2 mb-2" type="text" />
+
+        <label class="text-xs text-gray-600">Account Number</label>
+        <input id="profileAccountNumber" class="w-full border rounded px-3 py-2 mb-2" type="text" />
+
+        <label class="text-xs text-gray-600">Account Holder</label>
+        <input id="profileAccountHolder" class="w-full border rounded px-3 py-2 mb-2" type="text" />
       </div>
-      <button id="closeDrawer" class="small">Close</button>
-    </div>
 
-    <div class="space-y-3">
-      <button data-link="profile.html" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">My Profile</button>
-      <button data-link="referral.html" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Refer & Earn</button>
-      <button data-nav="about" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">About Us</button>
-      <button data-nav="mission" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Mission & Vision</button>
-      <button data-nav="faq" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">FAQ / Support</button>
-      <button id="drawerLogout" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50 text-red-600">Logout</button>
-    </div>
-
-    <div class="mt-6 text-xs muted">
-      Contact: +234 912 888 4830 · nelsongodspower24@gmail.com
-    </div>
-  </nav>
-
-  <!-- Profile Modal -->
-  <div id="profileModal" class="fixed inset-0 z-70 hidden items-center justify-center">
-    <div id="profileBackdrop" class="fixed inset-0 bg-black/40"></div>
-    <div class="glass" style="width:92%; max-width:520px; border-radius:16px; padding:18px; z-index:75;">
-      <h3 class="font-semibold text-lg">My Profile</h3>
-      <div class="mt-3 space-y-3">
-        <label class="small muted">Full name</label>
-        <input id="profileName" class="w-full border rounded px-3 py-2" type="text" />
-        <label class="small muted">Email (readonly)</label>
-        <input id="profileEmail" class="w-full border rounded px-3 py-2 bg-gray-50" type="email" readonly />
-        <label class="small muted">Phone</label>
-        <input id="profilePhone" class="w-full border rounded px-3 py-2" type="text" />
-        <div id="profileBankFields" class="hidden">
-          <label class="small muted">Bank Name</label>
-          <input id="profileBankName" class="w-full border rounded px-3 py-2" type="text" />
-          <label class="small muted">Account Number</label>
-          <input id="profileAccountNumber" class="w-full border rounded px-3 py-2" type="text" />
-          <label class="small muted">Account Holder</label>
-          <input id="profileAccountHolder" class="w-full border rounded px-3 py-2" type="text" />
-        </div>
-
-        <div class="flex gap-3 mt-2">
-          <button id="saveProfile" class="action-btn flex-1">Save Changes</button>
-          <button id="closeProfile" class="glass flex-1 px-3 py-2 rounded">Close</button>
-        </div>
-        <div id="profileMsg" class="small mt-2"></div>
+      <div class="flex gap-3 mt-4">
+        <button id="saveProfile" class="flex-1 bg-red-700 text-white py-2 rounded">Save</button>
+        <button id="closeProfile" class="flex-1 border py-2 rounded">Close</button>
       </div>
+      <p id="profileMsg" class="text-sm text-green-600 mt-2"></p>
     </div>
   </div>
 
 <script>
-/* ========== Configuration ========== */
+/*
+  home.html logic:
+  - Attempts to load user profile from localStorage.su_user, else tries backend profile endpoints
+  - Loads public content from /api/public/content (mission/vision/faq)
+  - Loads announcement from /api/announcements/latest (optional)
+  - Main action button routes by role:
+      customer -> Customer-dashboard.html
+      agent -> Agent-dashboard.html
+      admin -> Admin-dashboard.html
+      superadmin -> Superadmin-dashboard.html
+  - Profile edit available only via drawer -> PUT /api/users/me/bank for phone + bank
+  - Referral link is client-side (uses user id) and copy/share actions provided
+  - All actions provide user feedback
+*/
+
 const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
-const PATH_PROFILE = "/api/users/profile";         // GET profile
-const PATH_ANNOUNCE = "/api/announcements/latest"; // GET announcement (optional)
-const PATH_SAVE_BANK = "/api/users/me/bank";      // PUT bank/phone
 
-/* ========== Helpers ========== */
-function tokenHeader() {
+// UTIL: attach token if available
+function authHeaders(headers = {}) {
   const token = localStorage.getItem('su_token');
-  return token ? { 'Authorization': 'Bearer ' + token } : {};
+  headers['Content-Type'] = 'application/json';
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return headers;
 }
-async function apiFetch(path, opts = {}) {
-  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}), ...tokenHeader() };
-  const res = await fetch(API_BASE + path, { ...opts, headers });
-  if (res.status === 401) {
-    // force logout to login page
-    clearSessionAndRedirect();
-    throw new Error('Unauthorized - session expired');
+
+// resilient fetch with JSON parse + returns null on failure (but don't throw for optional calls)
+async function safeFetch(path, opts = {}, required = false) {
+  try {
+    const res = await fetch(API_BASE + path, opts);
+    const text = await res.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch {}
+    if (!res.ok) {
+      if (required) throw new Error((data && data.message) || `HTTP ${res.status}`);
+      return null;
+    }
+    return data;
+  } catch (e) {
+    if (required) throw e;
+    return null;
   }
-  const text = await res.text();
-  try { return text ? JSON.parse(text) : null; } catch (e) { return text; }
 }
 
-/* ========== UI helpers ========== */
-function qs(sel) { return document.querySelector(sel); }
-function qsa(sel) { return Array.from(document.querySelectorAll(sel)); }
-function show(el) { el.classList.remove('hidden'); }
-function hide(el) { el.classList.add('hidden'); }
-
-/* ========== Drawer & Profile Modal ========== */
-const drawer = document.getElementById('drawer');
-const backdrop = document.getElementById('drawerBackdrop');
-document.getElementById('hamburger').addEventListener('click', () => {
-  drawer.classList.add('open'); backdrop.classList.add('show');
-});
-document.getElementById('closeDrawer').addEventListener('click', closeDrawer);
-backdrop.addEventListener('click', closeDrawer);
-function closeDrawer() { drawer.classList.remove('open'); backdrop.classList.remove('show'); }
-
-qsa('[data-link]').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    const link = e.currentTarget.getAttribute('data-link');
-    // navigate in same origin to the requested page
-    window.location.href = link;
-  });
-});
-qsa('[data-nav]').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    const nav = e.currentTarget.getAttribute('data-nav');
-    closeDrawer();
-    if (nav === 'about') document.getElementById('aboutRead').click();
-    if (nav === 'mission') document.getElementById('missionRead').click();
-    if (nav === 'faq') document.getElementById('faqOpen').click();
-  });
-});
-document.getElementById('drawerLogout').addEventListener('click', () => { closeDrawer(); clearSessionAndRedirect(); });
-
-/* ========== Logout & Session ========== */
-function clearSessionAndRedirect() {
-  localStorage.removeItem('su_token');
-  localStorage.removeItem('su_user');
-  window.location.href = 'index.html'; // login page
+// Try to fetch profile from a list of likely endpoints
+async function fetchProfileFromBackend() {
+  const endpoints = [
+    "/api/users/profile",
+    "/api/auth/profile",
+    "/api/user/details",
+    "/api/auth/me"
+  ];
+  for (const ep of endpoints) {
+    const data = await safeFetch(ep, { headers: authHeaders() });
+    if (data && (data.name || data.email || data._id)) return data;
+  }
+  return null;
 }
-document.getElementById('logoutBtn').addEventListener('click', clearSessionAndRedirect);
 
-/* ========== Announcement ========= */
-document.getElementById('announceClose').addEventListener('click', () => {
-  document.getElementById('announcement').classList.add('hidden');
-});
+function firstName(full) {
+  if (!full) return '';
+  return String(full).split(' ')[0];
+}
 
-/* ========== FAQ toggles ========== */
-qsa('.faq-q').forEach(q => {
-  q.addEventListener('click', () => {
-    const a = q.nextElementSibling;
-    if (!a) return;
-    a.classList.toggle('hidden');
+async function init() {
+  wireUI();
+  // populate static / default content first
+  setStaticContent();
+
+  // load profile: prefer localStorage
+  let user = null;
+  try {
+    const raw = localStorage.getItem('su_user');
+    if (raw) {
+      user = JSON.parse(raw);
+    } else {
+      user = await fetchProfileFromBackend();
+      if (user) {
+        localStorage.setItem('su_user', JSON.stringify(user));
+      }
+    }
+  } catch (e) { console.warn("profile parse error", e.message); }
+
+  applyUserToUI(user);
+
+  // attempt to fetch updated profile and announcement (if token)
+  try {
+    const token = localStorage.getItem('su_token');
+    if (token) {
+      const profile = await fetchProfileFromBackend();
+      if (profile) {
+        localStorage.setItem('su_user', JSON.stringify(profile));
+        applyUserToUI(profile);
+      }
+      const ann = await safeFetch('/api/announcements/latest', { headers: authHeaders() });
+      if (ann && ann.isActive) showAnnouncement(ann);
+    }
+  } catch (err) {
+    console.info('Announcement/profile fetch failed:', err.message);
+  }
+
+  // public content (mission/vision/faq) from backend
+  const content = await safeFetch('/api/public/content', { headers: { 'Content-Type':'application/json' } });
+  if (content) applyPublicContent(content);
+
+  // set referral link and role button state
+  updateReferralAndAction();
+}
+
+// ---------- UI wiring ----------
+function wireUI() {
+  document.getElementById('hamburger').addEventListener('click', () => {
+    document.getElementById('drawer').classList.remove('hidden');
   });
-});
-document.getElementById('faqOpen').addEventListener('click', () => scrollToId('faqCard'));
+  document.getElementById('closeDrawer').addEventListener('click', () => {
+    document.getElementById('drawer').classList.add('hidden');
+  });
+  document.getElementById('backdrop').addEventListener('click', () => {
+    document.getElementById('drawer').classList.add('hidden');
+  });
 
-/* ========== Profile modal wiring ========== */
-const profileModal = document.getElementById('profileModal');
-const profileBackdrop = document.getElementById('profileBackdrop');
-document.getElementById('profileOpen').addEventListener('click', openProfile);
-document.getElementById('closeProfile').addEventListener('click', closeProfile);
-profileBackdrop.addEventListener('click', closeProfile);
+  document.getElementById('navProfile').addEventListener('click', () => {
+    openProfileModal();
+    document.getElementById('drawer').classList.add('hidden');
+  });
+  document.getElementById('navRefer').addEventListener('click', () => {
+    document.getElementById('drawer').classList.add('hidden');
+    document.getElementById('refLink').focus();
+  });
+  document.getElementById('navAbout').addEventListener('click', () => scrollToSection());
+  document.getElementById('navMission').addEventListener('click', () => scrollToSection('missionText'));
+  document.getElementById('navFAQ').addEventListener('click', () => scrollToSection('faqList'));
+  document.getElementById('navLogout').addEventListener('click', () => { doLogout(); });
 
-async function openProfile() {
-  const raw = localStorage.getItem('su_user');
-  if (!raw) { window.location.href = 'index.html'; return; }
-  const user = JSON.parse(raw);
-  document.getElementById('profileName').value = user.name || '';
+  document.getElementById('supportBtn').addEventListener('click', () => {
+    // go to contact (tel or whatsapp)
+    window.open(document.getElementById('whatsapp').href, '_blank');
+  });
+
+  // referral copy/share
+  document.getElementById('copyRef').addEventListener('click', async () => {
+    const link = document.getElementById('refLink').value;
+    try {
+      await navigator.clipboard.writeText(link);
+      alert('Referral link copied to clipboard');
+    } catch {
+      prompt('Copy this link', link);
+    }
+  });
+
+  // role action
+  document.getElementById('roleActionBtn').addEventListener('click', () => {
+    const raw = localStorage.getItem('su_user');
+    if (!raw) { window.location.href = 'index.html'; return; }
+    const user = JSON.parse(raw);
+    const role = (user.role || 'Customer').toLowerCase();
+    if (role === 'agent') window.location.href = 'Agent-dashboard.html';
+    else if (role === 'admin') window.location.href = 'Admin-dashboard.html';
+    else if (role === 'superadmin' || role === 'super admin') window.location.href = 'Superadmin-dashboard.html';
+    else window.location.href = 'Customer-dashboard.html';
+  });
+
+  // profile modal buttons
+  document.getElementById('navLogout').addEventListener('click', doLogout);
+  document.getElementById('closeProfile').addEventListener('click', () => {
+    document.getElementById('profileModal').classList.add('hidden');
+  });
+  document.getElementById('saveProfile').addEventListener('click', saveProfileChanges);
+
+  // FAQ interaction will be populated dynamically
+}
+
+// ---------- APPLY & RENDER ----------
+function applyUserToUI(user) {
+  if (!user) {
+    document.getElementById('welcomeMsg').innerText = 'Welcome!';
+    document.getElementById('welcomeSmall').innerText = 'Welcome';
+    document.getElementById('drawerName').innerText = 'Guest';
+    document.getElementById('drawerRole').innerText = 'Guest';
+    document.getElementById('profileEmail').value = '';
+    updateReferralAndAction();
+    return;
+  }
+  const name = user.name || user.fullName || user.first_name || user.email || 'User';
+  document.getElementById('welcomeMsg').innerText = `Welcome back, ${firstName(name)}!`;
+  document.getElementById('welcomeSmall').innerText = `Hi, ${firstName(name)}`;
+  document.getElementById('drawerName').innerText = name;
+  document.getElementById('drawerRole').innerText = user.role || 'Customer';
+
+  // profile modal defaults
+  document.getElementById('profileName').value = name;
   document.getElementById('profileEmail').value = user.email || '';
   document.getElementById('profilePhone').value = user.phone || '';
-  // show bank fields if agent/admin
-  const role = (user.role || '').toLowerCase();
-  const bankFields = document.getElementById('profileBankFields');
-  if (role === 'agent' || role === 'admin') {
-    bankFields.classList.remove('hidden');
-    const bd = user.bankDetails || {};
-    document.getElementById('profileBankName').value = bd.bankName || '';
-    document.getElementById('profileAccountNumber').value = bd.accountNumber || '';
-    document.getElementById('profileAccountHolder').value = bd.accountHolderName || '';
-  } else {
-    bankFields.classList.add('hidden');
-  }
-  document.getElementById('profileMsg').innerText = '';
-  profileModal.classList.remove('hidden');
-}
-function closeProfile() { profileModal.classList.add('hidden'); }
+  const bd = user.bankDetails || {};
+  document.getElementById('profileBankName').value = bd.bankName || '';
+  document.getElementById('profileAccountNumber').value = bd.accountNumber || '';
+  document.getElementById('profileAccountHolder').value = bd.accountHolderName || '';
 
-/* ========== Save profile (bank + phone) ========== */
-document.getElementById('saveProfile').addEventListener('click', async () => {
+  // show bank fields only for Agent/Admin
+  const role = (user.role || '').toLowerCase();
+  if (role === 'agent' || role === 'admin') document.getElementById('profileBankFields').classList.remove('hidden');
+  else document.getElementById('profileBankFields').classList.add('hidden');
+
+  updateReferralAndAction();
+}
+
+function applyPublicContent(content) {
+  // content expected: { about, mission, vision, faq: [{q,a}, ...] }
+  if (content.about) document.getElementById('aboutText').innerText = content.about;
+  if (content.mission) document.getElementById('missionText').innerText = content.mission;
+  if (content.vision) document.getElementById('visionText').innerText = content.vision;
+  // faq
+  const faqList = document.getElementById('faqList');
+  faqList.innerHTML = '';
+  const faqs = content.faq || [
+    { q: "What are your operating hours?", a: "We operate from 8:00 AM to 6:00 PM, Monday to Saturday." },
+    { q: "What areas in Lagos do you cover?", a: "We cover Ikeja, Victoria Island, Lekki, Surulere and many Mainland areas." },
+    { q: "How can I place a delivery order?", a: "Place an order via the Customer Dashboard or call support." }
+  ];
+  faqs.forEach((f, idx) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'border rounded-lg overflow-hidden';
+    wrap.innerHTML = `
+      <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center" data-idx="${idx}">
+        <span class="font-medium">${f.q}</span>
+        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">${f.a}</div>
+    `;
+    faqList.appendChild(wrap);
+  });
+  // attach toggles
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const a = btn.nextElementSibling;
+      if (!a) return;
+      a.classList.toggle('hidden');
+    });
+  });
+}
+
+function setStaticContent() {
+  // default static text if backend content missing
+  document.getElementById('aboutText').innerText = "Welcome to SkyUltimate Delivery Services — your trusted partner for swift, secure, and reliable delivery solutions right here in Lagos. Founded to bridge businesses and customers with punctuality and care.";
+  document.getElementById('missionText').innerText = "Our mission is to provide efficient, transparent, and reliable delivery services in Lagos, empowering businesses and individuals with seamless logistics.";
+  document.getElementById('visionText').innerText = "To be the leading and most preferred delivery service in Nigeria, recognized for reliability and technological excellence.";
+  // default FAQ is populated by applyPublicContent fallback.
+  applyPublicContent({});
+}
+
+function showAnnouncement(a) {
+  if (!a || !a.message) return;
+  const b = document.getElementById('announceBanner');
+  document.getElementById('announceTitle').innerText = a.title || 'Announcement';
+  document.getElementById('announceMsg').innerText = a.message || '';
+  b.classList.remove('hidden');
+}
+
+function updateReferralAndAction() {
+  const raw = localStorage.getItem('su_user');
+  const refInput = document.getElementById('refLink');
+  const btn = document.getElementById('roleActionBtn');
+  if (!raw) {
+    refInput.value = `${location.origin}/signup`;
+    btn.innerText = 'Login';
+    return;
+  }
+  const user = JSON.parse(raw);
+  const uid = user._id || user.id || '';
+  refInput.value = `${location.origin}/signup?ref=${encodeURIComponent(uid || (user.email || '').split('@')[0])}`;
+  const role = (user.role || 'Customer').toLowerCase();
+  if (role === 'agent') btn.innerText = 'Go to Delivery Board';
+  else if (role === 'admin') btn.innerText = 'Go to Operations Hub';
+  else if (role === 'superadmin' || role === 'super admin') btn.innerText = 'Go to Master Control Panel';
+  else btn.innerText = 'Go to My Dashboard';
+}
+
+/* ---------- PROFILE SAVE (phone + bank) ---------- */
+async function saveProfileChanges() {
   const phone = document.getElementById('profilePhone').value.trim();
   const bankName = document.getElementById('profileBankName').value.trim();
   const accountNumber = document.getElementById('profileAccountNumber').value.trim();
   const accountHolderName = document.getElementById('profileAccountHolder').value.trim();
+
   const payload = { phone };
   if (bankName || accountNumber || accountHolderName) {
     payload.bankName = bankName;
     payload.accountNumber = accountNumber;
     payload.accountHolderName = accountHolderName;
   }
-  document.getElementById('saveProfile').disabled = true;
-  document.getElementById('profileMsg').innerText = 'Saving...';
+
   try {
-    await apiFetch(PATH_SAVE_BANK, { method: 'PUT', body: JSON.stringify(payload) });
-    // update local copy su_user for immediate UI consistency
+    const res = await fetch(API_BASE + '/api/users/me/bank', {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(()=>null);
+    if (!res.ok) throw new Error((data && data.message) || `HTTP ${res.status}`);
+    // update local copy
     const raw = localStorage.getItem('su_user') || '{}';
     const user = JSON.parse(raw);
     user.phone = phone || user.phone;
@@ -380,97 +494,38 @@ document.getElementById('saveProfile').addEventListener('click', async () => {
     if (accountHolderName) user.bankDetails.accountHolderName = accountHolderName;
     localStorage.setItem('su_user', JSON.stringify(user));
     document.getElementById('profileMsg').innerText = 'Profile updated.';
-    setTimeout(closeProfile, 900);
-  } catch (e) {
-    document.getElementById('profileMsg').innerText = e.message || 'Save failed';
-  } finally {
-    document.getElementById('saveProfile').disabled = false;
+    applyUserToUI(user);
+    setTimeout(()=> document.getElementById('profileModal').classList.add('hidden'), 800);
+  } catch (err) {
+    document.getElementById('profileMsg').innerText = err.message || 'Failed to update.';
   }
-});
-
-/* ========== Role button logic & Redirects ========== */
-function updateRoleButtonFromUser(user) {
-  const role = (user.role || 'Customer').toLowerCase();
-  const roleBtn = document.getElementById('roleBtn');
-  const roleAction = document.getElementById('roleAction');
-  let text = 'Go to My Dashboard';
-  let href = 'Customer-dashboard.html';
-  if (role === 'agent') { text = 'Go to Delivery Board'; href = 'Agent-dashboard.html'; }
-  else if (role === 'admin') { text = 'Go to Operations Hub'; href = 'Admin-dashboard.html'; }
-  else if (role === 'superadmin' || role === 'super admin') { text = 'Go to Master Control Panel'; href = 'Superadmin-dashboard.html'; }
-  roleBtn.innerText = text;
-  roleAction.innerText = text;
-  roleBtn.onclick = () => window.location.href = href;
-  roleAction.onclick = () => window.location.href = href;
 }
 
-/* ========== Profile loading & Announcement ========= */
-async function loadProfileAndUI() {
-  // First check localStorage cached user
+/* ---------- PROFILE MODAL ---------- */
+function openProfileModal() {
   const raw = localStorage.getItem('su_user');
-  if (raw) {
-    try {
-      const user = JSON.parse(raw);
-      applyUserToUI(user);
-    } catch (e) { /* ignore */ }
-  }
-  // attempt to fetch fresh profile from backend if token exists
-  const token = localStorage.getItem('su_token');
-  if (!token) return; // not logged in
-  try {
-    const profile = await apiFetch(PATH_PROFILE);
-    if (profile) {
-      // store the canonical profile in localStorage
-      localStorage.setItem('su_user', JSON.stringify(profile));
-      applyUserToUI(profile);
-    }
-  } catch (err) {
-    console.warn('Profile fetch failed:', err.message);
-  }
+  if (!raw) { window.location.href = 'index.html'; return; }
+  document.getElementById('profileModal').classList.remove('hidden');
 }
 
-function applyUserToUI(user) {
-  const first = (user.name || '').split(' ')[0] || 'User';
-  document.getElementById('welcomeTitle').innerText = `Welcome back, ${first}!`;
-  document.getElementById('welcomeSub').innerText = `Signed in as ${user.role || 'Customer'}.`;
-  document.getElementById('drawerName').innerText = user.name || 'User';
-  document.getElementById('drawerRole').innerText = user.role || '';
-  updateRoleButtonFromUser(user);
+/* ---------- LOGOUT ---------- */
+function doLogout() {
+  localStorage.removeItem('su_token');
+  localStorage.removeItem('su_user');
+  window.location.href = 'index.html';
 }
 
-/* Announcement fetch */
-async function loadAnnouncement() {
-  try {
-    const res = await fetch(API_BASE + PATH_ANNOUNCE);
-    if (!res.ok) return; // silent when endpoint not present
-    const data = await res.json();
-    if (!data || !data.isActive) return;
-    document.getElementById('announceTitle').innerText = data.title || 'Announcement';
-    document.getElementById('announceBody').innerText = data.message || '';
-    document.getElementById('announcement').classList.remove('hidden');
-  } catch (err) {
-    // ignore announcement errors
-    console.info('Announcement load error:', err.message);
+/* ---------- small helpers ---------- */
+function scrollToSection(id = null) {
+  if (!id) window.scrollTo({ top: 0, behavior: 'smooth' });
+  else {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }
 
-/* ========== Utilities ========== */
-function scrollToId(id) {
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-/* ========== Init on DOMContentLoaded ========== */
-document.addEventListener('DOMContentLoaded', async () => {
-  // wire some quick buttons
-  document.getElementById('aboutRead').addEventListener('click', () => scrollToId('aboutCard'));
-  document.getElementById('missionRead').addEventListener('click', () => scrollToId('missionCard'));
-  document.getElementById('roleAction').addEventListener('click', () => document.getElementById('roleBtn').click());
-
-  // fetch profile + announcement
-  await loadProfileAndUI();
-  await loadAnnouncement();
-});
+/* ---------- start ---------- */
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
