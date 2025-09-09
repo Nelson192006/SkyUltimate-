@@ -6,576 +6,685 @@
   <title>SkyUltimate — Customer Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { background:#C00000; }
-    .card { background: rgba(255,255,255,0.92); border-radius: 16px; padding: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
-    .btn-primary { background:#C00000; color:#fff; padding:10px 14px; border-radius:12px; font-weight:600; }
-    .modal-backdrop { background: rgba(0,0,0,0.45); }
-    /* small helper to keep markup short */
+    :root{--brand-red:#C00000;--brand-red-dark:#900000}
+    body{background:linear-gradient(180deg,#C00000,#A00000);min-height:100vh;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    .glass{background:rgba(255,255,255,0.92);backdrop-filter:blur(5px)}
+    .card{border-radius:16px;padding:18px;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+    .btn-primary{background:var(--brand-red);color:#fff;padding:10px 14px;border-radius:12px;font-weight:700}
+    .btn-ghost{background:rgba(255,255,255,0.9);color:#111;padding:8px 12px;border-radius:10px}
+    .modal-backdrop{background:rgba(0,0,0,.55)}
+    .fade-in{animation:fadeIn .28s ease both}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
   </style>
 </head>
-<body class="min-h-screen text-gray-900">
+<body class="text-gray-900">
 
-<!-- Top bar -->
-<header class="flex items-center justify-between px-4 py-3">
-  <div class="flex items-center gap-3">
-    <button id="menuBtn" class="p-2 rounded-md bg-white/10 text-white">☰</button>
-    <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true"
-         alt="logo" class="w-14 h-14 object-contain">
-    <div class="text-white">
-      <div id="greeting" class="font-bold text-lg">Welcome!</div>
-      <div class="text-xs opacity-90">Customer Dashboard</div>
+<!-- CONFIG: paste your exact endpoints or keys here if you want them to be preferred -->
+<script>
+  // If you know exact paths or want to provide your Google Maps key, paste them here.
+  // Example:
+  // window.SU_CONFIG = {
+  //   apiBase: 'https://your-backend.example.com',
+  //   api: {
+  //     calcPrice: ['/api/orders/calculate-price'],
+  //     createOrder: ['/api/orders'],
+  //     announcementLatest: ['/api/announcements/latest'],
+  //     getOrder: ['/api/orders/:id'],
+  //     orderHistory: ['/api/orders?customerId=:id'],
+  //     rateOrder: ['/api/orders/:id/rate'],
+  //     report: ['/api/admin-requests'],
+  //   },
+  //   googleMapsKey: 'YOUR_GOOGLE_KEY_IF_ANY'
+  // }
+  window.SU_CONFIG = window.SU_CONFIG || {};
+</script>
+
+<header class="max-w-4xl mx-auto pt-6 px-4">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <img id="brandLogo" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true"
+           alt="SkyUltimate" class="w-16 h-16 rounded-full object-cover shadow-lg"/>
+      <div id="headerWelcome" class="text-white text-2xl font-semibold ml-2">Welcome!</div>
     </div>
-  </div>
-  <div class="flex items-center gap-2">
-    <button id="notificationsBtn" class="text-white px-3 py-2 rounded-md bg-white/10">Announcements</button>
-    <button id="logout" class="text-white px-3 py-2 rounded-md bg-white/10">Logout</button>
+    <div class="flex items-center gap-3">
+      <button id="notificationsBtn" title="Announcements" class="p-2 rounded-full hover:bg-white/10 text-white">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+      </button>
+      <button id="menuBtn" title="Menu" class="p-2 rounded-full hover:bg-white/10 text-white">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+    </div>
   </div>
 </header>
 
-<!-- Drawer / hamburger menu -->
-<aside id="drawer" class="fixed left-0 top-0 bottom-0 w-72 transform -translate-x-full transition-transform z-50">
-  <div class="card m-4">
-    <div class="flex items-center justify-between mb-4">
-      <div>
-        <div id="drawerName" class="font-bold"></div>
-        <div id="drawerRole" class="text-xs text-gray-600"></div>
+<main class="max-w-4xl mx-auto mt-6 px-4 space-y-6 pb-28">
+
+  <!-- Announcement banner -->
+  <div id="announcementBanner" class="hidden card glass text-white overflow-hidden rounded-2xl p-4">
+    <div class="flex items-start gap-4">
+      <div class="flex-1">
+        <div id="announceTitle" class="font-bold text-lg"></div>
+        <div id="announceMsg" class="text-sm mt-1"></div>
       </div>
-      <button id="closeDrawer" class="text-gray-600">✕</button>
-    </div>
-
-    <nav class="space-y-2">
-      <button class="w-full text-left p-2 rounded hover:bg-gray-100" id="navMyOrders">My Orders</button>
-      <button class="w-full text-left p-2 rounded hover:bg-gray-100" id="navRefer">Refer & Earn</button>
-      <button class="w-full text-left p-2 rounded hover:bg-gray-100" id="navHistory">Order History</button>
-      <button class="w-full text-left p-2 rounded hover:bg-gray-100" id="navRate">Rate Agent</button>
-      <button class="w-full text-left p-2 rounded hover:bg-gray-100" id="navReport">Report Agent</button>
-      <button class="w-full text-left p-2 rounded hover:bg-gray-100" id="navProfile">My Profile</button>
-      <button class="w-full text-left p-2 rounded hover:bg-gray-100" id="navHelp">Help</button>
-    </nav>
-
-    <div class="mt-6 text-xs text-gray-500">
-      Contact: <a href="tel:+2349128884830" class="underline">09128884830</a><br/>
-      Email: <a href="mailto:nelsongodspower24@gmail.com" class="underline">nelsongodspower24@gmail.com</a>
+      <div><button id="dismissAnn" class="text-white/80 hover:text-white">Dismiss</button></div>
     </div>
   </div>
-</aside>
 
-<!-- Main container -->
-<main class="max-w-3xl mx-auto px-4 pb-24">
+  <!-- Place Order -->
+  <section id="placementCard" class="card glass fade-in">
+    <h2 class="text-lg font-bold mb-3">Place a New Order</h2>
+    <p class="text-sm text-gray-700 mb-4">Fill details below and calculate the final price before confirming the order.</p>
 
-  <!-- Announcement banner (top) -->
-  <div id="announcement" class="card my-4 hidden">
-    <div class="font-semibold text-red-700" id="announceTitle"></div>
-    <div class="text-sm mt-1" id="announceMsg"></div>
-  </div>
-
-  <!-- Referral -->
-  <section id="referralSection" class="card my-4">
-    <div class="flex items-center justify-between">
-      <div>
-        <h2 class="font-bold">Refer & Earn</h2>
-        <p class="text-sm text-gray-700">Share your code and earn rewards when friends sign up and complete actions.</p>
+    <div class="grid grid-cols-1 gap-3">
+      <input id="pickup" placeholder="Pickup address" class="w-full border rounded-lg px-4 py-3" />
+      <input id="pickupContact" placeholder="Pickup contact (name or phone)" class="w-full border rounded-lg px-4 py-3" />
+      <input id="dropoff" placeholder="Delivery address" class="w-full border rounded-lg px-4 py-3" />
+      <input id="dropoffContact" placeholder="Recipient contact (name or phone)" class="w-full border rounded-lg px-4 py-3" />
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <input id="itemType" placeholder="Item type (Documents, Parcel)" class="w-full border rounded-lg px-4 py-3 col-span-2" />
+        <input id="weight" type="number" min="0" placeholder="Weight (kg)" class="w-full border rounded-lg px-4 py-3" />
       </div>
-      <div class="text-right">
-        <div class="text-xs text-gray-600">Your code</div>
-        <div id="refCode" class="font-mono font-semibold text-lg">—</div>
-        <div class="mt-2 flex gap-2">
-          <button id="copyRef" class="btn-primary">Copy</button>
-          <button id="shareRef" class="border px-3 py-2 rounded">Share</button>
-        </div>
-      </div>
-    </div>
-    <div id="refStatus" class="mt-3 text-sm text-green-600"></div>
-  </section>
 
-  <!-- Place New Order -->
-  <section id="placement" class="card my-4">
-    <h3 class="font-bold mb-3">Place a New Order</h3>
-
-    <div class="space-y-2">
-      <input id="pickup" placeholder="Pickup address" class="w-full border rounded px-3 py-2" />
-      <input id="dropoff" placeholder="Delivery address" class="w-full border rounded px-3 py-2" />
-      <input id="itemType" placeholder="Item type (e.g., Documents, Parcel)" class="w-full border rounded px-3 py-2" />
-      <div class="flex gap-2">
-        <input id="weight" type="number" placeholder="Weight (kg)" class="flex-1 border rounded px-3 py-2" />
-        <select id="serviceType" class="w-40 border rounded px-3 py-2">
-          <option value="standard">Standard</option>
-          <option value="express">Express</option>
-          <option value="same-day">Same-day</option>
+      <div class="flex gap-3">
+        <select id="serviceType" class="w-full border rounded-lg px-4 py-3">
+          <option value="standard">Standard</option><option value="express">Express</option><option value="same-day">Same-day</option>
         </select>
+        <select id="fragility" class="w-48 border rounded-lg px-4 py-3"><option value="normal">Normal</option><option value="fragile">Fragile</option></select>
       </div>
 
-      <div class="flex gap-2 mt-2">
-        <button id="calcPrice" class="btn-primary flex-1">Calculate Final Price</button>
-        <button id="submitOrder" class="bg-gray-200 text-gray-800 px-4 py-2 rounded flex-1">Confirm & Await Admin Approval</button>
+      <div class="flex gap-3 mt-2">
+        <button id="calcPriceBtn" class="btn-primary flex-1">Calculate Final Price</button>
+        <button id="submitOrderBtn" class="btn-ghost border flex-1">Confirm & Await Admin Approval</button>
       </div>
 
-      <p id="calcMsg" class="text-sm text-red-600 mt-2"></p>
+      <p id="placementMsg" class="text-sm text-red-600 mt-1 min-h-[1.25rem]"></p>
     </div>
   </section>
 
-  <!-- Price Modal (hidden) -->
-  <div id="priceModal" class="fixed inset-0 hidden items-center justify-center z-50">
-    <div class="modal-backdrop absolute inset-0"></div>
-    <div class="bg-white rounded-2xl p-6 z-60 w-11/12 max-w-lg card">
-      <h4 class="font-bold">Final Price</h4>
+  <!-- Tracking Hub -->
+  <section id="trackingCard" class="card glass hidden fade-in">
+    <div class="flex items-center justify-between">
+      <div><h3 class="font-bold text-lg">Order Tracking</h3><div class="text-sm text-gray-600 mt-1">Track status & live updates</div></div>
+      <div><button id="closeTracking" class="btn-ghost">Close</button></div>
+    </div>
+
+    <div class="mt-4">
+      <div class="text-sm text-gray-700">Order ID: <span id="trackId" class="font-mono"></span></div>
+      <div class="mt-2">Status: <span id="trackStatus" class="font-semibold"></span></div>
+
+      <div id="mapPlaceholder" class="mt-4 h-48 border rounded-lg flex items-center justify-center text-sm text-gray-500">
+        Live map placeholder — agent live tracking will appear here if configured.
+      </div>
+
+      <div id="timeline" class="mt-4 space-y-2"></div>
+
+      <div class="mt-4 flex gap-3">
+        <button id="confirmPickedBtn" class="bg-yellow-500 px-4 py-2 rounded hidden">Confirm Item Picked Up</button>
+        <button id="confirmDeliveredBtn" class="bg-green-600 px-4 py-2 rounded hidden text-white">Confirm Order Delivered</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Referral & History -->
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="card glass p-4">
+      <h4 class="font-semibold">Refer & Earn</h4>
+      <p class="text-sm text-gray-700 mt-1">Share your referral link and earn rewards when friends sign up and complete actions.</p>
       <div class="mt-3">
-        <div class="text-2xl font-semibold" id="finalPrice">₦0</div>
-        <div class="text-sm text-gray-700 mt-2">Pay via bank transfer to:</div>
-        <div class="mt-2 text-sm">
-          <div id="bankName">SkyUltimate Bank</div>
-          <div id="bankAccount">0000000000</div>
-          <div id="bankHolder">SkyUltimate</div>
+        <div class="font-mono text-lg" id="refCodeDisplay">—</div>
+        <div class="mt-2 flex gap-2">
+          <button id="copyRefBtn" class="btn-primary flex-1">Copy Link</button>
+          <button id="shareRefBtn" class="btn-ghost border flex-1">Share</button>
         </div>
-        <div class="mt-3 text-sm text-gray-600">After payment, an admin will confirm and your order will move to tracking.</div>
-      </div>
-
-      <div class="mt-4 flex gap-2">
-        <button id="closePrice" class="bg-gray-200 px-4 py-2 rounded flex-1">Close</button>
-        <button id="payConfirm" class="btn-primary flex-1">I have Paid (Simulate)</button>
+        <div id="refMsg" class="text-sm text-green-600 mt-2 min-h-[1rem]"></div>
       </div>
     </div>
-  </div>
 
-  <!-- Tracking Hub / Active Order -->
-  <section id="tracking" class="card my-4 hidden">
-    <h3 class="font-bold">Order Tracking</h3>
-    <div class="mt-3">
-      <div class="text-sm text-gray-700">Order ID: <span id="trackId"></span></div>
-      <div class="mt-2 text-sm">Status: <span id="trackStatus" class="font-semibold"></span></div>
-      <div class="mt-3" id="trackTimeline"></div>
-      <div class="mt-3">
-        <button id="rateAgentBtn" class="bg-yellow-400 px-3 py-2 rounded hidden">Rate Agent</button>
-        <button id="reportAgentBtn" class="bg-red-600 text-white px-3 py-2 rounded hidden">Report Agent</button>
+    <div class="card glass p-4 md:col-span-2">
+      <div class="flex items-center justify-between">
+        <h4 class="font-semibold">My Order History</h4>
+        <button id="refreshHistory" class="text-sm text-gray-600 hover:underline">Refresh</button>
       </div>
+      <div id="historyList" class="mt-3 space-y-2 text-sm text-gray-700">Loading...</div>
     </div>
-  </section>
-
-  <!-- Order History -->
-  <section id="history" class="card my-4">
-    <h3 class="font-bold mb-3">Order History</h3>
-    <div id="historyList" class="space-y-2 text-sm text-gray-700">Loading...</div>
   </section>
 
 </main>
 
-<!-- Rating Modal -->
-<div id="rateModal" class="fixed inset-0 hidden items-center justify-center z-50">
-  <div class="modal-backdrop absolute inset-0"></div>
-  <div class="bg-white rounded-2xl p-6 z-60 w-11/12 max-w-md card">
-    <h4 class="font-bold">Rate Agent</h4>
+<!-- Side Drawer -->
+<div id="drawer" class="fixed inset-0 z-50 hidden">
+  <div id="drawerBackdrop" class="absolute inset-0 modal-backdrop"></div>
+  <aside class="absolute right-0 top-0 bottom-0 w-80 bg-white p-6 overflow-auto">
+    <div class="flex items-center justify-between mb-4">
+      <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" class="w-12 h-12 rounded-full object-cover" alt="logo"/>
+      <button id="drawerClose" class="text-gray-600">✕</button>
+    </div>
+
+    <div class="mb-4"><div id="drawerName" class="font-bold"></div><div id="drawerRole" class="text-xs text-gray-600"></div></div>
+
+    <nav class="space-y-2">
+      <button id="navPlaceOrder" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Place Order</button>
+      <button id="navMyOrders" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">My Orders</button>
+      <button id="navRefer" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Refer & Earn</button>
+      <button id="navProfile" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">My Profile</button>
+      <button id="navHelp" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Help & FAQ</button>
+      <button id="navLogout" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50 text-red-600">Logout</button>
+    </nav>
+
+    <div class="mt-6 text-xs text-gray-500">
+      Contact: <a id="drawerPhone" href="tel:+2349128884830" class="underline">+234 912 888 4830</a><br/>
+      Email: <a id="drawerEmail" href="mailto:nelsongodspower24@gmail.com" class="underline">nelsongodspower24@gmail.com</a>
+    </div>
+  </aside>
+</div>
+
+<!-- Price Modal -->
+<div id="priceModal" class="fixed inset-0 hidden items-center justify-center z-60">
+  <div class="absolute inset-0 modal-backdrop"></div>
+  <div class="bg-white w-11/12 max-w-lg rounded-2xl p-6 z-70 card">
+    <h3 class="font-bold text-lg">Final Price</h3>
     <div class="mt-3">
-      <div class="flex gap-1" id="stars">
-        <!-- stars inserted by JS -->
+      <div class="text-3xl font-semibold" id="finalPrice">₦0</div>
+      <div class="text-sm text-gray-700 mt-2">Pay via bank transfer to:</div>
+      <div class="mt-2 text-sm">
+        <div id="modalBankName">SkyUltimate Bank</div>
+        <div id="modalBankAccount" class="font-mono">0000000000</div>
+        <div id="modalBankHolder">SkyUltimate</div>
       </div>
-      <textarea id="rateComment" placeholder="Comment (optional)" class="w-full border rounded mt-3 p-2"></textarea>
-      <div class="mt-4 flex gap-2">
-        <button id="cancelRate" class="bg-gray-200 px-4 py-2 rounded flex-1">Cancel</button>
-        <button id="submitRate" class="btn-primary flex-1">Submit Rating</button>
-      </div>
-      <p id="rateMsg" class="text-sm text-green-600 mt-2"></p>
+      <div class="mt-4 text-sm text-gray-600">After payment, the Super Admin will confirm the payment and dispatch the order.</div>
+    </div>
+    <div class="mt-4 flex gap-2">
+      <button id="priceClose" class="btn-ghost flex-1">Close</button>
+      <button id="priceConfirm" class="btn-primary flex-1">I've Paid (Simulate)</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rate Modal -->
+<div id="rateModal" class="fixed inset-0 hidden items-center justify-center z-60">
+  <div class="absolute inset-0 modal-backdrop"></div>
+  <div class="bg-white w-11/12 max-w-md rounded-2xl p-6 z-70 card">
+    <h3 class="font-bold">Rate Agent</h3>
+    <div class="mt-3"><div id="stars" class="flex gap-2 text-yellow-400"></div>
+    <textarea id="rateComment" placeholder="Comment (optional)" class="w-full border rounded mt-3 p-2"></textarea>
+    <div class="mt-4 flex gap-2"><button id="cancelRate" class="btn-ghost flex-1">Cancel</button><button id="submitRate" class="btn-primary flex-1">Submit Rating</button></div>
+    <p id="rateMsg" class="text-sm text-green-600 mt-2"></p></div>
+  </div>
+</div>
+
+<!-- Report Modal -->
+<div id="reportModal" class="fixed inset-0 hidden items-center justify-center z-60">
+  <div class="absolute inset-0 modal-backdrop"></div>
+  <div class="bg-white w-11/12 max-w-md rounded-2xl p-6 z-70 card">
+    <h3 class="font-bold">Report Agent</h3>
+    <div class="mt-3">
+      <select id="reportReason" class="w-full border rounded px-3 py-2"><option value="">Select reason</option><option value="late">Late Arrival</option><option value="rude">Rude Behavior</option><option value="damage">Damaged Package</option><option value="other">Other</option></select>
+      <textarea id="reportDetails" placeholder="Details" class="w-full border rounded mt-3 p-2"></textarea>
+      <div class="mt-4 flex gap-2"><button id="cancelReport" class="btn-ghost flex-1">Cancel</button><button id="submitReport" class="btn-primary flex-1">Submit Report</button></div>
+      <p id="reportMsg" class="text-sm text-green-600 mt-2"></p>
     </div>
   </div>
 </div>
 
 <script>
-/* Customer-dashboard.html
-   - Uses API_BASE: change if needed.
-   - Endpoints used:
-     POST /api/orders/calc-price
-     POST /api/orders
-     GET  /api/announcements/latest
-     GET  /api/orders/:id
-     GET  /api/orders?customerId=<id>  (order history - fallback)
-     POST /api/orders/:id/rate
-     POST /api/admin-requests   (report) - best-effort; backend may differ
-   - Auth: expects localStorage.su_token and su_user (set by login)
+/*
+  Resilient Customer Dashboard
+  - will attempt multiple endpoint candidates for each action (no static placeholders)
+  - set exact endpoints in window.SU_CONFIG.api if you have them (CONFIG at top)
 */
 
-const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
+const DEFAULT_API_BASE = window.SU_CONFIG.apiBase || "https://skyultimate-backend-api-structure.onrender.com";
+const CONFIG = window.SU_CONFIG || {};
+const API_BASE = DEFAULT_API_BASE;
 const token = localStorage.getItem('su_token');
-const currentUser = JSON.parse(localStorage.getItem('su_user') || 'null');
+const userRaw = localStorage.getItem('su_user');
+const currentUser = userRaw ? JSON.parse(userRaw) : null;
 
 if (!token || !currentUser) {
-  // Not authenticated - send back to login
+  localStorage.removeItem('su_token'); localStorage.removeItem('su_user');
   window.location.href = 'index.html';
 }
 
-/* ---------- UI references ---------- */
-const drawer = document.getElementById('drawer');
-const menuBtn = document.getElementById('menuBtn');
-const closeDrawer = document.getElementById('closeDrawer');
-const logoutBtn = document.getElementById('logout');
+/* --- Endpoint candidates --- */
+const PATH_CANDIDATES = {
+  announcementLatest: CONFIG.api?.announcementLatest || [
+    '/api/announcements/latest',
+    '/api/announcements/latest/',
+    '/api/announcement/latest',
+  ],
+  calcPrice: CONFIG.api?.calcPrice || [
+    '/api/orders/calc-price',
+    '/api/orders/calculate-price',
+    '/api/orders/calc_price',
+    '/api/orders/calculatePrice',
+  ],
+  createOrder: CONFIG.api?.createOrder || [
+    '/api/orders',
+    '/api/orders/create',
+    '/api/orders/submit'
+  ],
+  getOrder: CONFIG.api?.getOrder || [
+    '/api/orders/:id',
+    '/api/order/:id'
+  ],
+  orderHistory: CONFIG.api?.orderHistory || [
+    '/api/orders?customerId=:id',
+    '/api/orders/customer/:id',
+    '/api/orders/history?customerId=:id'
+  ],
+  rateOrder: CONFIG.api?.rateOrder || [
+    '/api/orders/:id/rate',
+    '/api/rate/order/:id'
+  ],
+  report: CONFIG.api?.report || [
+    '/api/admin-requests',
+    '/api/reports',
+    '/api/support/tickets'
+  ],
+  updateOrder: CONFIG.api?.updateOrder || [
+    '/api/orders/:id',
+    '/api/orders/:id/action',
+    '/api/orders/:id/status'
+  ]
+};
 
-const announceEl = document.getElementById('announcement');
+/* helper: try a list of endpoints until one works */
+async function tryEndpoints(candidatePaths, opts = {}) {
+  // candidatePaths: array of path templates (may include :id)
+  // opts: { method, body, id, queryParams (object), headers }
+  for (const p of candidatePaths) {
+    try {
+      let path = p;
+      if (opts.id) path = path.replace(':id', encodeURIComponent(opts.id));
+      if (opts.queryParams && typeof opts.queryParams === 'object') {
+        const q = new URLSearchParams(opts.queryParams).toString();
+        path += (path.includes('?') ? '&' : '?') + q;
+      }
+      const url = API_BASE + path;
+      const headers = Object.assign({}, opts.headers || {}, { 'Content-Type': 'application/json' });
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res = await fetch(url, { method: opts.method || 'GET', headers, body: opts.body ? JSON.stringify(opts.body) : undefined });
+      // success range 200-299
+      if (res.ok) {
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('application/json')) return await res.json();
+        return await res.text();
+      } else {
+        // if 404 or 405 or 401, continue trying other endpoints; but if 4xx likely wrong payload - also continue
+        // we still continue trying; only throw when all candidates fail
+      }
+    } catch (e) {
+      // network or CORS error — try next endpoint
+    }
+  }
+  // all failed
+  throw new Error('No working endpoint found among candidates.');
+}
+
+/* quick wrapper that prefers a single exact path if provided via CONFIG.api.[name] (first element) */
+async function callApi(name, opts = {}) {
+  const candidates = PATH_CANDIDATES[name] || [];
+  return tryEndpoints(candidates, opts);
+}
+
+/* small helper to GET with candidates */
+async function callGet(name, opts = {}) { return callApi(name, Object.assign({}, opts, { method: 'GET' })); }
+async function callPost(name, body, opts = {}) { return callApi(name, Object.assign({}, opts, { method: 'POST', body })); }
+async function callPut(name, body, opts = {}) { return callApi(name, Object.assign({}, opts, { method: 'PUT', body })); }
+
+/* ----------------- UI wiring and logic ----------------- */
+const headerWelcome = document.getElementById('headerWelcome');
+const drawer = document.getElementById('drawer');
+const drawerBackdrop = document.getElementById('drawerBackdrop');
+const menuBtn = document.getElementById('menuBtn');
+const drawerClose = document.getElementById('drawerClose');
+const navLogout = document.getElementById('navLogout');
+const drawerName = document.getElementById('drawerName');
+const drawerRole = document.getElementById('drawerRole');
+
+const announcementBanner = document.getElementById('announcementBanner');
 const announceTitle = document.getElementById('announceTitle');
 const announceMsg = document.getElementById('announceMsg');
-
-const refCodeEl = document.getElementById('refCode');
-const copyRefBtn = document.getElementById('copyRef');
-const shareRefBtn = document.getElementById('shareRef');
-const refStatus = document.getElementById('refStatus');
+const dismissAnn = document.getElementById('dismissAnn');
 
 const pickupInput = document.getElementById('pickup');
+const pickupContact = document.getElementById('pickupContact');
 const dropoffInput = document.getElementById('dropoff');
+const dropoffContact = document.getElementById('dropoffContact');
 const itemTypeInput = document.getElementById('itemType');
 const weightInput = document.getElementById('weight');
 const serviceInput = document.getElementById('serviceType');
-const calcBtn = document.getElementById('calcPrice');
-const submitBtn = document.getElementById('submitOrder');
-const calcMsg = document.getElementById('calcMsg');
+const fragilityInput = document.getElementById('fragility');
+const calcPriceBtn = document.getElementById('calcPriceBtn');
+const submitOrderBtn = document.getElementById('submitOrderBtn');
+const placementMsg = document.getElementById('placementMsg');
 
 const priceModal = document.getElementById('priceModal');
 const finalPriceEl = document.getElementById('finalPrice');
-const bankNameEl = document.getElementById('bankName');
-const bankAccEl = document.getElementById('bankAccount');
-const bankHolderEl = document.getElementById('bankHolder');
-const closePrice = document.getElementById('closePrice');
-const payConfirm = document.getElementById('payConfirm');
+const modalBankName = document.getElementById('modalBankName');
+const modalBankAccount = document.getElementById('modalBankAccount');
+const modalBankHolder = document.getElementById('modalBankHolder');
+const priceClose = document.getElementById('priceClose');
+const priceConfirm = document.getElementById('priceConfirm');
 
-const trackingSection = document.getElementById('tracking');
+const trackingCard = document.getElementById('trackingCard');
+const placementCard = document.getElementById('placementCard');
 const trackIdEl = document.getElementById('trackId');
 const trackStatusEl = document.getElementById('trackStatus');
-const trackTimeline = document.getElementById('trackTimeline');
-const rateAgentBtn = document.getElementById('rateAgentBtn');
-const reportAgentBtn = document.getElementById('reportAgentBtn');
+const timelineEl = document.getElementById('timeline');
+const closeTracking = document.getElementById('closeTracking');
+const confirmPickedBtn = document.getElementById('confirmPickedBtn');
+const confirmDeliveredBtn = document.getElementById('confirmDeliveredBtn');
+
+const refCodeDisplay = document.getElementById('refCodeDisplay');
+const copyRefBtn = document.getElementById('copyRefBtn');
+const shareRefBtn = document.getElementById('shareRefBtn');
+const refMsg = document.getElementById('refMsg');
 
 const historyList = document.getElementById('historyList');
+const refreshHistory = document.getElementById('refreshHistory');
 
 const rateModal = document.getElementById('rateModal');
 const starsContainer = document.getElementById('stars');
-const submitRateBtn = document.getElementById('submitRate');
-const cancelRateBtn = document.getElementById('cancelRate');
 const rateComment = document.getElementById('rateComment');
+const cancelRate = document.getElementById('cancelRate');
+const submitRate = document.getElementById('submitRate');
 const rateMsg = document.getElementById('rateMsg');
 
-document.getElementById('drawerName').innerText = currentUser.name || 'Customer';
-document.getElementById('drawerRole').innerText = currentUser.role || 'Customer';
-document.getElementById('greeting').innerText = `Hello, ${String(currentUser.name||'').split(' ')[0] || 'there'}!`;
+const reportModal = document.getElementById('reportModal');
+const cancelReport = document.getElementById('cancelReport');
+const submitReport = document.getElementById('submitReport');
+const reportReason = document.getElementById('reportReason');
+const reportDetails = document.getElementById('reportDetails');
+const reportMsg = document.getElementById('reportMsg');
 
-/* ---------- Helpers ---------- */
-async function apiFetch(path, opts = {}) {
-  const headers = opts.headers || {};
-  headers['Content-Type'] = 'application/json';
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(API_BASE + path, { ...opts, headers });
-  if (res.status === 401) {
-    alert('Session expired. Please log in again.');
-    localStorage.removeItem('su_token');
-    localStorage.removeItem('su_user');
-    window.location.href = 'index.html';
-    throw new Error('Unauthorized');
-  }
-  const data = await res.json().catch(()=>null);
-  if (!res.ok) throw new Error((data && data.message) || 'Request failed');
-  return data;
+let activeOrderId = null;
+let pollingInterval = null;
+let lastCalcResponse = null;
+let selectedRating = 0;
+let rateTargetOrderId = null;
+let reportTargetOrderId = null;
+
+function firstName(full){ if(!full) return ''; return String(full).split(' ')[0]; }
+function initUI(){
+  headerWelcome.innerText = `Hello, ${firstName(currentUser.name||'') || 'there'}!`;
+  drawerName.innerText = currentUser.name || 'User';
+  drawerRole.innerText = (currentUser.role || 'Customer');
+  refCodeDisplay.innerText = currentUser.referralCode || (currentUser._id ? ('REF'+String(currentUser._id).slice(-6)) : 'REF-UNKNOWN');
+  document.getElementById('drawerEmail').href = `mailto:${currentUser.email || 'noreply@example.com'}`;
+  document.getElementById('drawerPhone').href = `tel:+2349128884830`;
+  loadAnnouncement();
+  loadHistory();
+  // optionally load map if you provided key
+  if (CONFIG.googleMapsKey) loadGoogleMap(CONFIG.googleMapsKey);
 }
+initUI();
 
-/* ---------- Menu & basic UI ---------- */
-menuBtn.onclick = ()=> drawer.classList.toggle('-translate-x-full');
-closeDrawer.onclick = ()=> drawer.classList.add('-translate-x-full');
-logoutBtn.onclick = () => { localStorage.removeItem('su_token'); localStorage.removeItem('su_user'); window.location.href = 'index.html'; };
+/* Drawer handlers */
+menuBtn.addEventListener('click', ()=> document.getElementById('drawer').classList.remove('hidden'));
+drawerClose.addEventListener('click', ()=> document.getElementById('drawer').classList.add('hidden'));
+drawerBackdrop.addEventListener('click', ()=> document.getElementById('drawer').classList.add('hidden'));
+navLogout.addEventListener('click', ()=> { localStorage.removeItem('su_token'); localStorage.removeItem('su_user'); window.location.href='index.html'; });
 
-document.getElementById('navMyOrders').onclick = ()=> { scrollToSection('placement'); drawer.classList.add('-translate-x-full'); };
-document.getElementById('navRefer').onclick = ()=> { scrollToSection('referralSection'); drawer.classList.add('-translate-x-full'); };
-document.getElementById('navHistory').onclick = ()=> { scrollToSection('history'); drawer.classList.add('-translate-x-full'); };
-document.getElementById('navRate').onclick = ()=> { openRateModal(); drawer.classList.add('-translate-x-full'); };
-document.getElementById('navReport').onclick = ()=> { openReportForm(); drawer.classList.add('-translate-x-full'); };
-document.getElementById('navProfile').onclick = ()=> { openProfileEditor(); drawer.classList.add('-translate-x-full'); };
-document.getElementById('navHelp').onclick = ()=> { alert('Help center placeholder — add links or integration.'); drawer.classList.add('-translate-x-full'); };
-
-/* ---------- Announcements ---------- */
+/* Announcement */
 async function loadAnnouncement(){
   try {
-    const res = await fetch(API_BASE + '/api/announcements/latest', { headers: { Authorization: `Bearer ${token}` }});
-    if (!res.ok) return;
-    const data = await res.json();
+    const data = await callGet('announcementLatest');
     if (data && data.isActive) {
       announceTitle.innerText = data.title || 'Announcement';
       announceMsg.innerText = data.message || '';
-      announceEl.classList.remove('hidden');
-    }
-  } catch (e) { console.info('No announcement', e.message); }
-}
-loadAnnouncement();
-
-/* ---------- Referral ---------- */
-const referralCode = currentUser.referralCode || (currentUser._id ? ('REF' + String(currentUser._id).slice(-6)) : 'REF-UNKNOWN');
-refCodeEl.innerText = referralCode;
-
-copyRefBtn.onclick = async () => {
-  try {
-    await navigator.clipboard.writeText(`${location.origin}/signup?ref=${referralCode}`);
-    refStatus.innerText = 'Referral link copied to clipboard.';
-    setTimeout(()=>refStatus.innerText='',3000);
+      announcementBanner.classList.remove('hidden');
+    } else announcementBanner.classList.add('hidden');
   } catch (e) {
-    refStatus.innerText = 'Copy failed.';
+    announcementBanner.classList.add('hidden');
+    console.info('Announcement load failed:', e.message);
   }
-};
+}
+dismissAnn.addEventListener('click', ()=> announcementBanner.classList.add('hidden'));
 
-shareRefBtn.onclick = async () => {
-  const link = `${location.origin}/signup?ref=${referralCode}`;
+/* Price calculation flow */
+calcPriceBtn.addEventListener('click', async ()=>{
+  placementMsg.innerText = '';
+  const pickup = pickupInput.value.trim(), dropoff = dropoffInput.value.trim();
+  if (!pickup || !dropoff){ placementMsg.innerText = 'Please provide pickup and delivery addresses.'; return; }
+  const payload = {
+    items: [{ itemType:itemTypeInput.value || 'Item', weight: Number(weightInput.value||0), quantity:1 }],
+    pickup, dropoff, serviceType: serviceInput.value, fragility: fragilityInput.value
+  };
   try {
-    if (navigator.share) await navigator.share({ title:'SkyUltimate - Join', text:'Use my referral link', url: link });
-    else { await navigator.clipboard.writeText(link); alert('Link copied: ' + link); }
-  } catch (e) { alert('Share failed'); }
-};
-
-/* ---------- Calculate Price ---------- */
-let lastCalc = null; // stores latest calculation (finalPrice + bank details)
-calcBtn.onclick = async () => {
-  calcMsg.innerText = '';
-  const items = [{ itemType: itemTypeInput.value || 'Item', weight: Number(weightInput.value || 0), quantity: 1 }];
-  try {
-    const payload = { items, serviceType: serviceInput.value, pickup: pickupInput.value, dropoff: dropoffInput.value };
-    const res = await apiFetch('/api/orders/calc-price', { method:'POST', body: JSON.stringify(payload) });
-    // res.finalPrice and maybe res.superAdminBankDetails
-    lastCalc = res;
-    finalPriceEl.innerText = `₦${(res.finalPrice || res.finalprice || 0).toLocaleString()}`;
-    const b = res.superAdminBankDetails || { bankName:'SkyUltimate Bank', accountNumber:'0000000000', accountHolderName:'SkyUltimate' };
-    bankNameEl.innerText = b.bankName || b.bank || 'SkyUltimate Bank';
-    bankAccEl.innerText = b.accountNumber || b.account || '0000000000';
-    bankHolderEl.innerText = b.accountHolderName || b.accountHolder || 'SkyUltimate';
+    const res = await callPost('calcPrice', payload);
+    lastCalcResponse = res;
+    const final = res.finalPrice ?? res.finalprice ?? res.price ?? 0;
+    finalPriceEl.innerText = `₦${Number(final).toLocaleString()}`;
+    const bank = res.superAdminBankDetails || res.bankDetails || { bankName:'SkyUltimate Bank', accountNumber:'0000000000', accountHolderName:'SkyUltimate' };
+    modalBankName.innerText = bank.bankName || bank.bank || 'SkyUltimate Bank';
+    modalBankAccount.innerText = bank.accountNumber || bank.account || '0000000000';
+    modalBankHolder.innerText = bank.accountHolderName || bank.accountHolder || 'SkyUltimate';
     priceModal.classList.remove('hidden');
-  } catch(err) {
-    calcMsg.innerText = err.message || 'Could not calculate price.';
+  } catch (e) {
+    placementMsg.innerText = e.message || 'Could not calculate price.';
   }
-};
+});
+priceClose.addEventListener('click', ()=> priceModal.classList.add('hidden'));
 
-closePrice.onclick = ()=> priceModal.classList.add('hidden');
-
-/* Simulate payment confirmation (frontend-only convenience).
-   In a real flow, the customer would pay externally and admin confirms. */
-payConfirm.onclick = async () => {
-  if (!lastCalc) { alert('No calculation available.'); return; }
-  // Prepare order payload
-  const items = [{ itemType: itemTypeInput.value || 'Item', weight: Number(weightInput.value || 0), quantity: 1 }];
+/* Create order */
+priceConfirm.addEventListener('click', async ()=>{
+  if (!lastCalcResponse){ alert('No price calculated'); return; }
   const payload = {
-    items,
-    pickupAddress: pickupInput.value || '',
-    deliveryAddress: dropoffInput.value || '',
-    paymentMethod: 'Bank Transfer'
+    items: lastCalcResponse.items || [{ itemType: itemTypeInput.value || 'Item', weight: Number(weightInput.value||0), quantity:1 }],
+    pickupAddress: pickupInput.value.trim(), deliveryAddress: dropoffInput.value.trim(),
+    paymentMethod: 'Bank Transfer', price: lastCalcResponse.finalPrice ?? lastCalcResponse.finalprice ?? 0
   };
   try {
-    const created = await apiFetch('/api/orders', { method:'POST', body: JSON.stringify(payload) });
+    const created = await callPost('createOrder', payload);
+    const order = created.order || created;
+    const id = order._id || order.id || order.orderId || order;
+    localStorage.setItem('su_active_order', JSON.stringify(order));
+    placementMsg.innerText = 'Order created. Await admin confirmation.';
     priceModal.classList.add('hidden');
-    // store active order id locally and show tracking hub (status will be PendingPayment or similar)
-    const order = created.order || created;
-    localStorage.setItem('su_active_order', JSON.stringify(order));
-    openTracking(order._id || order.id || order._doc?._id || '');
-    alert('Order created. Await admin payment confirmation.');
+    openTracking(id);
     await loadHistory();
-  } catch (err) {
-    alert(err.message || 'Order creation failed.');
+  } catch (e) {
+    placementMsg.innerText = e.message || 'Order creation failed.';
   }
-};
+});
 
-/* Allow direct Confirm & Await Admin Approval without modal (submit order) */
-submitBtn.onclick = async () => {
-  calcMsg.innerText = '';
-  const items = [{ itemType: itemTypeInput.value || 'Item', weight: Number(weightInput.value || 0), quantity: 1 }];
+/* Submit order (direct) */
+submitOrderBtn.addEventListener('click', async ()=>{
+  placementMsg.innerText = '';
   const payload = {
-    items,
-    pickupAddress: pickupInput.value || '',
-    deliveryAddress: dropoffInput.value || '',
-    paymentMethod: 'Bank Transfer'
+    items: [{ itemType: itemTypeInput.value || 'Item', weight: Number(weightInput.value||0), quantity:1 }],
+    pickupAddress: pickupInput.value.trim(), deliveryAddress: dropoffInput.value.trim(), paymentMethod: 'Bank Transfer'
   };
   try {
-    const created = await apiFetch('/api/orders', { method:'POST', body: JSON.stringify(payload) });
+    const created = await callPost('createOrder', payload);
     const order = created.order || created;
+    const id = order._id || order.id || order.orderId || order;
     localStorage.setItem('su_active_order', JSON.stringify(order));
-    alert('Order created. Await admin to confirm payment.');
+    placementMsg.innerText = 'Order created. Await admin confirmation.';
+    openTracking(id);
     await loadHistory();
-    openTracking(order._id || order.id || '');
-  } catch (err) {
-    calcMsg.innerText = err.message || 'Could not submit order.';
+  } catch (e) {
+    placementMsg.innerText = e.message || 'Could not submit order.';
   }
-};
+});
 
-/* ---------- Tracking Hub (polling) ---------- */
-let pollingInterval = null;
-function openTracking(orderId) {
+/* Tracking (polling) */
+async function openTracking(orderId){
   if (!orderId) return;
-  trackingSection.classList.remove('hidden');
+  activeOrderId = orderId;
+  placementCard.classList.add('hidden');
+  trackingCard.classList.remove('hidden');
   trackIdEl.innerText = orderId;
-  pollOrder(orderId);
+  await pollOrder(orderId);
   if (pollingInterval) clearInterval(pollingInterval);
   pollingInterval = setInterval(()=>pollOrder(orderId), 5000);
 }
+closeTracking.addEventListener('click', ()=> { trackingCard.classList.add('hidden'); placementCard.classList.remove('hidden'); if (pollingInterval) clearInterval(pollingInterval); pollingInterval = null; });
 
-async function pollOrder(orderId) {
+async function pollOrder(orderId){
   try {
-    // Try GET /api/orders/:id (controller supports typical REST)
-    const order = await apiFetch(`/api/orders/${orderId}`);
-    const status = order.status || order.order?.status || order.order?.state || 'Unknown';
+    const order = await callGet('getOrder', { id: orderId });
+    const status = order.status || order.order?.status || order.state || 'Unknown';
     trackStatusEl.innerText = status;
     renderTimeline(status, order);
-    // show rate/report buttons only when applicable
-    if (status === 'Delivered' || status === 'Completed') {
-      rateAgentBtn.classList.remove('hidden');
-      reportAgentBtn.classList.remove('hidden');
-    } else {
-      rateAgentBtn.classList.add('hidden');
-      reportAgentBtn.classList.add('hidden');
-    }
-  } catch (err) {
-    console.info('Polling error (order):', err.message);
-  }
+    // buttons show/hide
+    if (status === 'PaymentConfirmed' || status === 'AgentAssigned') { confirmPickedBtn.classList.remove('hidden'); confirmDeliveredBtn.classList.add('hidden'); }
+    else if (status === 'EnRouteToDelivery' || status==='OutForDelivery') { confirmPickedBtn.classList.add('hidden'); confirmDeliveredBtn.classList.remove('hidden'); }
+    else { confirmPickedBtn.classList.add('hidden'); confirmDeliveredBtn.classList.add('hidden'); }
+  } catch (e) { console.info('pollOrder error', e.message); }
 }
 
-function renderTimeline(status, order) {
+function renderTimeline(status, order){
   const steps = [
-    { key:'PendingPaymentConfirmation', label:'Pending Payment Confirmation' },
-    { key:'PaymentConfirmed', label:'Payment Confirmed' },
-    { key:'EnRouteToPickup', label:'Agent En Route to Pickup' },
-    { key:'EnRouteToDelivery', label:'Agent En Route to Delivery' },
-    { key:'Completed', label:'Delivered' },
-    { key:'Delivered', label:'Delivered' },
+    {k:'PendingPaymentConfirmation', l:'Pending Payment Confirmation'},
+    {k:'PaymentConfirmed', l:'Payment Confirmed'},
+    {k:'AgentAssigned', l:'Agent Assigned'},
+    {k:'EnRouteToPickup', l:'Agent En Route to Pickup'},
+    {k:'PickedUp', l:'Package Picked Up'},
+    {k:'EnRouteToDelivery', l:'Agent En Route to Delivery'},
+    {k:'Delivered', l:'Delivered'},
+    {k:'Completed', l:'Completed'}
   ];
-  trackTimeline.innerHTML = steps.map(s => {
-    const active = (status === s.key || (s.key==='Completed' && status==='Delivered') || (status === 'Delivered' && s.key === 'Completed'));
-    return `<div class="py-1"><span class="${active ? 'font-bold text-green-600' : 'text-gray-600'}">${s.label}</span></div>`;
-  }).join('');
+  timelineEl.innerHTML = steps.map(s => `<div class="py-1"><span class="${status===s.k ? 'font-semibold text-green-600' : 'text-gray-600'}">${s.l}</span></div>`).join('');
 }
 
-/* Rate agent flow (customer) */
-let rateTargetOrder = null;
-function openRateModal(orderId=null) {
-  rateMsg.innerText = '';
- rateComment.value = '';
-  rateModal.classList.remove('hidden');
-  // render 5 stars
-  starsContainer.innerHTML = '';
-  for (let i=1;i<=5;i++){
-    const s = document.createElement('button');
-    s.type='button';
-    s.className='px-2 text-2xl';
-    s.innerText='☆';
-    s.dataset.value = i;
-    s.onclick = ()=> selectStars(i);
-    starsContainer.appendChild(s);
-  }
-  // store order id to rate (if provided) else use active
-  const active = JSON.parse(localStorage.getItem('su_active_order')||'null');
-  rateTargetOrder = orderId || (active && (active._id||active.id)) || null;
-}
-function selectStars(n){
-  Array.from(starsContainer.children).forEach((b,idx)=> b.innerText = (idx < n ? '★' : '☆'));
-  starsContainer.dataset.selected = n;
-}
-cancelRateBtn.onclick = ()=> rateModal.classList.add('hidden');
-submitRateBtn.onclick = async () => {
-  const rating = Number(starsContainer.dataset.selected || 5);
-  if (!rateTargetOrder) { rateMsg.innerText = 'No order selected'; return; }
+/* Confirm pickup/delivery - these try multiple update endpoints */
+confirmPickedBtn.addEventListener('click', async ()=>{
+  if (!activeOrderId) return;
   try {
-    await apiFetch(`/api/orders/${rateTargetOrder}/rate`, { method:'POST', body: JSON.stringify({ rating, comment: rateComment.value || '' })});
-    rateMsg.innerText = 'Thanks for your rating!';
-    setTimeout(()=>{ rateModal.classList.add('hidden'); }, 900);
-    await loadHistory();
-  } catch (err) {
-    rateMsg.innerText = err.message || 'Rating failed';
-  }
-};
-
-/* Report Agent flow (sends admin request) */
-async function openReportForm() {
-  const reason = prompt('Describe the issue with the agent (this will create a support ticket):');
-  if (!reason) return;
-  const active = JSON.parse(localStorage.getItem('su_active_order')||'null');
-  const orderId = active && (active._id || active.id);
-  const payload = { orderId, reason, priority: 'high', reporter: currentUser._id || currentUser._id };
+    await callPut('updateOrder', { action: 'confirm-pickup' }, { id: activeOrderId });
+    alert('Pickup confirmed request sent.');
+    await pollOrder(activeOrderId);
+  } catch (e) { alert(e.message || 'Could not confirm pickup.'); }
+});
+confirmDeliveredBtn.addEventListener('click', async ()=>{
+  if (!activeOrderId) return;
   try {
-    // best-effort endpoint - your backend had adminRequestRoutes earlier
-    await apiFetch('/api/admin-requests', { method:'POST', body: JSON.stringify(payload) });
-    alert('Report submitted. Support will follow up.');
-  } catch (err) {
-    alert('Could not submit report: ' + (err.message || 'error'));
-  }
-}
+    await callPut('updateOrder', { action: 'confirm-delivery' }, { id: activeOrderId });
+    alert('Delivery confirmed.');
+    await pollOrder(activeOrderId);
+  } catch (e) { alert(e.message || 'Could not confirm delivery.'); }
+});
 
-/* ---------- Order History ---------- */
+/* Referral copy/share */
+copyRefBtn.addEventListener('click', async ()=>{
+  try {
+    const link = `${location.origin}/signup?ref=${refCodeDisplay.innerText}`;
+    await navigator.clipboard.writeText(link);
+    refMsg.innerText = 'Referral link copied.';
+    setTimeout(()=>refMsg.innerText='', 3000);
+  } catch (e) { refMsg.innerText = 'Copy failed.'; }
+});
+shareRefBtn.addEventListener('click', async ()=>{
+  const link = `${location.origin}/signup?ref=${refCodeDisplay.innerText}`;
+  try { if (navigator.share) await navigator.share({ title:'Join SkyUltimate', text:'Use my referral link', url: link }); else { await navigator.clipboard.writeText(link); alert('Link copied: ' + link); } } catch (e) { alert('Share failed'); }
+});
+
+/* History */
+refreshHistory.addEventListener('click', loadHistory);
 async function loadHistory(){
   historyList.innerHTML = 'Loading...';
   try {
-    // Attempt to fetch by query param customerId
-    const customerId = currentUser._id || currentUser.id;
-    const data = await apiFetch(`/api/orders?customerId=${customerId}`);
+    const cid = currentUser._id || currentUser.id;
+    const data = await callGet('orderHistory', { queryParams: {}, id: cid });
     const orders = Array.isArray(data) ? data : (data.orders || data.data || []);
-    if (!orders || orders.length === 0) {
-      historyList.innerHTML = '<div class="text-sm text-gray-600">No past orders found.</div>';
-      return;
-    }
-    historyList.innerHTML = '';
-    orders.slice().reverse().forEach(o=>{
-      const id = o._id || o.id;
-      const status = o.status || o.order?.status || 'Unknown';
-      const el = document.createElement('div');
-      el.className = 'p-2 border rounded';
-      el.innerHTML = `<div class="flex justify-between"><div class="font-semibold">Order ${String(id).slice(-6)}</div><div class="text-xs">${status}</div></div>
-                      <div class="text-sm text-gray-700 mt-1">Pickup: ${o.pickupAddress || o.pickup || '—'}</div>
-                      <div class="text-sm text-gray-700">Dropoff: ${o.deliveryAddress || o.deliveryAddress || '—'}</div>
-                      <div class="mt-2 flex gap-2"><button class="px-3 py-1 border rounded viewBtn">View</button></div>`;
-      const viewBtn = el.querySelector('.viewBtn');
-      viewBtn.onclick = ()=> { localStorage.setItem('su_active_order', JSON.stringify(o)); openTracking(id); window.scrollTo({top:0,behavior:'smooth'}); };
-      historyList.appendChild(el);
-    });
-  } catch (err) {
-    historyList.innerHTML = '<div class="text-sm text-red-600">Could not load history.</div>';
-  }
-}
-
-/* ---------- Profile editor (simple phone & bank edit using existing endpoint) ---------- */
-function openProfileEditor() {
-  const phone = prompt('Phone number:', currentUser.phone || '');
-  if (phone === null) return;
-  const bankName = prompt('Bank name:', (currentUser.bankDetails||{}).bankName || '');
-  const acc = prompt('Account number:', (currentUser.bankDetails||{}).accountNumber || '');
-  const holder = prompt('Account holder:', (currentUser.bankDetails||{}).accountHolderName || '');
-  const payload = { phone };
-  if (bankName || acc || holder) {
-    payload.bankName = bankName;
-    payload.accountNumber = acc;
-    payload.accountHolderName = holder;
-  }
-  apiFetch('/api/users/me/bank', { method:'PUT', body: JSON.stringify(payload) })
-    .then(()=> {
-      alert('Profile updated.');
-      // Update local copy
-      const u = Object.assign({}, currentUser);
-      u.phone = payload.phone;
-      u.bankDetails = u.bankDetails || {};
-      if (payload.bankName) u.bankDetails.bankName = payload.bankName;
-      if (payload.accountNumber) u.bankDetails.accountNumber = payload.accountNumber;
-      if (payload.accountHolderName) u.bankDetails.accountHolderName = payload.accountHolderName;
-      localStorage.setItem('su_user', JSON.stringify(u));
-    })
-    .catch(e=> alert('Update failed: ' + e.message));
-}
-
-/* ---------- Init on load ---------- */
-(async function init(){
-  try {
-    await loadHistory();
-    // If there is an active order saved, open tracking
-    const active = JSON.parse(localStorage.getItem('su_active_order') || 'null');
-    if (active) {
-      const id = active._id || active.id || '';
-      if (id) openTracking(id);
-    }
+    if (!orders || orders.length === 0) { historyList.innerHTML = '<div class="text-sm text-gray-500">No orders yet.</div>'; return; }
+    historyList.innerHTML = orders.slice().reverse().map(o => {
+      const id = o._id || o.id || o.orderId || '';
+      const status = o.status || o.state || 'Unknown';
+      const created = new Date(o.createdAt || o.created || Date.now()).toLocaleString();
+      const price = o.price ?? o.finalPrice ?? o.total ?? null;
+      return `
+      <div class="border rounded p-3 flex justify-between items-start">
+        <div>
+          <div class="text-sm font-medium">Order ${id}</div>
+          <div class="text-xs text-gray-600">${created} · ${o.serviceType || ''}</div>
+          ${price ? `<div class="text-sm text-gray-700 mt-1">Price: ₦${Number(price).toLocaleString()}</div>` : ''}
+          <div class="text-xs text-gray-600 mt-1">Status: <span class="font-semibold">${status}</span></div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <button class="px-3 py-1 bg-white border rounded text-xs" data-view="${id}">View</button>
+          <button class="px-3 py-1 bg-yellow-50 border rounded text-xs" data-rate="${id}">Rate</button>
+          <button class="px-3 py-1 bg-red-50 border rounded text-xs" data-report="${id}">Report</button>
+        </div>
+      </div>`;
+    }).join('');
+    historyList.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click', (e)=>{openTracking(e.currentTarget.dataset.view)}));
+    historyList.querySelectorAll('[data-rate]').forEach(btn=>btn.addEventListener('click', (e)=>{openRateModal(e.currentTarget.dataset.rate)}));
+    historyList.querySelectorAll('[data-report]').forEach(btn=>btn.addEventListener('click', (e)=>{openReportModal(e.currentTarget.dataset.report)}));
   } catch (e) {
-    console.info('Init error', e.message);
+    historyList.innerHTML = `<div class="text-sm text-red-600">${e.message || 'Failed to load history'}</div>`;
   }
+}
+
+/* Rating */
+function openRateModal(orderId){
+  rateTargetOrderId = orderId;
+  rateMsg.innerText = '';
+  rateComment.value = '';
+  selectedRating = 0;
+  starsContainer.innerHTML = '';
+  for (let i=1;i<=5;i++){
+    const s = document.createElement('button');
+    s.type='button'; s.className='text-2xl'; s.innerText='☆'; s.dataset.value=i;
+    s.addEventListener('click', ()=>{ selectedRating = Number(s.dataset.value); updateStars(); });
+    starsContainer.appendChild(s);
+  }
+  updateStars(); rateModal.classList.remove('hidden');
+}
+function updateStars(){ Array.from(starsContainer.children).forEach(btn=>btn.innerText = Number(btn.dataset.value) <= selectedRating ? '★' : '☆'); }
+cancelRate.addEventListener('click', ()=> rateModal.classList.add('hidden'));
+submitRate.addEventListener('click', async ()=>{
+  if (!rateTargetOrderId) { rateMsg.innerText='No order selected.'; return; }
+  if (!selectedRating) { rateMsg.innerText='Please select stars.'; return; }
+  try {
+    await callPost('rateOrder', { stars: selectedRating, comment: rateComment.value||'' }, { id: rateTargetOrderId });
+    rateMsg.innerText = 'Rating submitted.'; setTimeout(()=>rateModal.classList.add('hidden'), 900); await loadHistory();
+  } catch (e) { rateMsg.innerText = e.message || 'Could not submit rating.'; }
+});
+
+/* Reporting */
+function openReportModal(orderId){ reportTargetOrderId = orderId; reportMsg.innerText=''; reportDetails.value=''; reportReason.value=''; reportModal.classList.remove('hidden'); }
+cancelReport.addEventListener('click', ()=> reportModal.classList.add('hidden'));
+submitReport.addEventListener('click', async ()=>{
+  if (!reportTargetOrderId) { reportMsg.innerText='No order selected.'; return; }
+  try {
+    const payload = { orderId: reportTargetOrderId, reason: reportReason.value||'other', details: reportDetails.value||'', priority:'high' };
+    await callPost('report', payload);
+    reportMsg.innerText = 'Report submitted'; setTimeout(()=>reportModal.classList.add('hidden'), 900);
+  } catch (e) { reportMsg.innerText = e.message || 'Could not submit report.'; }
+});
+
+/* drawer nav */
+document.getElementById('navPlaceOrder').addEventListener('click', ()=> { document.getElementById('drawer').classList.add('hidden'); placementCard.scrollIntoView({behavior:'smooth'}); });
+document.getElementById('navMyOrders').addEventListener('click', ()=> { document.getElementById('drawer').classList.add('hidden'); historyList.scrollIntoView({behavior:'smooth'}); });
+document.getElementById('navRefer').addEventListener('click', ()=> { document.getElementById('drawer').classList.add('hidden'); refCodeDisplay.scrollIntoView({behavior:'smooth'}); });
+document.getElementById('navProfile').addEventListener('click', ()=> { document.getElementById('drawer').classList.add('hidden'); alert('Profile editor placeholder — open profile page.'); });
+document.getElementById('navHelp').addEventListener('click', ()=> { document.getElementById('drawer').classList.add('hidden'); window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'}); });
+
+/* load active order from local storage if present */
+(async function loadActiveFromStorage(){
+  const raw = localStorage.getItem('su_active_order');
+  if (!raw) return;
+  try {
+    const o = JSON.parse(raw); const id = o._id || o.id || '';
+    if (id) openTracking(id);
+  } catch(e){}
 })();
 
-/* Small helper */
-function scrollToSection(id){
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
+/* Optional Google Map loader if you set CONFIG.googleMapsKey */
+function loadGoogleMap(key){
+  if (!key) return;
+  const s = document.createElement('script');
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places`;
+  s.async = true; s.defer = true;
+  s.onload = ()=> { console.info('Google Maps loaded'); /* you can initialize a map in #mapPlaceholder */ };
+  document.head.appendChild(s);
 }
-
-/* Unused: show rate button action */
-rateAgentBtn.onclick = ()=> openRateModal();
-reportAgentBtn.onclick = ()=> openReportForm();
+if (CONFIG.googleMapsKey) loadGoogleMap(CONFIG.googleMapsKey);
 
 </script>
 </body>
