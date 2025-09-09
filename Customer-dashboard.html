@@ -6,685 +6,1121 @@
   <title>SkyUltimate — Customer Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root{--brand-red:#C00000;--brand-red-dark:#900000}
-    body{background:linear-gradient(180deg,#C00000,#A00000);min-height:100vh;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-    .glass{background:rgba(255,255,255,0.92);backdrop-filter:blur(5px)}
-    .card{border-radius:16px;padding:18px;box-shadow:0 8px 30px rgba(0,0,0,.12)}
-    .btn-primary{background:var(--brand-red);color:#fff;padding:10px 14px;border-radius:12px;font-weight:700}
-    .btn-ghost{background:rgba(255,255,255,0.9);color:#111;padding:8px 12px;border-radius:10px}
-    .modal-backdrop{background:rgba(0,0,0,.55)}
-    .fade-in{animation:fadeIn .28s ease both}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    :root {
+      --brand-red: #C00000;
+      --glass: rgba(255,255,255,0.94);
+      --glass-dark: rgba(20,20,20,0.9);
+    }
+    html,body { height:100% }
+    body { background: linear-gradient(180deg, #E74C3C 0%, var(--brand-red) 100%); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+    .card { background: var(--glass); border-radius: 18px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
+    .pill { border-radius: 999px; }
+    .modal-backdrop { background: rgba(0,0,0,0.45); }
+    .overlay-full { position: fixed; inset: 0; z-index: 60; display: none; }
+    .overlay-full.show { display: block; }
+    .panel { background: white; border-radius: 14px; padding: 18px; max-width: 920px; margin: 40px auto; box-shadow: 0 18px 40px rgba(0,0,0,0.18); }
+    .btn-primary { background: var(--brand-red); color: #fff; }
+    .btn-outline { border: 1px solid rgba(0,0,0,0.06); background: #fff; }
+    .glass-dark { background: rgba(10,10,10,0.88); color: white; }
+    .fade-in { animation: fadeIn .28s ease both; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: translateY(0) } }
+    /* dark mode */
+    body.dark { background: linear-gradient(180deg, #2b2b2b 0%, #1b1b1b 100%); color: #e5e7eb; }
+    body.dark .card { background: rgba(12,12,12,0.8); color: #e5e7eb; }
+    body.dark .btn-primary { filter: brightness(1.06); }
+    .clickable { cursor: pointer; }
+    .small-muted { font-size: .9rem; color: rgba(0,0,0,0.6); }
+    body.dark .small-muted { color: rgba(255,255,255,0.65); }
+    input::placeholder, textarea::placeholder { color: rgba(0,0,0,0.4) }
+    body.dark input::placeholder, body.dark textarea::placeholder { color: rgba(255,255,255,0.45) }
   </style>
 </head>
-<body class="text-gray-900">
+<body>
 
-<!-- CONFIG: paste your exact endpoints or keys here if you want them to be preferred -->
-<script>
-  // If you know exact paths or want to provide your Google Maps key, paste them here.
-  // Example:
-  // window.SU_CONFIG = {
-  //   apiBase: 'https://your-backend.example.com',
-  //   api: {
-  //     calcPrice: ['/api/orders/calculate-price'],
-  //     createOrder: ['/api/orders'],
-  //     announcementLatest: ['/api/announcements/latest'],
-  //     getOrder: ['/api/orders/:id'],
-  //     orderHistory: ['/api/orders?customerId=:id'],
-  //     rateOrder: ['/api/orders/:id/rate'],
-  //     report: ['/api/admin-requests'],
-  //   },
-  //   googleMapsKey: 'YOUR_GOOGLE_KEY_IF_ANY'
-  // }
-  window.SU_CONFIG = window.SU_CONFIG || {};
-</script>
+  <!-- Top bar -->
+  <header class="w-full">
+    <div class="max-w-5xl mx-auto flex items-center justify-between p-4">
+      <div class="flex items-center gap-4">
+        <button id="hamburgerBtn" class="p-2 rounded-md hover:bg-white/10 text-white" aria-label="Open menu">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
 
-<header class="max-w-4xl mx-auto pt-6 px-4">
-  <div class="flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <img id="brandLogo" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true"
-           alt="SkyUltimate" class="w-16 h-16 rounded-full object-cover shadow-lg"/>
-      <div id="headerWelcome" class="text-white text-2xl font-semibold ml-2">Welcome!</div>
-    </div>
-    <div class="flex items-center gap-3">
-      <button id="notificationsBtn" title="Announcements" class="p-2 rounded-full hover:bg-white/10 text-white">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-      </button>
-      <button id="menuBtn" title="Menu" class="p-2 rounded-full hover:bg-white/10 text-white">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M4 6h16M4 12h16M4 18h16"></path></svg>
-      </button>
-    </div>
-  </div>
-</header>
+        <!-- logo only - no text beside it as requested -->
+        <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true"
+             alt="SkyUltimate" class="w-16 h-16 rounded-full shadow-lg"/>
 
-<main class="max-w-4xl mx-auto mt-6 px-4 space-y-6 pb-28">
-
-  <!-- Announcement banner -->
-  <div id="announcementBanner" class="hidden card glass text-white overflow-hidden rounded-2xl p-4">
-    <div class="flex items-start gap-4">
-      <div class="flex-1">
-        <div id="announceTitle" class="font-bold text-lg"></div>
-        <div id="announceMsg" class="text-sm mt-1"></div>
-      </div>
-      <div><button id="dismissAnn" class="text-white/80 hover:text-white">Dismiss</button></div>
-    </div>
-  </div>
-
-  <!-- Place Order -->
-  <section id="placementCard" class="card glass fade-in">
-    <h2 class="text-lg font-bold mb-3">Place a New Order</h2>
-    <p class="text-sm text-gray-700 mb-4">Fill details below and calculate the final price before confirming the order.</p>
-
-    <div class="grid grid-cols-1 gap-3">
-      <input id="pickup" placeholder="Pickup address" class="w-full border rounded-lg px-4 py-3" />
-      <input id="pickupContact" placeholder="Pickup contact (name or phone)" class="w-full border rounded-lg px-4 py-3" />
-      <input id="dropoff" placeholder="Delivery address" class="w-full border rounded-lg px-4 py-3" />
-      <input id="dropoffContact" placeholder="Recipient contact (name or phone)" class="w-full border rounded-lg px-4 py-3" />
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <input id="itemType" placeholder="Item type (Documents, Parcel)" class="w-full border rounded-lg px-4 py-3 col-span-2" />
-        <input id="weight" type="number" min="0" placeholder="Weight (kg)" class="w-full border rounded-lg px-4 py-3" />
-      </div>
-
-      <div class="flex gap-3">
-        <select id="serviceType" class="w-full border rounded-lg px-4 py-3">
-          <option value="standard">Standard</option><option value="express">Express</option><option value="same-day">Same-day</option>
-        </select>
-        <select id="fragility" class="w-48 border rounded-lg px-4 py-3"><option value="normal">Normal</option><option value="fragile">Fragile</option></select>
-      </div>
-
-      <div class="flex gap-3 mt-2">
-        <button id="calcPriceBtn" class="btn-primary flex-1">Calculate Final Price</button>
-        <button id="submitOrderBtn" class="btn-ghost border flex-1">Confirm & Await Admin Approval</button>
-      </div>
-
-      <p id="placementMsg" class="text-sm text-red-600 mt-1 min-h-[1.25rem]"></p>
-    </div>
-  </section>
-
-  <!-- Tracking Hub -->
-  <section id="trackingCard" class="card glass hidden fade-in">
-    <div class="flex items-center justify-between">
-      <div><h3 class="font-bold text-lg">Order Tracking</h3><div class="text-sm text-gray-600 mt-1">Track status & live updates</div></div>
-      <div><button id="closeTracking" class="btn-ghost">Close</button></div>
-    </div>
-
-    <div class="mt-4">
-      <div class="text-sm text-gray-700">Order ID: <span id="trackId" class="font-mono"></span></div>
-      <div class="mt-2">Status: <span id="trackStatus" class="font-semibold"></span></div>
-
-      <div id="mapPlaceholder" class="mt-4 h-48 border rounded-lg flex items-center justify-center text-sm text-gray-500">
-        Live map placeholder — agent live tracking will appear here if configured.
-      </div>
-
-      <div id="timeline" class="mt-4 space-y-2"></div>
-
-      <div class="mt-4 flex gap-3">
-        <button id="confirmPickedBtn" class="bg-yellow-500 px-4 py-2 rounded hidden">Confirm Item Picked Up</button>
-        <button id="confirmDeliveredBtn" class="bg-green-600 px-4 py-2 rounded hidden text-white">Confirm Order Delivered</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Referral & History -->
-  <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div class="card glass p-4">
-      <h4 class="font-semibold">Refer & Earn</h4>
-      <p class="text-sm text-gray-700 mt-1">Share your referral link and earn rewards when friends sign up and complete actions.</p>
-      <div class="mt-3">
-        <div class="font-mono text-lg" id="refCodeDisplay">—</div>
-        <div class="mt-2 flex gap-2">
-          <button id="copyRefBtn" class="btn-primary flex-1">Copy Link</button>
-          <button id="shareRefBtn" class="btn-ghost border flex-1">Share</button>
+        <div>
+          <div id="greeting" class="text-white text-xl font-semibold">Hello!</div>
         </div>
-        <div id="refMsg" class="text-sm text-green-600 mt-2 min-h-[1rem]"></div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button id="themeToggle" class="px-3 py-2 bg-white/10 text-white rounded pill">Dark</button>
+        <button id="profileBtnHeader" class="px-3 py-2 rounded text-white hover:bg-white/10">Profile</button>
+        <button id="logoutBtn" class="px-3 py-2 rounded text-white hover:bg-white/10">Logout</button>
       </div>
     </div>
+  </header>
 
-    <div class="card glass p-4 md:col-span-2">
+  <main class="max-w-5xl mx-auto py-6 px-4 space-y-6">
+
+    <!-- Announcement banner (top) -->
+    <div id="announceTop" class="card hidden fade-in">
+      <div id="announceTitle" class="font-semibold text-red-700"></div>
+      <div id="announceMsg" class="text-sm mt-1"></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Left: Place Order (primary) -->
+      <section class="lg:col-span-2 card fade-in">
+        <h2 class="text-lg font-bold">Place a New Order</h2>
+        <p class="text-sm small-muted mt-1">Create a delivery request — calculate price, pay, then track.</p>
+
+        <div class="mt-4 space-y-3">
+          <div>
+            <label class="text-xs small-muted">Pickup address</label>
+            <input id="pickup" class="w-full border rounded px-3 py-2 mt-1" placeholder="Start typing pickup address..." />
+          </div>
+
+          <div>
+            <label class="text-xs small-muted">Drop-off address</label>
+            <input id="dropoff" class="w-full border rounded px-3 py-2 mt-1" placeholder="Start typing delivery address..." />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <input id="itemType" placeholder="Item type (e.g., Parcel)" class="border rounded px-3 py-2" />
+            <input id="weight" type="number" placeholder="Weight (kg)" class="border rounded px-3 py-2" />
+            <select id="serviceType" class="border rounded px-3 py-2">
+              <option value="standard">Standard</option>
+              <option value="express">Express</option>
+              <option value="same-day">Same-day</option>
+            </select>
+          </div>
+
+          <div class="flex gap-3 mt-3">
+            <button id="calcPriceBtn" class="btn-primary px-4 py-2 rounded font-semibold">Calculate Final Price</button>
+            <button id="submitOrderBtn" class="border px-4 py-2 rounded" title="Submit & await admin confirmation">Confirm & Await Admin Approval</button>
+          </div>
+          <div id="calcMsg" class="text-sm text-red-600 mt-2"></div>
+        </div>
+      </section>
+
+      <!-- Right column: Quick panels -->
+      <aside class="card fade-in">
+        <div class="space-y-4">
+          <div>
+            <h3 class="font-semibold">Refer & Earn</h3>
+            <p class="text-sm small-muted mt-1">Share your referral link and earn rewards when friends sign up.</p>
+            <div class="mt-3 flex items-center justify-between gap-2">
+              <div>
+                <div class="text-xs small-muted">Your code</div>
+                <div id="refCode" class="font-mono font-semibold text-lg">—</div>
+              </div>
+              <div class="flex flex-col gap-2">
+                <button id="copyRefBtn" class="px-3 py-2 btn-primary rounded">Copy</button>
+                <button id="shareRefBtn" class="px-3 py-2 border rounded">Share</button>
+              </div>
+            </div>
+            <div id="refStatus" class="text-sm text-green-600 mt-2"></div>
+          </div>
+
+          <div>
+            <h3 class="font-semibold">Quick Support</h3>
+            <p class="text-sm small-muted mt-1">Contact our support team directly.</p>
+            <div class="mt-3 space-y-2">
+              <a id="callLink" href="tel:+2349128884830" class="block px-3 py-2 rounded border hover:bg-gray-50">📞 +234 912 888 4830</a>
+              <a id="waLink" href="https://wa.me/2349128884830" target="_blank" class="block px-3 py-2 rounded border hover:bg-gray-50">💬 WhatsApp</a>
+              <a id="emailLink" href="mailto:nelsongodspower24@gmail.com?subject=Support%20Request" class="block px-3 py-2 rounded border hover:bg-gray-50">✉️ Email Support</a>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="font-semibold">Order Status</h3>
+            <p class="text-sm small-muted mt-1">Active order (if any)</p>
+            <div class="mt-3">
+              <div id="activeOrderSummary" class="text-sm">No active order</div>
+              <div class="mt-2 flex gap-2">
+                <button id="openTrackingBtn" class="px-3 py-2 border rounded hidden">Open Tracking</button>
+                <button id="refreshBtn" class="px-3 py-2 border rounded">Refresh</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="max-w-5xl mx-auto text-center pb-10 text-sm small-muted">
+    <div>
+      <a id="phoneFooter" href="tel:+2349128884830" class="underline">Call: +234 912 888 4830</a>
+      <span class="mx-2">·</span>
+      <a id="whatsappFooter" href="https://wa.me/2349128884830" target="_blank" class="underline">WhatsApp</a>
+      <span class="mx-2">·</span>
+      <a id="emailFooter" href="mailto:nelsongodspower24@gmail.com" class="underline">Email</a>
+    </div>
+  </footer>
+
+  <!-- ---------------- Modals & overlays ---------------- -->
+
+  <!-- Price Modal -->
+  <div id="priceModal" class="overlay-full">
+    <div class="absolute inset-0 modal-backdrop" onclick="closePriceModal()"></div>
+    <div class="panel">
+      <div class="flex justify-between items-start">
+        <h3 class="text-xl font-bold">Final Price</h3>
+        <button onclick="closePriceModal()" class="text-gray-600">✕</button>
+      </div>
+      <div class="mt-3">
+        <div class="text-3xl font-semibold" id="finalPrice">₦0</div>
+        <div class="text-sm small-muted mt-2">Pay via bank transfer to the account below.</div>
+
+        <div class="mt-4 space-y-1">
+          <div class="text-sm">Bank: <span id="bankName">SkyUltimate Bank</span></div>
+          <div class="text-sm">Account number: <span id="bankAccount">0000000000</span></div>
+          <div class="text-sm">Account holder: <span id="bankHolder">SkyUltimate</span></div>
+        </div>
+
+        <div class="mt-6 flex gap-3">
+          <button id="iPaidBtn" class="btn-primary px-4 py-2 rounded">I have Paid (simulate)</button>
+          <button onclick="closePriceModal()" class="px-4 py-2 border rounded">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Overlays (Menu + Pages) -->
+  <div id="menuOverlay" class="overlay-full">
+    <div class="absolute inset-0 modal-backdrop" onclick="closeMenuOverlay()"></div>
+    <div class="panel">
       <div class="flex items-center justify-between">
-        <h4 class="font-semibold">My Order History</h4>
-        <button id="refreshHistory" class="text-sm text-gray-600 hover:underline">Refresh</button>
+        <div class="flex items-center gap-4">
+          <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" class="w-16 h-16 rounded-full" alt="logo"/>
+          <div>
+            <div id="menuName" class="text-lg font-semibold">User</div>
+            <div id="menuRole" class="text-sm small-muted">Role</div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="toggleTheme()" id="menuThemeBtn" class="px-3 py-2 rounded">Theme</button>
+          <button onclick="closeMenuOverlay()" class="px-3 py-2 rounded">Close</button>
+        </div>
       </div>
-      <div id="historyList" class="mt-3 space-y-2 text-sm text-gray-700">Loading...</div>
+
+      <hr class="my-4" />
+
+      <nav class="grid grid-cols-1 gap-3">
+        <button class="text-left px-4 py-3 rounded hover:bg-gray-50" onclick="openOverlay('history')">Order History</button>
+        <button class="text-left px-4 py-3 rounded hover:bg-gray-50" onclick="openOverlay('referral')">Refer & Earn</button>
+        <button class="text-left px-4 py-3 rounded hover:bg-gray-50" onclick="openOverlay('announcements')">Announcements</button>
+        <button class="text-left px-4 py-3 rounded hover:bg-gray-50" onclick="openOverlay('rate')">Rate Agent</button>
+        <button class="text-left px-4 py-3 rounded hover:bg-gray-50" onclick="openOverlay('report')">Report Agent</button>
+        <button class="text-left px-4 py-3 rounded hover:bg-gray-50" onclick="openOverlay('support')">Support / Feedback</button>
+        <button class="text-left px-4 py-3 rounded hover:bg-gray-50" onclick="openOverlay('profile')">My Profile</button>
+        <button class="text-left px-4 py-3 rounded hover:bg-gray-50 text-red-600" onclick="doLogout()">Logout</button>
+      </nav>
     </div>
-  </section>
+  </div>
 
-</main>
-
-<!-- Side Drawer -->
-<div id="drawer" class="fixed inset-0 z-50 hidden">
-  <div id="drawerBackdrop" class="absolute inset-0 modal-backdrop"></div>
-  <aside class="absolute right-0 top-0 bottom-0 w-80 bg-white p-6 overflow-auto">
-    <div class="flex items-center justify-between mb-4">
-      <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" class="w-12 h-12 rounded-full object-cover" alt="logo"/>
-      <button id="drawerClose" class="text-gray-600">✕</button>
-    </div>
-
-    <div class="mb-4"><div id="drawerName" class="font-bold"></div><div id="drawerRole" class="text-xs text-gray-600"></div></div>
-
-    <nav class="space-y-2">
-      <button id="navPlaceOrder" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Place Order</button>
-      <button id="navMyOrders" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">My Orders</button>
-      <button id="navRefer" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Refer & Earn</button>
-      <button id="navProfile" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">My Profile</button>
-      <button id="navHelp" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Help & FAQ</button>
-      <button id="navLogout" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50 text-red-600">Logout</button>
-    </nav>
-
-    <div class="mt-6 text-xs text-gray-500">
-      Contact: <a id="drawerPhone" href="tel:+2349128884830" class="underline">+234 912 888 4830</a><br/>
-      Email: <a id="drawerEmail" href="mailto:nelsongodspower24@gmail.com" class="underline">nelsongodspower24@gmail.com</a>
-    </div>
-  </aside>
-</div>
-
-<!-- Price Modal -->
-<div id="priceModal" class="fixed inset-0 hidden items-center justify-center z-60">
-  <div class="absolute inset-0 modal-backdrop"></div>
-  <div class="bg-white w-11/12 max-w-lg rounded-2xl p-6 z-70 card">
-    <h3 class="font-bold text-lg">Final Price</h3>
-    <div class="mt-3">
-      <div class="text-3xl font-semibold" id="finalPrice">₦0</div>
-      <div class="text-sm text-gray-700 mt-2">Pay via bank transfer to:</div>
-      <div class="mt-2 text-sm">
-        <div id="modalBankName">SkyUltimate Bank</div>
-        <div id="modalBankAccount" class="font-mono">0000000000</div>
-        <div id="modalBankHolder">SkyUltimate</div>
+  <!-- Order History Overlay -->
+  <div id="historyOverlay" class="overlay-full">
+    <div class="absolute inset-0 modal-backdrop" onclick="closeOverlay('history')"></div>
+    <div class="panel">
+      <div class="flex justify-between items-center">
+        <h3 class="text-xl font-bold">Order History</h3>
+        <button onclick="closeOverlay('history')" class="text-gray-600">✕</button>
       </div>
-      <div class="mt-4 text-sm text-gray-600">After payment, the Super Admin will confirm the payment and dispatch the order.</div>
-    </div>
-    <div class="mt-4 flex gap-2">
-      <button id="priceClose" class="btn-ghost flex-1">Close</button>
-      <button id="priceConfirm" class="btn-primary flex-1">I've Paid (Simulate)</button>
+      <div id="historyContent" class="mt-4 space-y-3 small-muted">Loading...</div>
     </div>
   </div>
-</div>
 
-<!-- Rate Modal -->
-<div id="rateModal" class="fixed inset-0 hidden items-center justify-center z-60">
-  <div class="absolute inset-0 modal-backdrop"></div>
-  <div class="bg-white w-11/12 max-w-md rounded-2xl p-6 z-70 card">
-    <h3 class="font-bold">Rate Agent</h3>
-    <div class="mt-3"><div id="stars" class="flex gap-2 text-yellow-400"></div>
-    <textarea id="rateComment" placeholder="Comment (optional)" class="w-full border rounded mt-3 p-2"></textarea>
-    <div class="mt-4 flex gap-2"><button id="cancelRate" class="btn-ghost flex-1">Cancel</button><button id="submitRate" class="btn-primary flex-1">Submit Rating</button></div>
-    <p id="rateMsg" class="text-sm text-green-600 mt-2"></p></div>
-  </div>
-</div>
-
-<!-- Report Modal -->
-<div id="reportModal" class="fixed inset-0 hidden items-center justify-center z-60">
-  <div class="absolute inset-0 modal-backdrop"></div>
-  <div class="bg-white w-11/12 max-w-md rounded-2xl p-6 z-70 card">
-    <h3 class="font-bold">Report Agent</h3>
-    <div class="mt-3">
-      <select id="reportReason" class="w-full border rounded px-3 py-2"><option value="">Select reason</option><option value="late">Late Arrival</option><option value="rude">Rude Behavior</option><option value="damage">Damaged Package</option><option value="other">Other</option></select>
-      <textarea id="reportDetails" placeholder="Details" class="w-full border rounded mt-3 p-2"></textarea>
-      <div class="mt-4 flex gap-2"><button id="cancelReport" class="btn-ghost flex-1">Cancel</button><button id="submitReport" class="btn-primary flex-1">Submit Report</button></div>
-      <p id="reportMsg" class="text-sm text-green-600 mt-2"></p>
+  <!-- Referral Overlay -->
+  <div id="referralOverlay" class="overlay-full">
+    <div class="absolute inset-0 modal-backdrop" onclick="closeOverlay('referral')"></div>
+    <div class="panel">
+      <div class="flex justify-between items-center">
+        <h3 class="text-xl font-bold">Refer & Earn</h3>
+        <button onclick="closeOverlay('referral')" class="text-gray-600">✕</button>
+      </div>
+      <div class="mt-4">
+        <div class="text-sm small-muted">Share your link to invite friends. Rewards are applied once the referred user completes the required action.</div>
+        <div class="mt-4">
+          <div class="font-mono text-lg" id="refFullLink">—</div>
+          <div class="mt-3 flex gap-2">
+            <button id="refCopyFullBtn" class="btn-primary px-4 py-2 rounded">Copy Link</button>
+            <button id="refShareFullBtn" class="px-4 py-2 border rounded">Share</button>
+          </div>
+          <div id="refHistory" class="mt-3 small-muted"></div>
+        </div>
+      </div>
     </div>
   </div>
-</div>
+
+  <!-- Announcements Overlay -->
+  <div id="announcementsOverlay" class="overlay-full">
+    <div class="absolute inset-0 modal-backdrop" onclick="closeOverlay('announcements')"></div>
+    <div class="panel">
+      <div class="flex justify-between items-center">
+        <h3 class="text-xl font-bold">Announcements</h3>
+        <button onclick="closeOverlay('announcements')" class="text-gray-600">✕</button>
+      </div>
+      <div id="announcementsList" class="mt-4 small-muted">Loading...</div>
+    </div>
+  </div>
+
+  <!-- Rate Agent Overlay -->
+  <div id="rateOverlay" class="overlay-full">
+    <div class="absolute inset-0 modal-backdrop" onclick="closeOverlay('rate')"></div>
+    <div class="panel">
+      <div class="flex justify-between items-center">
+        <h3 class="text-xl font-bold">Rate Agent</h3>
+        <button onclick="closeOverlay('rate')" class="text-gray-600">✕</button>
+      </div>
+      <div class="mt-4">
+        <div class="text-sm small-muted">Choose order to rate and leave a comment.</div>
+        <div id="rateOrdersList" class="mt-4 space-y-3"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report Agent Overlay -->
+  <div id="reportOverlay" class="overlay-full">
+    <div class="absolute inset-0 modal-backdrop" onclick="closeOverlay('report')"></div>
+    <div class="panel">
+      <div class="flex justify-between items-center">
+        <h3 class="text-xl font-bold">Report Agent</h3>
+        <button onclick="closeOverlay('report')" class="text-gray-600">✕</button>
+      </div>
+      <div class="mt-4 space-y-3">
+        <label class="text-sm small-muted">Which order?</label>
+        <select id="reportOrderSelect" class="w-full border rounded px-3 py-2"></select>
+        <label class="text-sm small-muted">Reason</label>
+        <input id="reportReason" class="w-full border rounded px-3 py-2" placeholder="Short reason" />
+        <label class="text-sm small-muted">Details</label>
+        <textarea id="reportDetails" class="w-full border rounded px-3 py-2" rows="4"></textarea>
+        <div class="flex gap-3">
+          <button id="submitReportBtn" class="btn-primary px-4 py-2 rounded">Send Report</button>
+          <button onclick="closeOverlay('report')" class="px-4 py-2 border rounded">Close</button>
+        </div>
+        <div id="reportStatus" class="text-sm text-green-600 mt-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Support / Feedback Overlay -->
+  <div id="supportOverlay" class="overlay-full">
+    <div class="absolute inset-0 modal-backdrop" onclick="closeOverlay('support')"></div>
+    <div class="panel">
+      <div class="flex justify-between items-center">
+        <h3 class="text-xl font-bold">Support & Feedback</h3>
+        <button onclick="closeOverlay('support')" class="text-gray-600">✕</button>
+      </div>
+      <div class="mt-4 space-y-3">
+        <label class="text-sm small-muted">Subject</label>
+        <input id="supportSubject" class="w-full border rounded px-3 py-2" />
+        <label class="text-sm small-muted">Message</label>
+        <textarea id="supportMessage" class="w-full border rounded px-3 py-2" rows="6"></textarea>
+        <div class="flex gap-3">
+          <button id="sendSupportBtn" class="btn-primary px-4 py-2 rounded">Send</button>
+          <button onclick="closeOverlay('support')" class="px-4 py-2 border rounded">Close</button>
+        </div>
+        <div id="supportStatus" class="text-sm text-green-600 mt-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Overlay -->
+  <div id="profileOverlay" class="overlay-full">
+    <div class="absolute inset-0 modal-backdrop" onclick="closeOverlay('profile')"></div>
+    <div class="panel">
+      <div class="flex justify-between items-center">
+        <h3 class="text-xl font-bold">My Profile</h3>
+        <button onclick="closeOverlay('profile')" class="text-gray-600">✕</button>
+      </div>
+      <div class="mt-4 space-y-3">
+        <label class="text-sm small-muted">Full name</label>
+        <input id="profileName" class="w-full border rounded px-3 py-2" readonly />
+        <label class="text-sm small-muted">Email</label>
+        <input id="profileEmail" class="w-full border rounded px-3 py-2" readonly />
+        <label class="text-sm small-muted">Phone</label>
+        <input id="profilePhone" class="w-full border rounded px-3 py-2" />
+        <div id="profileBankFields" class="hidden space-y-2">
+          <label class="text-sm small-muted">Bank name</label>
+          <input id="profileBankName" class="w-full border rounded px-3 py-2" />
+          <label class="text-sm small-muted">Account number</label>
+          <input id="profileAccountNumber" class="w-full border rounded px-3 py-2" />
+          <label class="text-sm small-muted">Account holder</label>
+          <input id="profileAccountHolder" class="w-full border rounded px-3 py-2" />
+        </div>
+        <div class="flex gap-3">
+          <button id="saveProfileBtn" class="btn-primary px-4 py-2 rounded">Save</button>
+          <button onclick="closeOverlay('profile')" class="px-4 py-2 border rounded">Close</button>
+        </div>
+        <div id="profileStatus" class="text-sm text-green-600 mt-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tracking Panel (overlay with map optional) -->
+  <div id="trackingOverlay" class="overlay-full">
+    <div class="absolute inset-0 modal-backdrop" onclick="closeOverlay('tracking')"></div>
+    <div class="panel">
+      <div class="flex justify-between items-center">
+        <h3 class="text-xl font-bold">Order Tracking</h3>
+        <button onclick="closeOverlay('tracking')" class="text-gray-600">✕</button>
+      </div>
+      <div class="mt-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>Order ID: <span id="trackOrderId" class="font-mono"></span></div>
+          <div>Status: <strong id="trackStatus"></strong></div>
+        </div>
+
+        <div id="mapContainer" class="w-full h-64 bg-gray-100 rounded"></div>
+
+        <div id="trackingTimeline" class="mt-3 small-muted"></div>
+
+        <div class="mt-3 flex gap-2">
+          <button id="callAgentBtn" class="px-3 py-2 border rounded hidden">Call Agent</button>
+          <button id="messageAgentBtn" class="px-3 py-2 border rounded hidden">Message Agent</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <script>
-/*
-  Resilient Customer Dashboard
-  - will attempt multiple endpoint candidates for each action (no static placeholders)
-  - set exact endpoints in window.SU_CONFIG.api if you have them (CONFIG at top)
-*/
+/* ------------- Client script ------------- */
 
-const DEFAULT_API_BASE = window.SU_CONFIG.apiBase || "https://skyultimate-backend-api-structure.onrender.com";
-const CONFIG = window.SU_CONFIG || {};
-const API_BASE = DEFAULT_API_BASE;
+const API_BASE = "https://skyultimate-backend-api-structure.onrender.com"; // update if needed
+const GOOGLE_API_KEY = "AIzaSyDu1dptqgTwWWD6568jhf_tal7uYfdyMlQ"; // user-provided (used for places/map)
+let googleMapsLoaded = false;
+let map = null, agentMarker = null, pickupMarker = null, dropoffMarker = null;
+let pollingInterval = null;
+
+/* --- auth check --- */
 const token = localStorage.getItem('su_token');
-const userRaw = localStorage.getItem('su_user');
-const currentUser = userRaw ? JSON.parse(userRaw) : null;
-
-if (!token || !currentUser) {
-  localStorage.removeItem('su_token'); localStorage.removeItem('su_user');
+const rawUser = localStorage.getItem('su_user');
+if (!token || !rawUser) {
+  // not authenticated
   window.location.href = 'index.html';
 }
+const currentUser = JSON.parse(rawUser);
 
-/* --- Endpoint candidates --- */
-const PATH_CANDIDATES = {
-  announcementLatest: CONFIG.api?.announcementLatest || [
-    '/api/announcements/latest',
-    '/api/announcements/latest/',
-    '/api/announcement/latest',
-  ],
-  calcPrice: CONFIG.api?.calcPrice || [
-    '/api/orders/calc-price',
-    '/api/orders/calculate-price',
-    '/api/orders/calc_price',
-    '/api/orders/calculatePrice',
-  ],
-  createOrder: CONFIG.api?.createOrder || [
-    '/api/orders',
-    '/api/orders/create',
-    '/api/orders/submit'
-  ],
-  getOrder: CONFIG.api?.getOrder || [
-    '/api/orders/:id',
-    '/api/order/:id'
-  ],
-  orderHistory: CONFIG.api?.orderHistory || [
-    '/api/orders?customerId=:id',
-    '/api/orders/customer/:id',
-    '/api/orders/history?customerId=:id'
-  ],
-  rateOrder: CONFIG.api?.rateOrder || [
-    '/api/orders/:id/rate',
-    '/api/rate/order/:id'
-  ],
-  report: CONFIG.api?.report || [
-    '/api/admin-requests',
-    '/api/reports',
-    '/api/support/tickets'
-  ],
-  updateOrder: CONFIG.api?.updateOrder || [
-    '/api/orders/:id',
-    '/api/orders/:id/action',
-    '/api/orders/:id/status'
-  ]
-};
-
-/* helper: try a list of endpoints until one works */
-async function tryEndpoints(candidatePaths, opts = {}) {
-  // candidatePaths: array of path templates (may include :id)
-  // opts: { method, body, id, queryParams (object), headers }
-  for (const p of candidatePaths) {
-    try {
-      let path = p;
-      if (opts.id) path = path.replace(':id', encodeURIComponent(opts.id));
-      if (opts.queryParams && typeof opts.queryParams === 'object') {
-        const q = new URLSearchParams(opts.queryParams).toString();
-        path += (path.includes('?') ? '&' : '?') + q;
-      }
-      const url = API_BASE + path;
-      const headers = Object.assign({}, opts.headers || {}, { 'Content-Type': 'application/json' });
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-      const res = await fetch(url, { method: opts.method || 'GET', headers, body: opts.body ? JSON.stringify(opts.body) : undefined });
-      // success range 200-299
-      if (res.ok) {
-        const ct = res.headers.get('content-type') || '';
-        if (ct.includes('application/json')) return await res.json();
-        return await res.text();
-      } else {
-        // if 404 or 405 or 401, continue trying other endpoints; but if 4xx likely wrong payload - also continue
-        // we still continue trying; only throw when all candidates fail
-      }
-    } catch (e) {
-      // network or CORS error — try next endpoint
-    }
-  }
-  // all failed
-  throw new Error('No working endpoint found among candidates.');
-}
-
-/* quick wrapper that prefers a single exact path if provided via CONFIG.api.[name] (first element) */
-async function callApi(name, opts = {}) {
-  const candidates = PATH_CANDIDATES[name] || [];
-  return tryEndpoints(candidates, opts);
-}
-
-/* small helper to GET with candidates */
-async function callGet(name, opts = {}) { return callApi(name, Object.assign({}, opts, { method: 'GET' })); }
-async function callPost(name, body, opts = {}) { return callApi(name, Object.assign({}, opts, { method: 'POST', body })); }
-async function callPut(name, body, opts = {}) { return callApi(name, Object.assign({}, opts, { method: 'PUT', body })); }
-
-/* ----------------- UI wiring and logic ----------------- */
-const headerWelcome = document.getElementById('headerWelcome');
-const drawer = document.getElementById('drawer');
-const drawerBackdrop = document.getElementById('drawerBackdrop');
-const menuBtn = document.getElementById('menuBtn');
-const drawerClose = document.getElementById('drawerClose');
-const navLogout = document.getElementById('navLogout');
-const drawerName = document.getElementById('drawerName');
-const drawerRole = document.getElementById('drawerRole');
-
-const announcementBanner = document.getElementById('announcementBanner');
+/* --- DOM refs --- */
+const greetingEl = document.getElementById('greeting');
+const announceTop = document.getElementById('announceTop');
 const announceTitle = document.getElementById('announceTitle');
 const announceMsg = document.getElementById('announceMsg');
-const dismissAnn = document.getElementById('dismissAnn');
+const refCodeEl = document.getElementById('refCode');
+const copyRefBtn = document.getElementById('copyRefBtn');
+const shareRefBtn = document.getElementById('shareRefBtn');
+const refStatus = document.getElementById('refStatus');
+const openTrackingBtn = document.getElementById('openTrackingBtn');
+const activeOrderSummary = document.getElementById('activeOrderSummary');
+const refreshBtn = document.getElementById('refreshBtn');
 
-const pickupInput = document.getElementById('pickup');
-const pickupContact = document.getElementById('pickupContact');
-const dropoffInput = document.getElementById('dropoff');
-const dropoffContact = document.getElementById('dropoffContact');
-const itemTypeInput = document.getElementById('itemType');
-const weightInput = document.getElementById('weight');
-const serviceInput = document.getElementById('serviceType');
-const fragilityInput = document.getElementById('fragility');
 const calcPriceBtn = document.getElementById('calcPriceBtn');
 const submitOrderBtn = document.getElementById('submitOrderBtn');
-const placementMsg = document.getElementById('placementMsg');
+const calcMsg = document.getElementById('calcMsg');
 
 const priceModal = document.getElementById('priceModal');
 const finalPriceEl = document.getElementById('finalPrice');
-const modalBankName = document.getElementById('modalBankName');
-const modalBankAccount = document.getElementById('modalBankAccount');
-const modalBankHolder = document.getElementById('modalBankHolder');
-const priceClose = document.getElementById('priceClose');
-const priceConfirm = document.getElementById('priceConfirm');
+const bankNameEl = document.getElementById('bankName');
+const bankAccountEl = document.getElementById('bankAccount');
+const bankHolderEl = document.getElementById('bankHolder');
+const iPaidBtn = document.getElementById('iPaidBtn');
 
-const trackingCard = document.getElementById('trackingCard');
-const placementCard = document.getElementById('placementCard');
-const trackIdEl = document.getElementById('trackId');
+/* overlays */
+const menuOverlay = document.getElementById('menuOverlay');
+const historyOverlay = document.getElementById('historyOverlay');
+const referralOverlay = document.getElementById('referralOverlay');
+const announcementsOverlay = document.getElementById('announcementsOverlay');
+const rateOverlay = document.getElementById('rateOverlay');
+const reportOverlay = document.getElementById('reportOverlay');
+const supportOverlay = document.getElementById('supportOverlay');
+const profileOverlay = document.getElementById('profileOverlay');
+const trackingOverlay = document.getElementById('trackingOverlay');
+
+const historyContent = document.getElementById('historyContent');
+const refFullLink = document.getElementById('refFullLink');
+const refCopyFullBtn = document.getElementById('refCopyFullBtn');
+const refShareFullBtn = document.getElementById('refShareFullBtn');
+const announcementsList = document.getElementById('announcementsList');
+
+const rateOrdersList = document.getElementById('rateOrdersList');
+
+const reportOrderSelect = document.getElementById('reportOrderSelect');
+const submitReportBtn = document.getElementById('submitReportBtn');
+const reportStatus = document.getElementById('reportStatus');
+
+const supportSubject = document.getElementById('supportSubject');
+const supportMessage = document.getElementById('supportMessage');
+const sendSupportBtn = document.getElementById('sendSupportBtn');
+const supportStatus = document.getElementById('supportStatus');
+
+const profileName = document.getElementById('profileName');
+const profileEmail = document.getElementById('profileEmail');
+const profilePhone = document.getElementById('profilePhone');
+const profileBankFields = document.getElementById('profileBankFields');
+const profileBankName = document.getElementById('profileBankName');
+const profileAccountNumber = document.getElementById('profileAccountNumber');
+const profileAccountHolder = document.getElementById('profileAccountHolder');
+const saveProfileBtn = document.getElementById('saveProfileBtn');
+const profileStatus = document.getElementById('profileStatus');
+
+const trackOrderIdEl = document.getElementById('trackOrderId');
 const trackStatusEl = document.getElementById('trackStatus');
-const timelineEl = document.getElementById('timeline');
-const closeTracking = document.getElementById('closeTracking');
-const confirmPickedBtn = document.getElementById('confirmPickedBtn');
-const confirmDeliveredBtn = document.getElementById('confirmDeliveredBtn');
+const trackingTimeline = document.getElementById('trackingTimeline');
+const mapContainer = document.getElementById('mapContainer');
+const callAgentBtn = document.getElementById('callAgentBtn');
+const messageAgentBtn = document.getElementById('messageAgentBtn');
 
-const refCodeDisplay = document.getElementById('refCodeDisplay');
-const copyRefBtn = document.getElementById('copyRefBtn');
-const shareRefBtn = document.getElementById('shareRefBtn');
-const refMsg = document.getElementById('refMsg');
+/* local state */
+let activeOrder = JSON.parse(localStorage.getItem('su_active_order') || 'null');
+let lastCalc = null;
 
-const historyList = document.getElementById('historyList');
-const refreshHistory = document.getElementById('refreshHistory');
-
-const rateModal = document.getElementById('rateModal');
-const starsContainer = document.getElementById('stars');
-const rateComment = document.getElementById('rateComment');
-const cancelRate = document.getElementById('cancelRate');
-const submitRate = document.getElementById('submitRate');
-const rateMsg = document.getElementById('rateMsg');
-
-const reportModal = document.getElementById('reportModal');
-const cancelReport = document.getElementById('cancelReport');
-const submitReport = document.getElementById('submitReport');
-const reportReason = document.getElementById('reportReason');
-const reportDetails = document.getElementById('reportDetails');
-const reportMsg = document.getElementById('reportMsg');
-
-let activeOrderId = null;
-let pollingInterval = null;
-let lastCalcResponse = null;
-let selectedRating = 0;
-let rateTargetOrderId = null;
-let reportTargetOrderId = null;
-
-function firstName(full){ if(!full) return ''; return String(full).split(' ')[0]; }
-function initUI(){
-  headerWelcome.innerText = `Hello, ${firstName(currentUser.name||'') || 'there'}!`;
-  drawerName.innerText = currentUser.name || 'User';
-  drawerRole.innerText = (currentUser.role || 'Customer');
-  refCodeDisplay.innerText = currentUser.referralCode || (currentUser._id ? ('REF'+String(currentUser._id).slice(-6)) : 'REF-UNKNOWN');
-  document.getElementById('drawerEmail').href = `mailto:${currentUser.email || 'noreply@example.com'}`;
-  document.getElementById('drawerPhone').href = `tel:+2349128884830`;
-  loadAnnouncement();
-  loadHistory();
-  // optionally load map if you provided key
-  if (CONFIG.googleMapsKey) loadGoogleMap(CONFIG.googleMapsKey);
+/* ---------- helpers ---------- */
+async function apiFetch(path, opts = {}) {
+  const headers = opts.headers || {};
+  headers['Content-Type'] = 'application/json';
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(API_BASE + path, { ...opts, headers });
+  if (res.status === 401) {
+    alert('Session expired. Please login again.');
+    doLogout();
+    throw new Error('Unauthorized');
+  }
+  const data = await res.json().catch(()=>null);
+  if (!res.ok) {
+    const msg = (data && data.message) || `Request failed ${res.status}`;
+    throw new Error(msg);
+  }
+  return data;
 }
-initUI();
 
-/* Drawer handlers */
-menuBtn.addEventListener('click', ()=> document.getElementById('drawer').classList.remove('hidden'));
-drawerClose.addEventListener('click', ()=> document.getElementById('drawer').classList.add('hidden'));
-drawerBackdrop.addEventListener('click', ()=> document.getElementById('drawer').classList.add('hidden'));
-navLogout.addEventListener('click', ()=> { localStorage.removeItem('su_token'); localStorage.removeItem('su_user'); window.location.href='index.html'; });
+function showOverlay(el) { el.classList.add('show'); }
+function hideOverlay(el) { el.classList.remove('show'); }
+function openMenuOverlay() { menuOverlay.classList.add('show'); document.getElementById('menuName').innerText = currentUser.name || 'User'; document.getElementById('menuRole').innerText = currentUser.role || 'Customer'; document.getElementById('menuThemeBtn').innerText = isDarkMode() ? 'Light' : 'Dark'; }
+function closeMenuOverlay() { menuOverlay.classList.remove('show'); }
 
-/* Announcement */
-async function loadAnnouncement(){
+/* ---------- theme (dark/light) ---------- */
+function isDarkMode(){ return localStorage.getItem('su_theme') === 'dark' || document.body.classList.contains('dark'); }
+function applyTheme() {
+  if (isDarkMode()) document.body.classList.add('dark'); else document.body.classList.remove('dark');
+  document.getElementById('themeToggle').innerText = isDarkMode() ? 'Light' : 'Dark';
+  document.getElementById('menuThemeBtn').innerText = isDarkMode() ? 'Light' : 'Dark';
+}
+function toggleTheme(){ localStorage.setItem('su_theme', isDarkMode() ? 'light' : 'dark'); applyTheme(); }
+
+/* ---------- init ---------- */
+function initUI() {
+  greetingEl.innerText = `Hello, ${String(currentUser.name || '').split(' ')[0] || 'there'}!`;
+  refCodeEl.innerText = currentUser.referralCode || (currentUser._id ? ('REF' + String(currentUser._id).slice(-6)) : 'REF-UNKNOWN');
+  refFullLink.innerText = `${location.origin}/signup?ref=${currentUser.referralCode || (currentUser._id ? ('REF' + String(currentUser._id).slice(-6)) : 'REF-UNKNOWN')}`;
+  document.getElementById('menuName').innerText = currentUser.name || 'User';
+  document.getElementById('menuRole').innerText = currentUser.role || 'Customer';
+  // profile fields
+  profileName.value = currentUser.name || '';
+  profileEmail.value = currentUser.email || '';
+  profilePhone.value = currentUser.phone || '';
+  if ((currentUser.role || '').toLowerCase() === 'agent' || (currentUser.role || '').toLowerCase() === 'admin') {
+    profileBankFields.classList.remove('hidden');
+    profileBankName.value = currentUser.bankDetails?.bankName || '';
+    profileAccountNumber.value = currentUser.bankDetails?.accountNumber || '';
+    profileAccountHolder.value = currentUser.bankDetails?.accountHolderName || '';
+  } else {
+    profileBankFields.classList.add('hidden');
+  }
+
+  // active order summary
+  if (activeOrder) {
+    activeOrderSummary.innerText = `Order: ${activeOrder._id || activeOrder.id || (activeOrder.order && activeOrder.order._id) || '—'} — ${activeOrder.status || activeOrder.order?.status || 'Pending'}`;
+    openTrackingBtn.classList.remove('hidden');
+  } else {
+    activeOrderSummary.innerText = 'No active order';
+    openTrackingBtn.classList.add('hidden');
+  }
+  applyTheme();
+}
+
+/* ---------- announcements ---------- */
+async function loadAnnouncement() {
   try {
-    const data = await callGet('announcementLatest');
+    const res = await fetch(API_BASE + '/api/announcements/latest'); // public
+    if (!res.ok) { hideAnnouncement(); return; }
+    const data = await res.json();
     if (data && data.isActive) {
       announceTitle.innerText = data.title || 'Announcement';
       announceMsg.innerText = data.message || '';
-      announcementBanner.classList.remove('hidden');
-    } else announcementBanner.classList.add('hidden');
+      announceTop.classList.remove('hidden');
+    } else {
+      hideAnnouncement();
+    }
   } catch (e) {
-    announcementBanner.classList.add('hidden');
     console.info('Announcement load failed:', e.message);
+    hideAnnouncement();
   }
 }
-dismissAnn.addEventListener('click', ()=> announcementBanner.classList.add('hidden'));
+function hideAnnouncement(){ announceTop.classList.add('hidden'); }
 
-/* Price calculation flow */
-calcPriceBtn.addEventListener('click', async ()=>{
-  placementMsg.innerText = '';
-  const pickup = pickupInput.value.trim(), dropoff = dropoffInput.value.trim();
-  if (!pickup || !dropoff){ placementMsg.innerText = 'Please provide pickup and delivery addresses.'; return; }
-  const payload = {
-    items: [{ itemType:itemTypeInput.value || 'Item', weight: Number(weightInput.value||0), quantity:1 }],
-    pickup, dropoff, serviceType: serviceInput.value, fragility: fragilityInput.value
-  };
+/* ---------- price calc & create order ---------- */
+calcPriceBtn.addEventListener('click', async () => {
+  calcMsg.innerText = '';
+  const items = [{ itemType: document.getElementById('itemType').value || 'Item', weight: Number(document.getElementById('weight').value || 0), quantity: 1 }];
   try {
-    const res = await callPost('calcPrice', payload);
-    lastCalcResponse = res;
-    const final = res.finalPrice ?? res.finalprice ?? res.price ?? 0;
-    finalPriceEl.innerText = `₦${Number(final).toLocaleString()}`;
-    const bank = res.superAdminBankDetails || res.bankDetails || { bankName:'SkyUltimate Bank', accountNumber:'0000000000', accountHolderName:'SkyUltimate' };
-    modalBankName.innerText = bank.bankName || bank.bank || 'SkyUltimate Bank';
-    modalBankAccount.innerText = bank.accountNumber || bank.account || '0000000000';
-    modalBankHolder.innerText = bank.accountHolderName || bank.accountHolder || 'SkyUltimate';
-    priceModal.classList.remove('hidden');
-  } catch (e) {
-    placementMsg.innerText = e.message || 'Could not calculate price.';
+    const payload = { items, serviceType: document.getElementById('serviceType').value, pickup: document.getElementById('pickup').value, dropoff: document.getElementById('dropoff').value };
+    const res = await apiFetch('/api/orders/calc-price', { method: 'POST', body: JSON.stringify(payload) });
+    lastCalc = res;
+    const price = res.finalPrice || res.finalprice || 0;
+    finalPriceEl.innerText = `₦${Number(price).toLocaleString()}`;
+    const b = res.superAdminBankDetails || res.superAdminBankDetails || { bankName:'SkyUltimate Bank', accountNumber:'0000000000', accountHolderName:'SkyUltimate' };
+    bankNameEl.innerText = b.bankName || b.bank || 'SkyUltimate Bank';
+    bankAccountEl.innerText = b.accountNumber || b.account || '0000000000';
+    bankHolderEl.innerText = b.accountHolderName || b.accountHolder || 'SkyUltimate';
+    showOverlay(priceModal);
+  } catch (err) {
+    calcMsg.innerText = err.message || 'Could not calculate price.';
   }
 });
-priceClose.addEventListener('click', ()=> priceModal.classList.add('hidden'));
 
-/* Create order */
-priceConfirm.addEventListener('click', async ()=>{
-  if (!lastCalcResponse){ alert('No price calculated'); return; }
-  const payload = {
-    items: lastCalcResponse.items || [{ itemType: itemTypeInput.value || 'Item', weight: Number(weightInput.value||0), quantity:1 }],
-    pickupAddress: pickupInput.value.trim(), deliveryAddress: dropoffInput.value.trim(),
-    paymentMethod: 'Bank Transfer', price: lastCalcResponse.finalPrice ?? lastCalcResponse.finalprice ?? 0
-  };
+function closePriceModal() { hideOverlay(priceModal); }
+
+iPaidBtn.addEventListener('click', async () => {
+  // Simulate payment confirmation by creating an order (or call createOrder with payment info)
+  if (!lastCalc) { alert('No calculation available'); return; }
   try {
-    const created = await callPost('createOrder', payload);
+    const items = [{ itemType: document.getElementById('itemType').value || 'Item', weight: Number(document.getElementById('weight').value || 0), quantity: 1 }];
+    const payload = {
+      items,
+      pickupAddress: document.getElementById('pickup').value || '',
+      deliveryAddress: document.getElementById('dropoff').value || '',
+      paymentMethod: 'Bank Transfer'
+    };
+    const created = await apiFetch('/api/orders', { method:'POST', body: JSON.stringify(payload) });
     const order = created.order || created;
-    const id = order._id || order.id || order.orderId || order;
     localStorage.setItem('su_active_order', JSON.stringify(order));
-    placementMsg.innerText = 'Order created. Await admin confirmation.';
-    priceModal.classList.add('hidden');
-    openTracking(id);
+    activeOrder = order;
+    activeOrderSummary.innerText = `Order: ${order._id || order.id || order._doc?._id} — ${order.status || 'Pending'}`;
+    openTracking(order._id || order.id || order._doc?._id || '');
+    hideOverlay(priceModal);
+    alert('Order created. Await admin payment confirmation.');
     await loadHistory();
-  } catch (e) {
-    placementMsg.innerText = e.message || 'Order creation failed.';
+  } catch (err) {
+    alert(err.message || 'Order creation failed.');
   }
 });
 
-/* Submit order (direct) */
-submitOrderBtn.addEventListener('click', async ()=>{
-  placementMsg.innerText = '';
+/* direct submit without showing modal */
+submitOrderBtn.addEventListener('click', async () => {
+  calcMsg.innerText = '';
+  const items = [{ itemType: document.getElementById('itemType').value || 'Item', weight: Number(document.getElementById('weight').value || 0), quantity: 1 }];
   const payload = {
-    items: [{ itemType: itemTypeInput.value || 'Item', weight: Number(weightInput.value||0), quantity:1 }],
-    pickupAddress: pickupInput.value.trim(), deliveryAddress: dropoffInput.value.trim(), paymentMethod: 'Bank Transfer'
+    items,
+    pickupAddress: document.getElementById('pickup').value || '',
+    deliveryAddress: document.getElementById('dropoff').value || '',
+    paymentMethod: 'Bank Transfer'
   };
   try {
-    const created = await callPost('createOrder', payload);
+    const created = await apiFetch('/api/orders', { method:'POST', body: JSON.stringify(payload) });
     const order = created.order || created;
-    const id = order._id || order.id || order.orderId || order;
     localStorage.setItem('su_active_order', JSON.stringify(order));
-    placementMsg.innerText = 'Order created. Await admin confirmation.';
-    openTracking(id);
+    activeOrder = order;
+    activeOrderSummary.innerText = `Order: ${order._id || order.id} — ${order.status || 'Pending'}`;
+    openTracking(order._id || order.id || '');
     await loadHistory();
-  } catch (e) {
-    placementMsg.innerText = e.message || 'Could not submit order.';
+    alert('Order created. Await admin to confirm payment.');
+  } catch (err) {
+    calcMsg.innerText = err.message || 'Could not submit order.';
   }
 });
 
-/* Tracking (polling) */
-async function openTracking(orderId){
-  if (!orderId) return;
-  activeOrderId = orderId;
-  placementCard.classList.add('hidden');
-  trackingCard.classList.remove('hidden');
-  trackIdEl.innerText = orderId;
+/* ---------- tracking (polling & map) ---------- */
+document.getElementById('openTrackingBtn').addEventListener('click', () => {
+  if (!activeOrder) { alert('No active order'); return; }
+  openOverlay('tracking');
+  openTracking(activeOrder._id || activeOrder.id || activeOrder._doc?._id || '');
+});
+
+async function openTracking(orderId) {
+  trackOrderIdEl.innerText = orderId;
   await pollOrder(orderId);
   if (pollingInterval) clearInterval(pollingInterval);
   pollingInterval = setInterval(()=>pollOrder(orderId), 5000);
 }
-closeTracking.addEventListener('click', ()=> { trackingCard.classList.add('hidden'); placementCard.classList.remove('hidden'); if (pollingInterval) clearInterval(pollingInterval); pollingInterval = null; });
 
-async function pollOrder(orderId){
+async function pollOrder(orderId) {
   try {
-    const order = await callGet('getOrder', { id: orderId });
-    const status = order.status || order.order?.status || order.state || 'Unknown';
+    const order = await apiFetch(`/api/orders/${orderId}`);
+    const status = order.status || order.order?.status || 'Unknown';
     trackStatusEl.innerText = status;
     renderTimeline(status, order);
-    // buttons show/hide
-    if (status === 'PaymentConfirmed' || status === 'AgentAssigned') { confirmPickedBtn.classList.remove('hidden'); confirmDeliveredBtn.classList.add('hidden'); }
-    else if (status === 'EnRouteToDelivery' || status==='OutForDelivery') { confirmPickedBtn.classList.add('hidden'); confirmDeliveredBtn.classList.remove('hidden'); }
-    else { confirmPickedBtn.classList.add('hidden'); confirmDeliveredBtn.classList.add('hidden'); }
-  } catch (e) { console.info('pollOrder error', e.message); }
+    // if agent exists, show contact buttons
+    const agentId = order.agent || order.order?.agent;
+    if (agentId) {
+      // fetch agent details if you have endpoint (best-effort)
+      try {
+        const agentProfile = await apiFetch(`/api/users/${agentId}`); // may 404 - optional
+        callAgentBtn.classList.remove('hidden');
+        callAgentBtn.onclick = () => { if (agentProfile.phone) window.location.href = `tel:${agentProfile.phone}`; else alert('Agent phone not available'); };
+      } catch (e) {
+        // ignore if endpoint doesn't exist
+      }
+    } else {
+      callAgentBtn.classList.add('hidden');
+    }
+
+    // map: if order contains geo (agentLat, agentLng) or order.agentLocation, attempt to show
+    if ((order.agentLocation && order.agentLocation.lat) || (order.order && order.order.agentLocation && order.order.agentLocation.lat)) {
+      const agentLoc = (order.agentLocation || order.order?.agentLocation);
+      ensureGoogleMaps(() => {
+        updateMap(agentLoc, order);
+      });
+    }
+
+  } catch (err) {
+    console.info('Polling error (order):', err.message);
+  }
 }
 
-function renderTimeline(status, order){
+function renderTimeline(status, order) {
   const steps = [
-    {k:'PendingPaymentConfirmation', l:'Pending Payment Confirmation'},
-    {k:'PaymentConfirmed', l:'Payment Confirmed'},
-    {k:'AgentAssigned', l:'Agent Assigned'},
-    {k:'EnRouteToPickup', l:'Agent En Route to Pickup'},
-    {k:'PickedUp', l:'Package Picked Up'},
-    {k:'EnRouteToDelivery', l:'Agent En Route to Delivery'},
-    {k:'Delivered', l:'Delivered'},
-    {k:'Completed', l:'Completed'}
+    { key:'PendingPayment', label:'Pending Payment' },
+    { key:'PaymentConfirmed', label:'Payment Confirmed' },
+    { key:'EnRouteToPickup', label:'Agent En Route to Pickup' },
+    { key:'EnRouteToDelivery', label:'Agent En Route to Delivery' },
+    { key:'Completed', label:'Delivered' },
+    { key:'Delivered', label:'Delivered' },
   ];
-  timelineEl.innerHTML = steps.map(s => `<div class="py-1"><span class="${status===s.k ? 'font-semibold text-green-600' : 'text-gray-600'}">${s.l}</span></div>`).join('');
+  trackingTimeline.innerHTML = steps.map(s => {
+    const active = (status === s.key || (s.key === 'Completed' && status === 'Delivered'));
+    return `<div class="py-1"><span class="${active ? 'font-bold text-green-600' : 'text-gray-600'}">${s.label}</span></div>`;
+  }).join('');
 }
 
-/* Confirm pickup/delivery - these try multiple update endpoints */
-confirmPickedBtn.addEventListener('click', async ()=>{
-  if (!activeOrderId) return;
+/* ---------- history ---------- */
+async function loadHistory() {
   try {
-    await callPut('updateOrder', { action: 'confirm-pickup' }, { id: activeOrderId });
-    alert('Pickup confirmed request sent.');
-    await pollOrder(activeOrderId);
-  } catch (e) { alert(e.message || 'Could not confirm pickup.'); }
-});
-confirmDeliveredBtn.addEventListener('click', async ()=>{
-  if (!activeOrderId) return;
-  try {
-    await callPut('updateOrder', { action: 'confirm-delivery' }, { id: activeOrderId });
-    alert('Delivery confirmed.');
-    await pollOrder(activeOrderId);
-  } catch (e) { alert(e.message || 'Could not confirm delivery.'); }
-});
-
-/* Referral copy/share */
-copyRefBtn.addEventListener('click', async ()=>{
-  try {
-    const link = `${location.origin}/signup?ref=${refCodeDisplay.innerText}`;
-    await navigator.clipboard.writeText(link);
-    refMsg.innerText = 'Referral link copied.';
-    setTimeout(()=>refMsg.innerText='', 3000);
-  } catch (e) { refMsg.innerText = 'Copy failed.'; }
-});
-shareRefBtn.addEventListener('click', async ()=>{
-  const link = `${location.origin}/signup?ref=${refCodeDisplay.innerText}`;
-  try { if (navigator.share) await navigator.share({ title:'Join SkyUltimate', text:'Use my referral link', url: link }); else { await navigator.clipboard.writeText(link); alert('Link copied: ' + link); } } catch (e) { alert('Share failed'); }
-});
-
-/* History */
-refreshHistory.addEventListener('click', loadHistory);
-async function loadHistory(){
-  historyList.innerHTML = 'Loading...';
-  try {
-    const cid = currentUser._id || currentUser.id;
-    const data = await callGet('orderHistory', { queryParams: {}, id: cid });
-    const orders = Array.isArray(data) ? data : (data.orders || data.data || []);
-    if (!orders || orders.length === 0) { historyList.innerHTML = '<div class="text-sm text-gray-500">No orders yet.</div>'; return; }
-    historyList.innerHTML = orders.slice().reverse().map(o => {
-      const id = o._id || o.id || o.orderId || '';
-      const status = o.status || o.state || 'Unknown';
-      const created = new Date(o.createdAt || o.created || Date.now()).toLocaleString();
-      const price = o.price ?? o.finalPrice ?? o.total ?? null;
-      return `
-      <div class="border rounded p-3 flex justify-between items-start">
-        <div>
-          <div class="text-sm font-medium">Order ${id}</div>
-          <div class="text-xs text-gray-600">${created} · ${o.serviceType || ''}</div>
-          ${price ? `<div class="text-sm text-gray-700 mt-1">Price: ₦${Number(price).toLocaleString()}</div>` : ''}
-          <div class="text-xs text-gray-600 mt-1">Status: <span class="font-semibold">${status}</span></div>
-        </div>
-        <div class="flex flex-col gap-2">
-          <button class="px-3 py-1 bg-white border rounded text-xs" data-view="${id}">View</button>
-          <button class="px-3 py-1 bg-yellow-50 border rounded text-xs" data-rate="${id}">Rate</button>
-          <button class="px-3 py-1 bg-red-50 border rounded text-xs" data-report="${id}">Report</button>
-        </div>
-      </div>`;
+    historyContent.innerText = 'Loading...';
+    // try endpoint with query param
+    const uid = currentUser.id || currentUser._id;
+    let data;
+    try {
+      data = await apiFetch(`/api/orders?customerId=${uid}`);
+    } catch (e) {
+      // fallback: fetch all and filter
+      const all = await apiFetch('/api/orders');
+      data = (Array.isArray(all) ? all : all.orders || []).filter(o => String(o.customer || o.customerId || o.customer?._id) === String(uid));
+    }
+    if (!data || (Array.isArray(data) && data.length === 0)) {
+      historyContent.innerHTML = '<div class="small-muted">No past orders found.</div>';
+      return;
+    }
+    const list = Array.isArray(data) ? data : (data.orders || []);
+    historyContent.innerHTML = list.map(o => {
+      const id = o._id || o.id || (o.order && o.order._id) || '—';
+      const status = o.status || o.order?.status || 'Unknown';
+      const price = o.finalPrice || o.order?.finalPrice || '—';
+      return `<div class="p-3 border rounded"><div class="flex justify-between"><div class="font-semibold">${id}</div><div class="text-sm">${status}</div></div><div class="text-sm mt-2">Price: ₦${Number(price || 0).toLocaleString()}</div><div class="mt-2"><button class="px-3 py-1 border rounded" onclick="openOrderDetails('${id}')">Open</button></div></div>`;
     }).join('');
-    historyList.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click', (e)=>{openTracking(e.currentTarget.dataset.view)}));
-    historyList.querySelectorAll('[data-rate]').forEach(btn=>btn.addEventListener('click', (e)=>{openRateModal(e.currentTarget.dataset.rate)}));
-    historyList.querySelectorAll('[data-report]').forEach(btn=>btn.addEventListener('click', (e)=>{openReportModal(e.currentTarget.dataset.report)}));
+  } catch (err) {
+    historyContent.innerText = 'Failed to load history';
+    console.error(err);
+  }
+}
+
+/* order details action placeholder (could open tracking for that order) */
+function openOrderDetails(orderId) {
+  openOverlay('tracking');
+  openTracking(orderId);
+}
+
+/* ---------- referral actions ---------- */
+copyRefBtn.addEventListener('click', async () => {
+  try {
+    const link = `${location.origin}/signup?ref=${currentUser.referralCode || (currentUser._id ? ('REF' + String(currentUser._id).slice(-6)) : 'REF-UNKNOWN')}`;
+    await navigator.clipboard.writeText(link);
+    refStatus.innerText = 'Referral link copied to clipboard.';
+    setTimeout(()=>refStatus.innerText='', 3000);
   } catch (e) {
-    historyList.innerHTML = `<div class="text-sm text-red-600">${e.message || 'Failed to load history'}</div>`;
+    refStatus.innerText = 'Copy failed.';
+  }
+});
+shareRefBtn.addEventListener('click', async () => {
+  const link = `${location.origin}/signup?ref=${currentUser.referralCode || (currentUser._id ? ('REF' + String(currentUser._id).slice(-6)) : 'REF-UNKNOWN')}`;
+  try {
+    if (navigator.share) await navigator.share({ title: 'Join SkyUltimate', text:'Use my referral link', url: link });
+    else { await navigator.clipboard.writeText(link); alert('Link copied: ' + link); }
+  } catch (e) { alert('Share failed'); }
+});
+
+refCopyFullBtn.addEventListener('click', async () => {
+  const link = refFullLink.innerText;
+  try { await navigator.clipboard.writeText(link); alert('Copied'); } catch (e) { alert('Copy failed'); }
+});
+refShareFullBtn.addEventListener('click', async () => {
+  const link = refFullLink.innerText;
+  try {
+    if (navigator.share) await navigator.share({ title: 'Join SkyUltimate', url: link });
+    else { await navigator.clipboard.writeText(link); alert('Copied: ' + link); }
+  } catch (e) { alert('Share failed'); }
+});
+
+/* ---------- announcements overlay ---------- */
+async function loadAnnouncementsOverlay() {
+  try {
+    const a = await apiFetch('/api/announcements/latest'); // same endpoint
+    if (!a) {
+      announcementsList.innerText = 'No announcements.';
+      return;
+    }
+    announcementsList.innerHTML = `<div class="p-3 border rounded"><div class="font-semibold">${a.title || 'Announcement'}</div><div class="text-sm mt-2">${a.message || ''}</div></div>`;
+  } catch (e) {
+    announcementsList.innerText = 'Failed to load announcements.';
   }
 }
 
-/* Rating */
-function openRateModal(orderId){
-  rateTargetOrderId = orderId;
-  rateMsg.innerText = '';
-  rateComment.value = '';
-  selectedRating = 0;
-  starsContainer.innerHTML = '';
-  for (let i=1;i<=5;i++){
-    const s = document.createElement('button');
-    s.type='button'; s.className='text-2xl'; s.innerText='☆'; s.dataset.value=i;
-    s.addEventListener('click', ()=>{ selectedRating = Number(s.dataset.value); updateStars(); });
-    starsContainer.appendChild(s);
+/* ---------- rate orders ---------- */
+async function loadRateOrders() {
+  try {
+    rateOrdersList.innerHTML = 'Loading...';
+    const uid = currentUser._id || currentUser.id;
+    // fetch history & filter for completed
+    let list = [];
+    try {
+      const res = await apiFetch(`/api/orders?customerId=${uid}`);
+      list = Array.isArray(res) ? res : (res.orders || []);
+    } catch (e) {
+      const all = await apiFetch('/api/orders');
+      list = (Array.isArray(all) ? all : (all.orders || [])).filter(o => String(o.customer) === String(uid));
+    }
+    const completed = list.filter(o => (o.status || o.order?.status) === 'Completed' || (o.status || '').toLowerCase() === 'delivered');
+    if (completed.length === 0) {
+      rateOrdersList.innerHTML = '<div class="small-muted">No completed orders to rate yet.</div>';
+      return;
+    }
+    rateOrdersList.innerHTML = completed.map(o => {
+      const id = o._id || o.id;
+      return `<div class="p-3 border rounded flex justify-between items-center"><div><div class="font-semibold">${id}</div><div class="text-sm small-muted">${o.finalPrice ? '₦' + Number(o.finalPrice).toLocaleString() : ''}</div></div><div><button class="px-3 py-1 btn-primary rounded" onclick="openRateModal('${id}')">Rate</button></div></div>`;
+    }).join('');
+  } catch (err) {
+    rateOrdersList.innerText = 'Failed to load rating list.';
   }
-  updateStars(); rateModal.classList.remove('hidden');
 }
-function updateStars(){ Array.from(starsContainer.children).forEach(btn=>btn.innerText = Number(btn.dataset.value) <= selectedRating ? '★' : '☆'); }
-cancelRate.addEventListener('click', ()=> rateModal.classList.add('hidden'));
-submitRate.addEventListener('click', async ()=>{
-  if (!rateTargetOrderId) { rateMsg.innerText='No order selected.'; return; }
-  if (!selectedRating) { rateMsg.innerText='Please select stars.'; return; }
+
+/* click handler to open a small rate modal (native prompt for simplicity) */
+async function openRateModal(orderId) {
+  const star = prompt('Rate agent 1-5 stars (enter a number):');
+  const comment = prompt('Add a comment (optional):') || '';
+  const rating = Number(star);
+  if (!rating || rating < 1 || rating > 5) { alert('Invalid rating'); return; }
   try {
-    await callPost('rateOrder', { stars: selectedRating, comment: rateComment.value||'' }, { id: rateTargetOrderId });
-    rateMsg.innerText = 'Rating submitted.'; setTimeout(()=>rateModal.classList.add('hidden'), 900); await loadHistory();
-  } catch (e) { rateMsg.innerText = e.message || 'Could not submit rating.'; }
+    await apiFetch(`/api/orders/${orderId}/rate`, { method:'POST', body: JSON.stringify({ rating, comment }) });
+    alert('Thanks for rating!');
+    closeOverlay('rate');
+    await loadHistory();
+  } catch (e) {
+    alert(e.message || 'Submit failed');
+  }
+}
+
+/* ---------- report agent ---------- */
+async function loadReportOrdersSelect() {
+  try {
+    const uid = currentUser._id || currentUser.id;
+    let list = [];
+    try {
+      const res = await apiFetch(`/api/orders?customerId=${uid}`);
+      list = Array.isArray(res) ? res : (res.orders || []);
+    } catch (e) {
+      const all = await apiFetch('/api/orders');
+      list = (Array.isArray(all) ? all : (all.orders || [])).filter(o => String(o.customer) === String(uid));
+    }
+    reportOrderSelect.innerHTML = '<option value="">Select order</option>' + list.map(o => `<option value="${o._id||o.id}">${o._id||o.id} — ${o.status||''}</option>`).join('');
+  } catch (err) {
+    reportOrderSelect.innerHTML = '<option value="">Failed to load</option>';
+  }
+}
+
+submitReportBtn.addEventListener('click', async () => {
+  const orderId = reportOrderSelect.value;
+  const reason = document.getElementById('reportReason').value.trim();
+  const details = document.getElementById('reportDetails').value.trim();
+  if (!orderId || !reason) { alert('Choose order and give a reason'); return; }
+  try {
+    // send to /api/reports (preferred) and fallback to /api/admin-requests
+    try {
+      await apiFetch('/api/reports', { method: 'POST', body: JSON.stringify({ orderId, reason, details }) });
+    } catch (e) {
+      await apiFetch('/api/admin-requests', { method: 'POST', body: JSON.stringify({ orderId, reason, details }) });
+    }
+    reportStatus.innerText = 'Report sent to admin/superadmin for review.';
+    setTimeout(()=>reportStatus.innerText='', 4000);
+    closeOverlay('report');
+  } catch (err) {
+    alert(err.message || 'Report failed');
+  }
 });
 
-/* Reporting */
-function openReportModal(orderId){ reportTargetOrderId = orderId; reportMsg.innerText=''; reportDetails.value=''; reportReason.value=''; reportModal.classList.remove('hidden'); }
-cancelReport.addEventListener('click', ()=> reportModal.classList.add('hidden'));
-submitReport.addEventListener('click', async ()=>{
-  if (!reportTargetOrderId) { reportMsg.innerText='No order selected.'; return; }
+/* ---------- support ---------- */
+sendSupportBtn.addEventListener('click', async () => {
+  const subject = supportSubject.value.trim();
+  const message = supportMessage.value.trim();
+  if (!subject || !message) { alert('Please provide subject and message'); return; }
   try {
-    const payload = { orderId: reportTargetOrderId, reason: reportReason.value||'other', details: reportDetails.value||'', priority:'high' };
-    await callPost('report', payload);
-    reportMsg.innerText = 'Report submitted'; setTimeout(()=>reportModal.classList.add('hidden'), 900);
-  } catch (e) { reportMsg.innerText = e.message || 'Could not submit report.'; }
+    await apiFetch('/api/feedback', { method: 'POST', body: JSON.stringify({ subject, message, userId: currentUser._id || currentUser.id }) });
+    supportStatus.innerText = 'Support message sent. We will get back to you.';
+    setTimeout(()=>supportStatus.innerText='', 4000);
+    closeOverlay('support');
+  } catch (e) {
+    // fallback: send to /api/contact or email via mailto
+    try {
+      await apiFetch('/api/contact', { method:'POST', body: JSON.stringify({ subject, message }) });
+      supportStatus.innerText = 'Message sent.';
+      setTimeout(()=>supportStatus.innerText='',4000);
+      closeOverlay('support');
+    } catch (f) {
+      alert('Failed to send support message via API. Please email support.');
+    }
+  }
 });
 
-/* drawer nav */
-document.getElementById('navPlaceOrder').addEventListener('click', ()=> { document.getElementById('drawer').classList.add('hidden'); placementCard.scrollIntoView({behavior:'smooth'}); });
-document.getElementById('navMyOrders').addEventListener('click', ()=> { document.getElementById('drawer').classList.add('hidden'); historyList.scrollIntoView({behavior:'smooth'}); });
-document.getElementById('navRefer').addEventListener('click', ()=> { document.getElementById('drawer').classList.add('hidden'); refCodeDisplay.scrollIntoView({behavior:'smooth'}); });
-document.getElementById('navProfile').addEventListener('click', ()=> { document.getElementById('drawer').classList.add('hidden'); alert('Profile editor placeholder — open profile page.'); });
-document.getElementById('navHelp').addEventListener('click', ()=> { document.getElementById('drawer').classList.add('hidden'); window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'}); });
-
-/* load active order from local storage if present */
-(async function loadActiveFromStorage(){
-  const raw = localStorage.getItem('su_active_order');
-  if (!raw) return;
+/* ---------- profile save (uses /api/users/me/bank) ---------- */
+saveProfileBtn.addEventListener('click', async () => {
+  const phone = profilePhone.value.trim();
+  const bankName = profileBankName.value.trim();
+  const accountNumber = profileAccountNumber.value.trim();
+  const accountHolderName = profileAccountHolder.value.trim();
   try {
-    const o = JSON.parse(raw); const id = o._id || o.id || '';
-    if (id) openTracking(id);
-  } catch(e){}
-})();
+    const payload = { phone };
+    if (bankName || accountNumber || accountHolderName) {
+      payload.bankName = bankName;
+      payload.accountNumber = accountNumber;
+      payload.accountHolderName = accountHolderName;
+    }
+    await apiFetch('/api/users/me/bank', { method: 'PUT', body: JSON.stringify(payload) });
+    profileStatus.innerText = 'Profile updated.';
+    // update local copy
+    currentUser.phone = phone || currentUser.phone;
+    currentUser.bankDetails = currentUser.bankDetails || {};
+    if (bankName) currentUser.bankDetails.bankName = bankName;
+    if (accountNumber) currentUser.bankDetails.accountNumber = accountNumber;
+    if (accountHolderName) currentUser.bankDetails.accountHolderName = accountHolderName;
+    localStorage.setItem('su_user', JSON.stringify(currentUser));
+    setTimeout(()=>closeOverlay('profile'), 900);
+  } catch (e) {
+    profileStatus.innerText = e.message || 'Update failed.';
+  }
+});
 
-/* Optional Google Map loader if you set CONFIG.googleMapsKey */
-function loadGoogleMap(key){
-  if (!key) return;
-  const s = document.createElement('script');
-  s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places`;
-  s.async = true; s.defer = true;
-  s.onload = ()=> { console.info('Google Maps loaded'); /* you can initialize a map in #mapPlaceholder */ };
-  document.head.appendChild(s);
+/* ---------- overlays open/close helpers ---------- */
+function openOverlay(name) {
+  closeMenuOverlay();
+  // hide all to prevent duplicates
+  [historyOverlay, referralOverlay, announcementsOverlay, rateOverlay, reportOverlay, supportOverlay, profileOverlay, trackingOverlay].forEach(hideOverlay);
+  switch (name) {
+    case 'history': showOverlay(historyOverlay); loadHistory(); break;
+    case 'referral': showOverlay(referralOverlay); /* nothing extra */ break;
+    case 'announcements': showOverlay(announcementsOverlay); loadAnnouncementsOverlay(); break;
+    case 'rate': showOverlay(rateOverlay); loadRateOrders(); break;
+    case 'report': showOverlay(reportOverlay); loadReportOrdersSelect(); break;
+    case 'support': showOverlay(supportOverlay); break;
+    case 'profile': showOverlay(profileOverlay); break;
+    case 'tracking': showOverlay(trackingOverlay); break;
+  }
 }
-if (CONFIG.googleMapsKey) loadGoogleMap(CONFIG.googleMapsKey);
+function closeOverlay(name) {
+  switch (name) {
+    case 'history': hideOverlay(historyOverlay); break;
+    case 'referral': hideOverlay(referralOverlay); break;
+    case 'announcements': hideOverlay(announcementsOverlay); break;
+    case 'rate': hideOverlay(rateOverlay); break;
+    case 'report': hideOverlay(reportOverlay); break;
+    case 'support': hideOverlay(supportOverlay); break;
+    case 'profile': hideOverlay(profileOverlay); break;
+    case 'tracking': hideOverlay(trackingOverlay); if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; } break;
+  }
+}
+
+/* menu open */
+document.getElementById('hamburgerBtn').addEventListener('click', openMenuOverlay);
+document.getElementById('profileBtnHeader').addEventListener('click', ()=> openOverlay('profile'));
+function openOverlay(name){ openOverlay; openOverlay(name); } // placeholder - replaced below
+
+// override the above dummy with correct function reference
+window.openOverlay = openOverlay;
+
+/* close menu overlay pressing backdrop */
+function closeMenuOverlay() { menuOverlay.classList.remove('show'); }
+
+/* logout */
+function doLogout() {
+  localStorage.removeItem('su_token');
+  localStorage.removeItem('su_user');
+  localStorage.removeItem('su_active_order');
+  window.location.href = 'index.html';
+}
+
+/* refresh button */
+refreshBtn.addEventListener('click', async () => {
+  await loadHistory();
+  await loadAnnouncement();
+  alert('Refreshed');
+});
+
+/* open menu helpers */
+document.getElementById('logoutBtn').addEventListener('click', doLogout);
+document.getElementById('profileBtnHeader').addEventListener('click', () => openOverlay('profile'));
+
+/* convenience UI mapping */
+document.getElementById('hamburgerBtn').addEventListener('click', openMenuOverlay);
+document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+/* helper to show/hide overlay elements easily */
+function showOverlay(el) { if (el) el.classList.add('show'); }
+function hideOverlay(el) { if (el) el.classList.remove('show'); }
+
+/* ---------- Google Maps Places (lazy load) ---------- */
+function ensureGoogleMaps(cb) {
+  if (googleMapsLoaded) { if (cb) cb(); return; }
+  const script = document.createElement('script');
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places`;
+  script.defer = true;
+  script.async = true;
+  script.onload = () => {
+    googleMapsLoaded = true;
+    if (cb) cb();
+  };
+  script.onerror = () => { console.warn('Google Maps failed to load'); if (cb) cb(); };
+  document.head.appendChild(script);
+}
+
+/* Attach places autocomplete to pickup/dropoff inputs when they get focus (lazy) */
+function attachPlacesAutocomplete() {
+  ensureGoogleMaps(() => {
+    try {
+      const pickup = document.getElementById('pickup');
+      const dropoff = document.getElementById('dropoff');
+      if (window.google && google.maps && google.maps.places) {
+        if (!pickup.__pl) {
+          const ac1 = new google.maps.places.Autocomplete(pickup, { types: ['geocode'] });
+          pickup.__pl = ac1;
+        }
+        if (!dropoff.__pl) {
+          const ac2 = new google.maps.places.Autocomplete(dropoff, { types: ['geocode'] });
+          dropoff.__pl = ac2;
+        }
+      }
+    } catch (e) { console.warn('Places attach failed', e); }
+  });
+}
+document.getElementById('pickup').addEventListener('focus', attachPlacesAutocomplete);
+document.getElementById('dropoff').addEventListener('focus', attachPlacesAutocomplete);
+
+/* map update */
+function updateMap(agentLoc, order) {
+  if (!googleMapsLoaded || !window.google) return;
+  try {
+    if (!map) {
+      map = new google.maps.Map(mapContainer, { center: { lat: 6.5244, lng: 3.3792 }, zoom: 12 });
+    }
+    // place pickup & dropoff if available in order payload
+    if (order.pickupLocation && order.pickupLocation.lat) {
+      const p = { lat: Number(order.pickupLocation.lat), lng: Number(order.pickupLocation.lng) };
+      if (!pickupMarker) pickupMarker = new google.maps.Marker({ map, position: p, title: 'Pickup' });
+      else pickupMarker.setPosition(p);
+      map.setCenter(p);
+    }
+    if (order.deliveryLocation && order.deliveryLocation.lat) {
+      const d = { lat: Number(order.deliveryLocation.lat), lng: Number(order.deliveryLocation.lng) };
+      if (!dropoffMarker) dropoffMarker = new google.maps.Marker({ map, position: d, title: 'Dropoff' });
+      else dropoffMarker.setPosition(d);
+    }
+    if (agentLoc && agentLoc.lat) {
+      const a = { lat: Number(agentLoc.lat), lng: Number(agentLoc.lng) };
+      if (!agentMarker) agentMarker = new google.maps.Marker({ map, position: a, title: 'Agent', icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: '#ff0000', fillOpacity: 1, strokeWeight: 2 } });
+      else agentMarker.setPosition(a);
+    }
+  } catch (err) { console.warn('map update error', err); }
+}
+
+/* ---------- UI wiring for overlays open/close (connect earlier functions properly) ---------- */
+function openMenuOverlay() { menuOverlay.classList.add('show'); document.getElementById('menuName').innerText = currentUser.name || 'User'; document.getElementById('menuRole').innerText = currentUser.role || 'Customer'; document.getElementById('menuThemeBtn').innerText = isDarkMode() ? 'Light' : 'Dark'; }
+function closeMenuOverlay() { menuOverlay.classList.remove('show'); }
+
+function openOverlay(name) {
+  closeMenuOverlay();
+  // close all others first
+  [historyOverlay, referralOverlay, announcementsOverlay, rateOverlay, reportOverlay, supportOverlay, profileOverlay, trackingOverlay].forEach(hideOverlay);
+  switch (name) {
+    case 'history': showOverlay(historyOverlay); loadHistory(); break;
+    case 'referral': showOverlay(referralOverlay); break;
+    case 'announcements': showOverlay(announcementsOverlay); loadAnnouncementsOverlay(); break;
+    case 'rate': showOverlay(rateOverlay); loadRateOrders(); break;
+    case 'report': showOverlay(reportOverlay); loadReportOrdersSelect(); break;
+    case 'support': showOverlay(supportOverlay); break;
+    case 'profile': showOverlay(profileOverlay); break;
+    case 'tracking': showOverlay(trackingOverlay); break;
+  }
+}
+function closeOverlay(name) {
+  switch (name) {
+    case 'history': hideOverlay(historyOverlay); break;
+    case 'referral': hideOverlay(referralOverlay); break;
+    case 'announcements': hideOverlay(announcementsOverlay); break;
+    case 'rate': hideOverlay(rateOverlay); break;
+    case 'report': hideOverlay(reportOverlay); break;
+    case 'support': hideOverlay(supportOverlay); break;
+    case 'profile': hideOverlay(profileOverlay); break;
+    case 'tracking': hideOverlay(trackingOverlay); if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; } break;
+  }
+}
+
+/* make menu buttons work */
+document.querySelectorAll('[onclick^="openOverlay"]').forEach(btn => {
+  // already set via inline onclick in markup - keep as-is
+});
+
+/* ---------- startup ---------- */
+applyTheme();
+initUI();
+loadAnnouncement();
+loadHistory();
+loadAnnouncementsOverlay(); // prepare announcements content
+
+// ensure referral overlay link is set
+refFullLink.innerText = `${location.origin}/signup?ref=${currentUser.referralCode || (currentUser._id ? ('REF' + String(currentUser._id).slice(-6)) : 'REF-UNKNOWN')}`;
+
+/* attach quick handlers */
+document.getElementById('hamburgerBtn').addEventListener('click', openMenuOverlay);
+document.getElementById('profileBtnHeader').addEventListener('click', () => openOverlay('profile'));
+document.getElementById('themeToggle').addEventListener('click', () => { toggleTheme(); applyTheme(); });
+
+document.getElementById('refFullLink')?.addEventListener('click', () => {});
+document.getElementById('refCopyFullBtn')?.addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(refFullLink.innerText); alert('Copied'); } catch (e) { alert('Failed'); }
+});
+document.getElementById('refShareFullBtn')?.addEventListener('click', async () => {
+  try { if (navigator.share) await navigator.share({ title: 'Join SkyUltimate', url: refFullLink.innerText }); else await navigator.clipboard.writeText(refFullLink.innerText); } catch(e) { alert('Share failed'); }
+});
+
+/* ensure we attach places autocomplete if user focuses inputs */
+document.getElementById('pickup').addEventListener('focus', attachPlacesAutocomplete);
+document.getElementById('dropoff').addEventListener('focus', attachPlacesAutocomplete);
+
+/* finalize: wire menu overlay buttons (some are inline, but attach the dynamic ones too) */
+document.querySelectorAll('#menuOverlay nav button').forEach(btn => {
+  // already wired inline via onclick; no-op
+});
+
+/* Export small functions for console debugging if needed */
+window.apiFetch = apiFetch;
+window.openOverlay = openOverlay;
+window.closeOverlay = closeOverlay;
+window.doLogout = doLogout;
 
 </script>
 </body>
