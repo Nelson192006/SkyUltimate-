@@ -4,464 +4,456 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SkyUltimate — Customer Dashboard</title>
+
+  <!-- Tailwind CDN for utility styles -->
   <script src="https://cdn.tailwindcss.com"></script>
+
   <style>
-    :root {
+    /* Embedded premium styling */
+    :root{
       --brand-red: #C00000;
-      --glass: rgba(255,255,255,0.94);
-      --glass-dark: rgba(20,20,20,0.9);
+      --brand-red-dark: #940000;
+      --glass: rgba(255,255,255,0.92);
+      --card-radius: 18px;
+      --shadow: 0 8px 30px rgba(0,0,0,0.12);
     }
-    html,body { height:100% }
-    body { background: linear-gradient(180deg, #E74C3C 0%, var(--brand-red) 100%); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
-    .card { background: var(--glass); border-radius: 18px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
-    .pill { border-radius: 999px; }
-    .modal-backdrop { background: rgba(0,0,0,0.45); }
-    .overlay-full { position: fixed; inset: 0; z-index: 60; display: none; }
-    .overlay-full.show { display: block; }
-    .panel { background: white; border-radius: 14px; padding: 18px; max-width: 920px; margin: 40px auto; box-shadow: 0 18px 40px rgba(0,0,0,0.18); }
-    .btn-primary { background: var(--brand-red); color: #fff; }
-    .btn-outline { border: 1px solid rgba(0,0,0,0.06); background: #fff; }
-    .glass-dark { background: rgba(10,10,10,0.88); color: white; }
-    .fade-in { animation: fadeIn .28s ease both; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: translateY(0) } }
-    /* dark mode */
-    body.dark { background: linear-gradient(180deg, #2b2b2b 0%, #1b1b1b 100%); color: #e5e7eb; }
-    body.dark .card { background: rgba(12,12,12,0.8); color: #e5e7eb; }
-    body.dark .btn-primary { filter: brightness(1.06); }
-    .clickable { cursor: pointer; }
-    .small-muted { font-size: .9rem; color: rgba(0,0,0,0.6); }
-    body.dark .small-muted { color: rgba(255,255,255,0.65); }
-    input::placeholder, textarea::placeholder { color: rgba(0,0,0,0.4) }
-    body.dark input::placeholder, body.dark textarea::placeholder { color: rgba(255,255,255,0.45) }
+    html,body { height:100%; margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+    body.light { background: linear-gradient(180deg,#fff 0%, #fff 100%); color:#111; }
+    body.dark { background: linear-gradient(180deg,#0b1020 0%, #071029 100%); color:#e6eefb; }
+    .app-bg { background: linear-gradient(180deg,var(--brand-red) 0%, #9a0000 100%); min-height:100vh; padding-bottom: 100px; }
+    .card { background: var(--glass); border-radius: var(--card-radius); box-shadow: var(--shadow); padding: 16px; }
+    .rounded-logo { width:56px; height:56px; border-radius:999px; object-fit:cover; box-shadow: 0 8px 24px rgba(0,0,0,0.24); }
+    .btn { background:var(--brand-red); color:#fff; padding:10px 14px; border-radius:12px; font-weight:700; }
+    .btn-outline { background:transparent; color:var(--brand-red); border:2px solid rgba(255,255,255,0.12); padding:8px 12px; border-radius:10px; font-weight:700; }
+    .glass-soft { background: rgba(255,255,255,0.06); border-radius:14px; padding:10px; }
+    .toast { position: fixed; right: 20px; bottom: 20px; z-index:10000; min-width:260px; border-radius:12px; padding:12px 16px; box-shadow:0 8px 30px rgba(0,0,0,0.24); color:#fff; }
+    .toast.success{ background:#16a34a } .toast.error{ background:#b91c1c } .toast.info{ background:#0ea5e9 }
+    .overlay-full { position: fixed; inset:0; background: rgba(3,7,18,0.6); z-index:2000; display:flex; align-items:center; justify-content:center; }
+    .hidden { display:none; }
+    /* map container */
+    #map { width:100%; height:260px; border-radius:12px; overflow:hidden; }
+    /* hamburger overlay screens take full content area */
+    .panel-screen { position: fixed; inset: 72px 12px 12px 12px; z-index:1500; overflow:auto; border-radius:14px; padding:18px; box-shadow: var(--shadow); background: rgba(255,255,255,0.96); }
+    .dark .panel-screen { background: rgba(8,10,20,0.95); color:#e6eefb; }
+    .chip { background: rgba(255,255,255,0.85); padding:6px 10px; border-radius:999px; font-weight:600; }
+    .muted { color: #6b7280; }
+    /* small screens adjustments */
+    @media (max-width:640px){
+      .panel-screen { inset: 72px 8px 8px 8px; padding:12px; }
+    }
   </style>
 </head>
-<body>
+<body class="app-bg light">
 
-  <!-- Top bar -->
-  <header class="w-full">
-    <div class="max-w-5xl mx-auto flex items-center justify-between p-4">
-      <div class="flex items-center gap-4">
-        <button id="hamburgerBtn" class="p-2 rounded-md hover:bg-white/10 text-white" aria-label="Open menu">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
-        </button>
+  <!-- APP SHELL -->
+  <div class="max-w-4xl mx-auto pt-6">
 
-        <!-- logo only - no text beside it as requested -->
-        <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true"
-             alt="SkyUltimate" class="w-16 h-16 rounded-full shadow-lg"/>
-
-        <div>
-          <div id="greeting" class="text-white text-xl font-semibold">Hello!</div>
+    <!-- HEADER -->
+    <header class="flex items-center justify-between px-3 mb-6">
+      <div class="flex items-center gap-3">
+        <img class="rounded-logo" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="logo">
+        <!-- No text beside logo as requested -->
+        <div id="welcomeWrap" class="ml-2">
+          <div id="welcomeMsg" class="text-white text-lg font-semibold">Welcome!</div>
+          <div id="welcomeSub" class="text-white/90 text-sm muted">Your hub</div>
         </div>
       </div>
 
-      <div class="flex items-center gap-3">
-        <button id="themeToggle" class="px-3 py-2 bg-white/10 text-white rounded pill">Dark</button>
-        <button id="profileBtnHeader" class="px-3 py-2 rounded text-white hover:bg-white/10">Profile</button>
-        <button id="logoutBtn" class="px-3 py-2 rounded text-white hover:bg-white/10">Logout</button>
+      <div class="flex items-center gap-2">
+        <button id="themeToggle" class="btn-outline">Dark</button>
+        <button id="menuBtn" class="btn-outline">Menu</button>
+        <button id="logoutBtn" class="btn" title="Logout">Logout</button>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <main class="max-w-5xl mx-auto py-6 px-4 space-y-6">
+    <!-- MAIN GRID -->
+    <main id="mainContent" class="grid grid-cols-1 gap-4 px-3">
 
-    <!-- Announcement banner (top) -->
-    <div id="announceTop" class="card hidden fade-in">
-      <div id="announceTitle" class="font-semibold text-red-700"></div>
-      <div id="announceMsg" class="text-sm mt-1"></div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-      <!-- Left: Place Order (primary) -->
-      <section class="lg:col-span-2 card fade-in">
-        <h2 class="text-lg font-bold">Place a New Order</h2>
-        <p class="text-sm small-muted mt-1">Create a delivery request — calculate price, pay, then track.</p>
-
-        <div class="mt-4 space-y-3">
+      <!-- ANNOUNCEMENT (dynamic) -->
+      <section id="announcementBox" class="card hidden">
+        <div class="flex items-start justify-between gap-4">
           <div>
-            <label class="text-xs small-muted">Pickup address</label>
-            <input id="pickup" class="w-full border rounded px-3 py-2 mt-1" placeholder="Start typing pickup address..." />
+            <div id="announceTitle" class="text-red-700 font-bold"></div>
+            <div id="announceBody" class="text-sm mt-1 muted"></div>
           </div>
-
           <div>
-            <label class="text-xs small-muted">Drop-off address</label>
-            <input id="dropoff" class="w-full border rounded px-3 py-2 mt-1" placeholder="Start typing delivery address..." />
+            <button id="dismissAnnouncement" class="btn-outline">Dismiss</button>
           </div>
+        </div>
+      </section>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <input id="itemType" placeholder="Item type (e.g., Parcel)" class="border rounded px-3 py-2" />
-            <input id="weight" type="number" placeholder="Weight (kg)" class="border rounded px-3 py-2" />
+      <!-- HERO/REFERRAL -->
+      <section class="card flex items-center justify-between gap-4">
+        <div>
+          <h2 id="heroGreeting" class="text-xl font-bold">Hello, <span id="firstName">there</span> 👋</h2>
+          <p class="muted text-sm mt-1">Ready to send something? Place an order or view your history.</p>
+        </div>
+        <div class="text-right">
+          <div class="muted text-xs">Your Referral</div>
+          <div id="refCode" class="font-mono text-lg font-bold">—</div>
+          <div class="mt-2 flex gap-2 justify-end">
+            <button id="copyRef" class="btn-outline">Copy</button>
+            <button id="shareRef" class="btn">Share</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ORDER PLACEMENT -->
+      <section id="placementCard" class="card">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold">Place a New Order</h3>
+          <div class="muted text-sm">Choose service & details</div>
+        </div>
+
+        <div class="mt-3 grid grid-cols-1 gap-3">
+          <input id="pickup" placeholder="Pickup address" class="w-full border rounded px-3 py-2" />
+          <input id="pickupContact" placeholder="Pickup contact name & phone" class="w-full border rounded px-3 py-2" />
+          <input id="dropoff" placeholder="Delivery address" class="w-full border rounded px-3 py-2" />
+          <input id="dropoffContact" placeholder="Recipient name & phone" class="w-full border rounded px-3 py-2" />
+          <div class="flex gap-2">
+            <input id="itemType" placeholder="Item type (Documents, Parcel)" class="flex-1 border rounded px-3 py-2" />
+            <input id="weight" type="number" min="0" placeholder="Weight (kg)" class="w-40 border rounded px-3 py-2" />
+          </div>
+          <div class="flex gap-2 items-center">
             <select id="serviceType" class="border rounded px-3 py-2">
               <option value="standard">Standard</option>
               <option value="express">Express</option>
               <option value="same-day">Same-day</option>
             </select>
-          </div>
 
-          <div class="flex gap-3 mt-3">
-            <button id="calcPriceBtn" class="btn-primary px-4 py-2 rounded font-semibold">Calculate Final Price</button>
-            <button id="submitOrderBtn" class="border px-4 py-2 rounded" title="Submit & await admin confirmation">Confirm & Await Admin Approval</button>
+            <button id="calcPrice" class="btn ml-auto">Calculate Final Price</button>
+            <button id="submitOrder" class="btn-outline">Confirm & Await Admin Approval</button>
           </div>
-          <div id="calcMsg" class="text-sm text-red-600 mt-2"></div>
+          <div id="calcMsg" class="text-sm text-red-600 mt-1"></div>
         </div>
       </section>
 
-      <!-- Right column: Quick panels -->
-      <aside class="card fade-in">
-        <div class="space-y-4">
-          <div>
-            <h3 class="font-semibold">Refer & Earn</h3>
-            <p class="text-sm small-muted mt-1">Share your referral link and earn rewards when friends sign up.</p>
-            <div class="mt-3 flex items-center justify-between gap-2">
-              <div>
-                <div class="text-xs small-muted">Your code</div>
-                <div id="refCode" class="font-mono font-semibold text-lg">—</div>
-              </div>
-              <div class="flex flex-col gap-2">
-                <button id="copyRefBtn" class="px-3 py-2 btn-primary rounded">Copy</button>
-                <button id="shareRefBtn" class="px-3 py-2 border rounded">Share</button>
-              </div>
+      <!-- PRICE MODAL (hidden) -->
+      <div id="priceModal" class="overlay-full hidden">
+        <div class="card w-full max-w-xl">
+          <h3 class="text-xl font-semibold">Final Price</h3>
+          <div class="mt-3">
+            <div id="finalPrice" class="text-3xl font-bold">₦0</div>
+            <div class="muted text-sm mt-2">Pay via bank transfer to:</div>
+            <div class="mt-2">
+              <div id="bankName" class="font-bold">SkyUltimate Bank</div>
+              <div id="bankAccount" class="muted">0000000000</div>
+              <div id="bankHolder" class="muted">SkyUltimate</div>
             </div>
-            <div id="refStatus" class="text-sm text-green-600 mt-2"></div>
+            <div class="mt-3 text-sm muted">After payment, the Admin will confirm and your order will move to tracking.</div>
           </div>
-
-          <div>
-            <h3 class="font-semibold">Quick Support</h3>
-            <p class="text-sm small-muted mt-1">Contact our support team directly.</p>
-            <div class="mt-3 space-y-2">
-              <a id="callLink" href="tel:+2349128884830" class="block px-3 py-2 rounded border hover:bg-gray-50">📞 +234 912 888 4830</a>
-              <a id="waLink" href="https://wa.me/2349128884830" target="_blank" class="block px-3 py-2 rounded border hover:bg-gray-50">💬 WhatsApp</a>
-              <a id="emailLink" href="mailto:nelsongodspower24@gmail.com?subject=Support%20Request" class="block px-3 py-2 rounded border hover:bg-gray-50">✉️ Email Support</a>
-            </div>
+          <div class="mt-4 flex gap-2">
+            <button id="closePrice" class="btn-outline flex-1">Close</button>
+            <button id="iPaid" class="btn flex-1">I have Paid (Simulate)</button>
           </div>
-
-          <div>
-            <h3 class="font-semibold">Order Status</h3>
-            <p class="text-sm small-muted mt-1">Active order (if any)</p>
-            <div class="mt-3">
-              <div id="activeOrderSummary" class="text-sm">No active order</div>
-              <div class="mt-2 flex gap-2">
-                <button id="openTrackingBtn" class="px-3 py-2 border rounded hidden">Open Tracking</button>
-                <button id="refreshBtn" class="px-3 py-2 border rounded">Refresh</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
-    </div>
-
-  </main>
-
-  <!-- Footer -->
-  <footer class="max-w-5xl mx-auto text-center pb-10 text-sm small-muted">
-    <div>
-      <a id="phoneFooter" href="tel:+2349128884830" class="underline">Call: +234 912 888 4830</a>
-      <span class="mx-2">·</span>
-      <a id="whatsappFooter" href="https://wa.me/2349128884830" target="_blank" class="underline">WhatsApp</a>
-      <span class="mx-2">·</span>
-      <a id="emailFooter" href="mailto:nelsongodspower24@gmail.com" class="underline">Email</a>
-    </div>
-  </footer>
-
-  <!-- ---------------- Modals & overlays ---------------- -->
-
-  <!-- Price Modal -->
-  <div id="priceModal" class="overlay-full">
-    <div class="absolute inset-0 modal-backdrop" onclick="closePriceModal()"></div>
-    <div class="panel">
-      <div class="flex justify-between items-start">
-        <h3 class="text-xl font-bold">Final Price</h3>
-        <button onclick="closePriceModal()" class="text-gray-600">✕</button>
-      </div>
-      <div class="mt-3">
-        <div class="text-3xl font-semibold" id="finalPrice">₦0</div>
-        <div class="text-sm small-muted mt-2">Pay via bank transfer to the account below.</div>
-
-        <div class="mt-4 space-y-1">
-          <div class="text-sm">Bank: <span id="bankName">SkyUltimate Bank</span></div>
-          <div class="text-sm">Account number: <span id="bankAccount">0000000000</span></div>
-          <div class="text-sm">Account holder: <span id="bankHolder">SkyUltimate</span></div>
-        </div>
-
-        <div class="mt-6 flex gap-3">
-          <button id="iPaidBtn" class="btn-primary px-4 py-2 rounded">I have Paid (simulate)</button>
-          <button onclick="closePriceModal()" class="px-4 py-2 border rounded">Close</button>
         </div>
       </div>
-    </div>
+
+      <!-- TRACKING HUB -->
+      <section id="trackingCard" class="card hidden">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-semibold">Order Tracking</h3>
+            <div class="muted text-sm" id="trackSub">Realtime updates below</div>
+          </div>
+          <div>
+            <button id="closeTracking" class="btn-outline">Close</button>
+          </div>
+        </div>
+
+        <div class="mt-3 grid grid-cols-1 gap-3">
+          <div id="map" class="rounded-lg"></div>
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="muted text-xs">Order ID</div>
+              <div id="trackId" class="font-mono font-semibold">—</div>
+            </div>
+            <div>
+              <div class="muted text-xs">Status</div>
+              <div id="trackStatus" class="font-semibold">—</div>
+            </div>
+            <div>
+              <button id="callAgent" class="btn-outline hidden">Call Agent</button>
+            </div>
+          </div>
+          <div id="timeline" class="mt-2"></div>
+        </div>
+      </section>
+
+      <!-- ORDER HISTORY (compact list) -->
+      <section id="historyCard" class="card">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold">Order History</h3>
+          <div class="muted text-sm">Recent orders</div>
+        </div>
+        <div id="historyList" class="mt-3 space-y-3 text-sm">
+          Loading...
+        </div>
+      </section>
+
+      <!-- INFO: Mission / Vision / FAQ -->
+      <section class="card">
+        <h3 class="text-lg font-semibold">About SkyUltimate</h3>
+        <p class="muted mt-2">Welcome to SkyUltimate Delivery Services — your trusted partner for swift, secure, and reliable delivery solutions in Lagos.</p>
+
+        <div class="mt-4 grid grid-cols-1 gap-3">
+          <div>
+            <h4 class="font-semibold">Our Mission</h4>
+            <p class="muted text-sm mt-1">Provide the most efficient, transparent, and reliable delivery services in Lagos — empowering businesses and individuals.</p>
+          </div>
+          <div>
+            <h4 class="font-semibold">Our Vision</h4>
+            <p class="muted text-sm mt-1">To be the leading and most preferred delivery service provider in Nigeria, known for reliability and technological excellence.</p>
+          </div>
+
+          <div>
+            <h4 class="font-semibold mb-2">FAQ / Support</h4>
+
+            <div class="space-y-2">
+              <details class="border rounded p-3">
+                <summary class="font-medium">What are your operating hours?</summary>
+                <div class="mt-2 muted text-sm">We operate from 8:00 AM to 6:00 PM, Monday to Saturday.</div>
+              </details>
+
+              <details class="border rounded p-3">
+                <summary class="font-medium">What areas in Lagos do you cover?</summary>
+                <div class="mt-2 muted text-sm">Coverage across Ikeja, Victoria Island, Lekki, Surulere and many mainland areas. Contact support if unsure.</div>
+              </details>
+
+              <details class="border rounded p-3">
+                <summary class="font-medium">How can I place a delivery order?</summary>
+                <div class="mt-2 muted text-sm">Use the "Place a New Order" section above or call our support hotline with pickup/drop details.</div>
+              </details>
+
+              <details class="border rounded p-3">
+                <summary class="font-medium">What payment methods do you accept?</summary>
+                <div class="mt-2 muted text-sm">Currently Transfer (bank transfer). You'll see bank details at checkout.</div>
+              </details>
+
+              <details class="border rounded p-3">
+                <summary class="font-medium">How can I track my delivery?</summary>
+                <div class="mt-2 muted text-sm">After payment confirmation, tracking appears on this page with live agent location (if assigned).</div>
+              </details>
+
+              <details class="border rounded p-3">
+                <summary class="font-medium">What if my package is delayed or missing?</summary>
+                <div class="mt-2 muted text-sm">Contact support immediately with your tracking number. We'll investigate and work on a solution.</div>
+              </details>
+
+              <details class="border rounded p-3">
+                <summary class="font-medium">How do you calculate delivery fees?</summary>
+                <div class="mt-2 muted text-sm">Fees are based on distance, weight and service type. Use "Calculate Final Price" to preview fees.</div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- FOOTER CONTACT -->
+      <footer class="mt-6 text-center muted">
+        <div>Contact: <a id="phoneLink" class="underline" href="tel:+2349128884830">+234 912 888 4830</a> · <a id="whatsappLink" class="underline" target="_blank" href="https://wa.me/2349128884830">WhatsApp</a> · <a id="emailLink" class="underline" href="mailto:nelsongodspower24@gmail.com">Email</a></div>
+      </footer>
+
+    </main>
   </div>
 
-  <!-- Fullscreen Overlays (Menu + Pages) -->
-  <div id="menuOverlay" class="overlay-full">
-    <div class="absolute inset-0 modal-backdrop" onclick="closeMenuOverlay()"></div>
-    <div class="panel">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-4">
-          <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" class="w-16 h-16 rounded-full" alt="logo"/>
+  <!-- HAMBURGER OVERLAY / PANEL (replaces main content when open) -->
+  <div id="panelOverlay" class="hidden">
+    <div class="panel-screen max-w-4xl mx-auto">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <img class="w-12 h-12 rounded-full" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="logo">
           <div>
-            <div id="menuName" class="text-lg font-semibold">User</div>
-            <div id="menuRole" class="text-sm small-muted">Role</div>
+            <div id="panelUserName" class="font-bold">User</div>
+            <div id="panelUserRole" class="text-sm muted">Role</div>
           </div>
         </div>
         <div class="flex gap-2">
-          <button onclick="toggleTheme()" id="menuThemeBtn" class="px-3 py-2 rounded">Theme</button>
-          <button onclick="closeMenuOverlay()" class="px-3 py-2 rounded">Close</button>
+          <button id="closePanel" class="btn-outline">Close</button>
+          <button id="panelLogout" class="btn">Logout</button>
         </div>
       </div>
-
-      <hr class="my-4" />
 
       <nav class="grid grid-cols-1 gap-3">
-        <button class="text-left px-4 py-3 rounded hover:bg-gray-50" onclick="openOverlay('history')">Order History</button>
-        <button class="text-left px-4 py-3 rounded hover:bg-gray-50" onclick="openOverlay('referral')">Refer & Earn</button>
-        <button class="text-left px-4 py-3 rounded hover:bg-gray-50" onclick="openOverlay('announcements')">Announcements</button>
-        <button class="text-left px-4 py-3 rounded hover:bg-gray-50" onclick="openOverlay('rate')">Rate Agent</button>
-        <button class="text-left px-4 py-3 rounded hover:bg-gray-50" onclick="openOverlay('report')">Report Agent</button>
-        <button class="text-left px-4 py-3 rounded hover:bg-gray-50" onclick="openOverlay('support')">Support / Feedback</button>
-        <button class="text-left px-4 py-3 rounded hover:bg-gray-50" onclick="openOverlay('profile')">My Profile</button>
-        <button class="text-left px-4 py-3 rounded hover:bg-gray-50 text-red-600" onclick="doLogout()">Logout</button>
+        <button class="p-3 text-left border rounded" data-panel="profile">My Profile</button>
+        <button class="p-3 text-left border rounded" data-panel="history">Order History</button>
+        <button class="p-3 text-left border rounded" data-panel="referrals">Refer & Earn</button>
+        <button class="p-3 text-left border rounded" data-panel="announcements">Announcements</button>
+        <button class="p-3 text-left border rounded" data-panel="rate">Rate Agent</button>
+        <button class="p-3 text-left border rounded" data-panel="report">Report Agent</button>
+        <button class="p-3 text-left border rounded" data-panel="support">Support</button>
+        <button class="p-3 text-left border rounded" data-panel="settings">Settings</button>
       </nav>
+
+      <div id="panelContent" class="mt-6"></div>
     </div>
   </div>
 
-  <!-- Order History Overlay -->
-  <div id="historyOverlay" class="overlay-full">
-    <div class="absolute inset-0 modal-backdrop" onclick="closeOverlay('history')"></div>
-    <div class="panel">
-      <div class="flex justify-between items-center">
-        <h3 class="text-xl font-bold">Order History</h3>
-        <button onclick="closeOverlay('history')" class="text-gray-600">✕</button>
-      </div>
-      <div id="historyContent" class="mt-4 space-y-3 small-muted">Loading...</div>
-    </div>
-  </div>
-
-  <!-- Referral Overlay -->
-  <div id="referralOverlay" class="overlay-full">
-    <div class="absolute inset-0 modal-backdrop" onclick="closeOverlay('referral')"></div>
-    <div class="panel">
-      <div class="flex justify-between items-center">
-        <h3 class="text-xl font-bold">Refer & Earn</h3>
-        <button onclick="closeOverlay('referral')" class="text-gray-600">✕</button>
-      </div>
-      <div class="mt-4">
-        <div class="text-sm small-muted">Share your link to invite friends. Rewards are applied once the referred user completes the required action.</div>
-        <div class="mt-4">
-          <div class="font-mono text-lg" id="refFullLink">—</div>
-          <div class="mt-3 flex gap-2">
-            <button id="refCopyFullBtn" class="btn-primary px-4 py-2 rounded">Copy Link</button>
-            <button id="refShareFullBtn" class="px-4 py-2 border rounded">Share</button>
-          </div>
-          <div id="refHistory" class="mt-3 small-muted"></div>
+  <!-- PROFILE MODAL (simple) -->
+  <div id="profileModal" class="overlay-full hidden">
+    <div class="card w-full max-w-lg">
+      <h3 class="text-lg font-semibold">My Profile</h3>
+      <div class="mt-3 grid gap-2">
+        <input id="profileName" class="border rounded px-3 py-2" placeholder="Full name" />
+        <input id="profileEmail" class="border rounded px-3 py-2" placeholder="Email" readonly />
+        <input id="profilePhone" class="border rounded px-3 py-2" placeholder="Phone" />
+        <div id="profileBankFields" class="hidden">
+          <input id="profileBankName" class="border rounded px-3 py-2" placeholder="Bank name" />
+          <input id="profileAccountNumber" class="border rounded px-3 py-2" placeholder="Account number" />
+          <input id="profileAccountHolder" class="border rounded px-3 py-2" placeholder="Account holder" />
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Announcements Overlay -->
-  <div id="announcementsOverlay" class="overlay-full">
-    <div class="absolute inset-0 modal-backdrop" onclick="closeOverlay('announcements')"></div>
-    <div class="panel">
-      <div class="flex justify-between items-center">
-        <h3 class="text-xl font-bold">Announcements</h3>
-        <button onclick="closeOverlay('announcements')" class="text-gray-600">✕</button>
-      </div>
-      <div id="announcementsList" class="mt-4 small-muted">Loading...</div>
-    </div>
-  </div>
-
-  <!-- Rate Agent Overlay -->
-  <div id="rateOverlay" class="overlay-full">
-    <div class="absolute inset-0 modal-backdrop" onclick="closeOverlay('rate')"></div>
-    <div class="panel">
-      <div class="flex justify-between items-center">
-        <h3 class="text-xl font-bold">Rate Agent</h3>
-        <button onclick="closeOverlay('rate')" class="text-gray-600">✕</button>
-      </div>
-      <div class="mt-4">
-        <div class="text-sm small-muted">Choose order to rate and leave a comment.</div>
-        <div id="rateOrdersList" class="mt-4 space-y-3"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Report Agent Overlay -->
-  <div id="reportOverlay" class="overlay-full">
-    <div class="absolute inset-0 modal-backdrop" onclick="closeOverlay('report')"></div>
-    <div class="panel">
-      <div class="flex justify-between items-center">
-        <h3 class="text-xl font-bold">Report Agent</h3>
-        <button onclick="closeOverlay('report')" class="text-gray-600">✕</button>
-      </div>
-      <div class="mt-4 space-y-3">
-        <label class="text-sm small-muted">Which order?</label>
-        <select id="reportOrderSelect" class="w-full border rounded px-3 py-2"></select>
-        <label class="text-sm small-muted">Reason</label>
-        <input id="reportReason" class="w-full border rounded px-3 py-2" placeholder="Short reason" />
-        <label class="text-sm small-muted">Details</label>
-        <textarea id="reportDetails" class="w-full border rounded px-3 py-2" rows="4"></textarea>
-        <div class="flex gap-3">
-          <button id="submitReportBtn" class="btn-primary px-4 py-2 rounded">Send Report</button>
-          <button onclick="closeOverlay('report')" class="px-4 py-2 border rounded">Close</button>
+        <div class="flex gap-2">
+          <button id="saveProfile" class="btn flex-1">Save</button>
+          <button id="closeProfile" class="btn-outline flex-1">Close</button>
         </div>
-        <div id="reportStatus" class="text-sm text-green-600 mt-2"></div>
+        <div id="profileMsg" class="text-sm text-green-600"></div>
       </div>
     </div>
   </div>
 
-  <!-- Support / Feedback Overlay -->
-  <div id="supportOverlay" class="overlay-full">
-    <div class="absolute inset-0 modal-backdrop" onclick="closeOverlay('support')"></div>
-    <div class="panel">
-      <div class="flex justify-between items-center">
-        <h3 class="text-xl font-bold">Support & Feedback</h3>
-        <button onclick="closeOverlay('support')" class="text-gray-600">✕</button>
-      </div>
-      <div class="mt-4 space-y-3">
-        <label class="text-sm small-muted">Subject</label>
-        <input id="supportSubject" class="w-full border rounded px-3 py-2" />
-        <label class="text-sm small-muted">Message</label>
-        <textarea id="supportMessage" class="w-full border rounded px-3 py-2" rows="6"></textarea>
-        <div class="flex gap-3">
-          <button id="sendSupportBtn" class="btn-primary px-4 py-2 rounded">Send</button>
-          <button onclick="closeOverlay('support')" class="px-4 py-2 border rounded">Close</button>
+  <!-- RATE / REPORT MODALS -->
+  <div id="rateModal" class="overlay-full hidden">
+    <div class="card w-full max-w-md">
+      <h3 class="text-lg font-semibold">Rate Agent</h3>
+      <div class="mt-3">
+        <div id="starRow" class="flex gap-1 text-2xl">⭐⭐⭐⭐⭐</div>
+        <textarea id="rateComment" placeholder="Add a comment (optional)" class="w-full border rounded px-3 py-2 mt-3"></textarea>
+        <div class="flex gap-2 mt-3">
+          <button id="submitRating" class="btn flex-1">Submit Rating</button>
+          <button id="closeRate" class="btn-outline flex-1">Close</button>
         </div>
-        <div id="supportStatus" class="text-sm text-green-600 mt-2"></div>
+        <div id="rateMsg" class="text-sm text-green-600 mt-2"></div>
       </div>
     </div>
   </div>
 
-  <!-- Profile Overlay -->
-  <div id="profileOverlay" class="overlay-full">
-    <div class="absolute inset-0 modal-backdrop" onclick="closeOverlay('profile')"></div>
-    <div class="panel">
-      <div class="flex justify-between items-center">
-        <h3 class="text-xl font-bold">My Profile</h3>
-        <button onclick="closeOverlay('profile')" class="text-gray-600">✕</button>
-      </div>
-      <div class="mt-4 space-y-3">
-        <label class="text-sm small-muted">Full name</label>
-        <input id="profileName" class="w-full border rounded px-3 py-2" readonly />
-        <label class="text-sm small-muted">Email</label>
-        <input id="profileEmail" class="w-full border rounded px-3 py-2" readonly />
-        <label class="text-sm small-muted">Phone</label>
-        <input id="profilePhone" class="w-full border rounded px-3 py-2" />
-        <div id="profileBankFields" class="hidden space-y-2">
-          <label class="text-sm small-muted">Bank name</label>
-          <input id="profileBankName" class="w-full border rounded px-3 py-2" />
-          <label class="text-sm small-muted">Account number</label>
-          <input id="profileAccountNumber" class="w-full border rounded px-3 py-2" />
-          <label class="text-sm small-muted">Account holder</label>
-          <input id="profileAccountHolder" class="w-full border rounded px-3 py-2" />
+  <div id="reportModal" class="overlay-full hidden">
+    <div class="card w-full max-w-md">
+      <h3 class="text-lg font-semibold">Report Agent</h3>
+      <div class="mt-3">
+        <select id="reportType" class="border rounded px-3 py-2 w-full">
+          <option value="late">Late Delivery</option>
+          <option value="rude">Rude Behavior</option>
+          <option value="lost">Lost Package</option>
+          <option value="other">Other</option>
+        </select>
+        <textarea id="reportDetails" placeholder="Describe the issue" class="w-full border rounded px-3 py-2 mt-3"></textarea>
+        <div class="flex gap-2 mt-3">
+          <button id="submitReport" class="btn flex-1">Send Report</button>
+          <button id="closeReport" class="btn-outline flex-1">Close</button>
         </div>
-        <div class="flex gap-3">
-          <button id="saveProfileBtn" class="btn-primary px-4 py-2 rounded">Save</button>
-          <button onclick="closeOverlay('profile')" class="px-4 py-2 border rounded">Close</button>
-        </div>
-        <div id="profileStatus" class="text-sm text-green-600 mt-2"></div>
+        <div id="reportMsg" class="text-sm text-green-600 mt-2"></div>
       </div>
     </div>
   </div>
 
-  <!-- Tracking Panel (overlay with map optional) -->
-  <div id="trackingOverlay" class="overlay-full">
-    <div class="absolute inset-0 modal-backdrop" onclick="closeOverlay('tracking')"></div>
-    <div class="panel">
-      <div class="flex justify-between items-center">
-        <h3 class="text-xl font-bold">Order Tracking</h3>
-        <button onclick="closeOverlay('tracking')" class="text-gray-600">✕</button>
-      </div>
-      <div class="mt-4 space-y-3">
-        <div class="flex items-center justify-between">
-          <div>Order ID: <span id="trackOrderId" class="font-mono"></span></div>
-          <div>Status: <strong id="trackStatus"></strong></div>
-        </div>
+  <!-- Toast container -->
+  <div id="toastContainer"></div>
 
-        <div id="mapContainer" class="w-full h-64 bg-gray-100 rounded"></div>
-
-        <div id="trackingTimeline" class="mt-3 small-muted"></div>
-
-        <div class="mt-3 flex gap-2">
-          <button id="callAgentBtn" class="px-3 py-2 border rounded hidden">Call Agent</button>
-          <button id="messageAgentBtn" class="px-3 py-2 border rounded hidden">Message Agent</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- Google Maps -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDu1dptqgTwWWD6568jhf_tal7uYfdyMlQ&libraries=places"></script>
 
 <script>
-/* ------------- Client script ------------- */
+/*
+  Full single-file Customer Dashboard
+  - Wires to your API_BASE (change if needed)
+  - Uses localStorage.su_token and localStorage.su_user
+  - All buttons are functional and call appropriate endpoints (per earlier chat)
+  - If an endpoint is not yet implemented server-side, the UI will surface the error
+*/
 
-const API_BASE = "https://skyultimate-backend-api-structure.onrender.com"; // update if needed
-const GOOGLE_API_KEY = "AIzaSyDu1dptqgTwWWD6568jhf_tal7uYfdyMlQ"; // user-provided (used for places/map)
-let googleMapsLoaded = false;
-let map = null, agentMarker = null, pickupMarker = null, dropoffMarker = null;
-let pollingInterval = null;
-
-/* --- auth check --- */
+const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
 const token = localStorage.getItem('su_token');
-const rawUser = localStorage.getItem('su_user');
-if (!token || !rawUser) {
-  // not authenticated
+let currentUser = null;
+try { currentUser = JSON.parse(localStorage.getItem('su_user') || 'null'); } catch(e){ currentUser = null; }
+
+if (!token || !currentUser) {
+  // not authenticated -> redirect to login
   window.location.href = 'index.html';
 }
-const currentUser = JSON.parse(rawUser);
 
-/* --- DOM refs --- */
-const greetingEl = document.getElementById('greeting');
-const announceTop = document.getElementById('announceTop');
-const announceTitle = document.getElementById('announceTitle');
-const announceMsg = document.getElementById('announceMsg');
+// ---------- helper: toast ----------
+function showToast(type='info', msg='', timeout=3500) {
+  const id = 't'+Date.now();
+  const el = document.createElement('div');
+  el.id = id;
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=> el.classList.add('visible'), 50);
+  setTimeout(()=> { el.remove(); }, timeout);
+}
+
+// ---------- helper: apiFetch ----------
+async function apiFetch(path, opts = {}) {
+  const headers = (opts.headers || {});
+  headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(API_BASE + path, { ...opts, headers });
+  if (res.status === 401) {
+    showToast('error', 'Session expired. Redirecting to login...');
+    localStorage.removeItem('su_token');
+    localStorage.removeItem('su_user');
+    setTimeout(()=> window.location.href='index.html', 900);
+    throw new Error('Unauthorized');
+  }
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch(e) { data = text; }
+  if (!res.ok) {
+    const errMsg = data && (data.message || data.error) ? (data.message || data.error) : `HTTP ${res.status}`;
+    throw new Error(errMsg);
+  }
+  return data;
+}
+
+// ---------- UI refs ----------
+const firstNameEl = document.getElementById('firstName');
+const heroGreeting = document.getElementById('heroGreeting');
 const refCodeEl = document.getElementById('refCode');
-const copyRefBtn = document.getElementById('copyRefBtn');
-const shareRefBtn = document.getElementById('shareRefBtn');
-const refStatus = document.getElementById('refStatus');
-const openTrackingBtn = document.getElementById('openTrackingBtn');
-const activeOrderSummary = document.getElementById('activeOrderSummary');
-const refreshBtn = document.getElementById('refreshBtn');
+const copyRef = document.getElementById('copyRef');
+const shareRef = document.getElementById('shareRef');
 
-const calcPriceBtn = document.getElementById('calcPriceBtn');
-const submitOrderBtn = document.getElementById('submitOrderBtn');
-const calcMsg = document.getElementById('calcMsg');
-
+const calcPriceBtn = document.getElementById('calcPrice');
+const submitOrderBtn = document.getElementById('submitOrder');
 const priceModal = document.getElementById('priceModal');
 const finalPriceEl = document.getElementById('finalPrice');
 const bankNameEl = document.getElementById('bankName');
 const bankAccountEl = document.getElementById('bankAccount');
 const bankHolderEl = document.getElementById('bankHolder');
-const iPaidBtn = document.getElementById('iPaidBtn');
+const closePrice = document.getElementById('closePrice');
+const iPaidBtn = document.getElementById('iPaid');
+const calcMsg = document.getElementById('calcMsg');
 
-/* overlays */
-const menuOverlay = document.getElementById('menuOverlay');
-const historyOverlay = document.getElementById('historyOverlay');
-const referralOverlay = document.getElementById('referralOverlay');
-const announcementsOverlay = document.getElementById('announcementsOverlay');
-const rateOverlay = document.getElementById('rateOverlay');
-const reportOverlay = document.getElementById('reportOverlay');
-const supportOverlay = document.getElementById('supportOverlay');
-const profileOverlay = document.getElementById('profileOverlay');
-const trackingOverlay = document.getElementById('trackingOverlay');
+const trackingCard = document.getElementById('trackingCard');
+const trackingMapEl = document.getElementById('map');
+const trackIdEl = document.getElementById('trackId');
+const trackStatusEl = document.getElementById('trackStatus');
+const timelineEl = document.getElementById('timeline');
+const closeTracking = document.getElementById('closeTracking');
+const callAgentBtn = document.getElementById('callAgent');
 
-const historyContent = document.getElementById('historyContent');
-const refFullLink = document.getElementById('refFullLink');
-const refCopyFullBtn = document.getElementById('refCopyFullBtn');
-const refShareFullBtn = document.getElementById('refShareFullBtn');
-const announcementsList = document.getElementById('announcementsList');
+const historyList = document.getElementById('historyList');
 
-const rateOrdersList = document.getElementById('rateOrdersList');
+const announcementBox = document.getElementById('announcementBox');
+const announceTitle = document.getElementById('announceTitle');
+const announceBody = document.getElementById('announceBody');
+const dismissAnnouncement = document.getElementById('dismissAnnouncement');
 
-const reportOrderSelect = document.getElementById('reportOrderSelect');
-const submitReportBtn = document.getElementById('submitReportBtn');
-const reportStatus = document.getElementById('reportStatus');
+const menuBtn = document.getElementById('menuBtn');
+const panelOverlay = document.getElementById('panelOverlay');
+const closePanel = document.getElementById('closePanel');
+const panelContent = document.getElementById('panelContent');
+const panelUserName = document.getElementById('panelUserName');
+const panelUserRole = document.getElementById('panelUserRole');
+const panelLogout = document.getElementById('panelLogout');
 
-const supportSubject = document.getElementById('supportSubject');
-const supportMessage = document.getElementById('supportMessage');
-const sendSupportBtn = document.getElementById('sendSupportBtn');
-const supportStatus = document.getElementById('supportStatus');
+const logoutBtn = document.getElementById('logoutBtn');
 
+const themeToggle = document.getElementById('themeToggle');
+
+const profileModal = document.getElementById('profileModal');
 const profileName = document.getElementById('profileName');
 const profileEmail = document.getElementById('profileEmail');
 const profilePhone = document.getElementById('profilePhone');
@@ -469,659 +461,632 @@ const profileBankFields = document.getElementById('profileBankFields');
 const profileBankName = document.getElementById('profileBankName');
 const profileAccountNumber = document.getElementById('profileAccountNumber');
 const profileAccountHolder = document.getElementById('profileAccountHolder');
-const saveProfileBtn = document.getElementById('saveProfileBtn');
-const profileStatus = document.getElementById('profileStatus');
+const saveProfile = document.getElementById('saveProfile');
+const closeProfile = document.getElementById('closeProfile');
+const profileMsg = document.getElementById('profileMsg');
 
-const trackOrderIdEl = document.getElementById('trackOrderId');
-const trackStatusEl = document.getElementById('trackStatus');
-const trackingTimeline = document.getElementById('trackingTimeline');
-const mapContainer = document.getElementById('mapContainer');
-const callAgentBtn = document.getElementById('callAgentBtn');
-const messageAgentBtn = document.getElementById('messageAgentBtn');
+const rateModal = document.getElementById('rateModal');
+const rateComment = document.getElementById('rateComment');
+const submitRating = document.getElementById('submitRating');
+const closeRate = document.getElementById('closeRate');
+const starRow = document.getElementById('starRow');
+const rateMsg = document.getElementById('rateMsg');
 
-/* local state */
-let activeOrder = JSON.parse(localStorage.getItem('su_active_order') || 'null');
+const reportModal = document.getElementById('reportModal');
+const reportType = document.getElementById('reportType');
+const reportDetails = document.getElementById('reportDetails');
+const submitReport = document.getElementById('submitReport');
+const closeReport = document.getElementById('closeReport');
+const reportMsg = document.getElementById('reportMsg');
+
+const placementCard = document.getElementById('placementCard');
+
+// order form fields
+const pickupInput = document.getElementById('pickup');
+const pickupContactInput = document.getElementById('pickupContact');
+const dropoffInput = document.getElementById('dropoff');
+const dropoffContactInput = document.getElementById('dropoffContact');
+const itemTypeInput = document.getElementById('itemType');
+const weightInput = document.getElementById('weight');
+const serviceInput = document.getElementById('serviceType');
+
+// ---------- state ----------
 let lastCalc = null;
+let activeOrder = null;
+let map = null;
+let agentMarker = null;
+let pollingInterval = null;
+let selectedRating = 5;
 
-/* ---------- helpers ---------- */
-async function apiFetch(path, opts = {}) {
-  const headers = opts.headers || {};
-  headers['Content-Type'] = 'application/json';
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(API_BASE + path, { ...opts, headers });
-  if (res.status === 401) {
-    alert('Session expired. Please login again.');
-    doLogout();
-    throw new Error('Unauthorized');
-  }
-  const data = await res.json().catch(()=>null);
-  if (!res.ok) {
-    const msg = (data && data.message) || `Request failed ${res.status}`;
-    throw new Error(msg);
-  }
-  return data;
-}
-
-function showOverlay(el) { el.classList.add('show'); }
-function hideOverlay(el) { el.classList.remove('show'); }
-function openMenuOverlay() { menuOverlay.classList.add('show'); document.getElementById('menuName').innerText = currentUser.name || 'User'; document.getElementById('menuRole').innerText = currentUser.role || 'Customer'; document.getElementById('menuThemeBtn').innerText = isDarkMode() ? 'Light' : 'Dark'; }
-function closeMenuOverlay() { menuOverlay.classList.remove('show'); }
-
-/* ---------- theme (dark/light) ---------- */
-function isDarkMode(){ return localStorage.getItem('su_theme') === 'dark' || document.body.classList.contains('dark'); }
-function applyTheme() {
-  if (isDarkMode()) document.body.classList.add('dark'); else document.body.classList.remove('dark');
-  document.getElementById('themeToggle').innerText = isDarkMode() ? 'Light' : 'Dark';
-  document.getElementById('menuThemeBtn').innerText = isDarkMode() ? 'Light' : 'Dark';
-}
-function toggleTheme(){ localStorage.setItem('su_theme', isDarkMode() ? 'light' : 'dark'); applyTheme(); }
-
-/* ---------- init ---------- */
+// ---------- initialize UI ----------
 function initUI() {
-  greetingEl.innerText = `Hello, ${String(currentUser.name || '').split(' ')[0] || 'there'}!`;
-  refCodeEl.innerText = currentUser.referralCode || (currentUser._id ? ('REF' + String(currentUser._id).slice(-6)) : 'REF-UNKNOWN');
-  refFullLink.innerText = `${location.origin}/signup?ref=${currentUser.referralCode || (currentUser._id ? ('REF' + String(currentUser._id).slice(-6)) : 'REF-UNKNOWN')}`;
-  document.getElementById('menuName').innerText = currentUser.name || 'User';
-  document.getElementById('menuRole').innerText = currentUser.role || 'Customer';
-  // profile fields
+  // set first name
+  const name = currentUser.name || (currentUser.fullName) || "there";
+  const first = String(name).split(' ')[0] || 'there';
+  firstNameEl.innerText = first;
+  heroGreeting.innerText = `Hello, ${first}!`;
+
+  // referral code
+  const referralCode = currentUser.referralCode || (currentUser._id ? ('REF'+String(currentUser._id).slice(-6)) : 'REF-UNKNOWN');
+  refCodeEl.innerText = referralCode;
+
+  // panel user info
+  panelUserName.innerText = name;
+  panelUserRole.innerText = (currentUser.role || 'Customer');
+
+  // profile modal populate
   profileName.value = currentUser.name || '';
   profileEmail.value = currentUser.email || '';
   profilePhone.value = currentUser.phone || '';
   if ((currentUser.role || '').toLowerCase() === 'agent' || (currentUser.role || '').toLowerCase() === 'admin') {
     profileBankFields.classList.remove('hidden');
-    profileBankName.value = currentUser.bankDetails?.bankName || '';
-    profileAccountNumber.value = currentUser.bankDetails?.accountNumber || '';
-    profileAccountHolder.value = currentUser.bankDetails?.accountHolderName || '';
+    profileBankName.value = (currentUser.bankDetails || {}).bankName || '';
+    profileAccountNumber.value = (currentUser.bankDetails || {}).accountNumber || '';
+    profileAccountHolder.value = (currentUser.bankDetails || {}).accountHolderName || '';
   } else {
     profileBankFields.classList.add('hidden');
   }
 
-  // active order summary
-  if (activeOrder) {
-    activeOrderSummary.innerText = `Order: ${activeOrder._id || activeOrder.id || (activeOrder.order && activeOrder.order._id) || '—'} — ${activeOrder.status || activeOrder.order?.status || 'Pending'}`;
-    openTrackingBtn.classList.remove('hidden');
-  } else {
-    activeOrderSummary.innerText = 'No active order';
-    openTrackingBtn.classList.add('hidden');
-  }
-  applyTheme();
+  // events
+  copyRef.addEventListener('click', async ()=> {
+    try { await navigator.clipboard.writeText(`${location.origin}/signup?ref=${referralCode}`); showToast('success','Referral link copied'); }
+    catch(e){ showToast('error','Copy failed'); }
+  });
+  shareRef.addEventListener('click', async ()=> {
+    const link = `${location.origin}/signup?ref=${referralCode}`;
+    try {
+      if (navigator.share) await navigator.share({ title:'Join SkyUltimate', text:'Use my link', url:link});
+      else { await navigator.clipboard.writeText(link); showToast('success','Referral link copied'); }
+    } catch(e){ showToast('error','Share failed'); }
+  });
+
+  // price & order
+  calcPriceBtn.addEventListener('click', onCalcPrice);
+  closePrice.addEventListener('click', ()=> priceModal.classList.add('hidden'));
+  iPaidBtn.addEventListener('click', onIPaid);
+  submitOrderBtn.addEventListener('click', onSubmitOrder);
+
+  // tracking
+  closeTracking.addEventListener('click', ()=> {
+    trackingCard.classList.add('hidden');
+    if (pollingInterval) clearInterval(pollingInterval);
+    pollingInterval = null;
+  });
+
+  // menu
+  menuBtn.addEventListener('click', openPanel);
+  closePanel.addEventListener('click', closePanelFunc);
+  panelLogout.addEventListener('click', ()=> { doLogout(); });
+
+  logoutBtn.addEventListener('click', ()=> { doLogout(); });
+
+  themeToggle.addEventListener('click', toggleTheme);
+
+  // profile modal
+  document.getElementById('panelContent'); // used later
+  document.querySelectorAll('[data-panel]').forEach(btn => {
+    btn.addEventListener('click', ()=> openPanelSection(btn.getAttribute('data-panel')));
+  });
+
+  closeProfile.addEventListener('click', ()=> profileModal.classList.add('hidden'));
+  saveProfile.addEventListener('click', onSaveProfile);
+
+  // rate/report modals
+  closeRate.addEventListener('click', ()=> rateModal.classList.add('hidden'));
+  submitRating.addEventListener('click', onSubmitRating);
+
+  document.querySelectorAll('#starRow, #starRow *').forEach(el=>{
+    // star click handled inside function
+  });
+  renderStars();
+
+  closeReport.addEventListener('click', ()=> reportModal.classList.add('hidden'));
+  submitReport.addEventListener('click', onSubmitReport);
+
+  // announcements
+  dismissAnnouncement.addEventListener('click', ()=> announcementBox.classList.add('hidden'));
+
+  // populate history
+  loadHistory();
+
+  // announcements
+  loadAnnouncement();
+
+  // try to fetch fresh profile & update referral code if backend has more data
+  fetchProfile();
 }
 
-/* ---------- announcements ---------- */
+// ---------- Fetch profile (fresh from server) ----------
+async function fetchProfile() {
+  try {
+    const p = await apiFetch('/api/users/profile');
+    if (p) {
+      currentUser = p;
+      localStorage.setItem('su_user', JSON.stringify(p));
+      initUI(); // refresh UI
+    }
+  } catch (err) {
+    console.warn('Could not refresh profile:', err.message);
+  }
+}
+
+// ---------- Announcement ----------
 async function loadAnnouncement() {
   try {
-    const res = await fetch(API_BASE + '/api/announcements/latest'); // public
-    if (!res.ok) { hideAnnouncement(); return; }
-    const data = await res.json();
-    if (data && data.isActive) {
-      announceTitle.innerText = data.title || 'Announcement';
-      announceMsg.innerText = data.message || '';
-      announceTop.classList.remove('hidden');
+    const a = await apiFetch('/api/announcements/latest');
+    if (a && a.isActive) {
+      announcementBox.classList.remove('hidden');
+      announceTitle.innerText = a.title || 'Announcement';
+      announceBody.innerText = a.message || '';
     } else {
-      hideAnnouncement();
+      announcementBox.classList.add('hidden');
     }
-  } catch (e) {
-    console.info('Announcement load failed:', e.message);
-    hideAnnouncement();
+  } catch (err) {
+    console.info('No announcement:', err.message);
+    announcementBox.classList.add('hidden');
   }
 }
-function hideAnnouncement(){ announceTop.classList.add('hidden'); }
 
-/* ---------- price calc & create order ---------- */
-calcPriceBtn.addEventListener('click', async () => {
+// ---------- Calculate price ----------
+async function onCalcPrice(){
   calcMsg.innerText = '';
-  const items = [{ itemType: document.getElementById('itemType').value || 'Item', weight: Number(document.getElementById('weight').value || 0), quantity: 1 }];
+  const items = [{ itemType: itemTypeInput.value || 'Item', weight: Number(weightInput.value || 0), quantity: 1 }];
+  const payload = {
+    items,
+    pickup: pickupInput.value || '',
+    dropoff: dropoffInput.value || '',
+    serviceType: serviceInput.value || 'standard'
+  };
   try {
-    const payload = { items, serviceType: document.getElementById('serviceType').value, pickup: document.getElementById('pickup').value, dropoff: document.getElementById('dropoff').value };
     const res = await apiFetch('/api/orders/calc-price', { method: 'POST', body: JSON.stringify(payload) });
     lastCalc = res;
     const price = res.finalPrice || res.finalprice || 0;
     finalPriceEl.innerText = `₦${Number(price).toLocaleString()}`;
-    const b = res.superAdminBankDetails || res.superAdminBankDetails || { bankName:'SkyUltimate Bank', accountNumber:'0000000000', accountHolderName:'SkyUltimate' };
+    const b = res.superAdminBankDetails || res.bankDetails || { bankName:'SkyUltimate Bank', accountNumber:'0000000000', accountHolderName:'SkyUltimate' };
     bankNameEl.innerText = b.bankName || b.bank || 'SkyUltimate Bank';
     bankAccountEl.innerText = b.accountNumber || b.account || '0000000000';
     bankHolderEl.innerText = b.accountHolderName || b.accountHolder || 'SkyUltimate';
-    showOverlay(priceModal);
+    priceModal.classList.remove('hidden');
   } catch (err) {
     calcMsg.innerText = err.message || 'Could not calculate price.';
+    showToast('error', err.message || 'Calc failed');
   }
-});
+}
 
-function closePriceModal() { hideOverlay(priceModal); }
-
-iPaidBtn.addEventListener('click', async () => {
-  // Simulate payment confirmation by creating an order (or call createOrder with payment info)
-  if (!lastCalc) { alert('No calculation available'); return; }
-  try {
-    const items = [{ itemType: document.getElementById('itemType').value || 'Item', weight: Number(document.getElementById('weight').value || 0), quantity: 1 }];
-    const payload = {
-      items,
-      pickupAddress: document.getElementById('pickup').value || '',
-      deliveryAddress: document.getElementById('dropoff').value || '',
-      paymentMethod: 'Bank Transfer'
-    };
-    const created = await apiFetch('/api/orders', { method:'POST', body: JSON.stringify(payload) });
-    const order = created.order || created;
-    localStorage.setItem('su_active_order', JSON.stringify(order));
-    activeOrder = order;
-    activeOrderSummary.innerText = `Order: ${order._id || order.id || order._doc?._id} — ${order.status || 'Pending'}`;
-    openTracking(order._id || order.id || order._doc?._id || '');
-    hideOverlay(priceModal);
-    alert('Order created. Await admin payment confirmation.');
-    await loadHistory();
-  } catch (err) {
-    alert(err.message || 'Order creation failed.');
-  }
-});
-
-/* direct submit without showing modal */
-submitOrderBtn.addEventListener('click', async () => {
-  calcMsg.innerText = '';
-  const items = [{ itemType: document.getElementById('itemType').value || 'Item', weight: Number(document.getElementById('weight').value || 0), quantity: 1 }];
+// ---------- Confirm "I Paid" (simulate) ----------
+async function onIPaid(){
+  if (!lastCalc) { showToast('error', 'No price calculated'); return; }
+  // create order with same payload used earlier in calc
+  const items = [{ itemType: itemTypeInput.value || 'Item', weight: Number(weightInput.value || 0), quantity: 1 }];
   const payload = {
     items,
-    pickupAddress: document.getElementById('pickup').value || '',
-    deliveryAddress: document.getElementById('dropoff').value || '',
+    pickupAddress: pickupInput.value || '',
+    deliveryAddress: dropoffInput.value || '',
     paymentMethod: 'Bank Transfer'
   };
   try {
-    const created = await apiFetch('/api/orders', { method:'POST', body: JSON.stringify(payload) });
+    const created = await apiFetch('/api/orders', { method: 'POST', body: JSON.stringify(payload) });
     const order = created.order || created;
     localStorage.setItem('su_active_order', JSON.stringify(order));
     activeOrder = order;
-    activeOrderSummary.innerText = `Order: ${order._id || order.id} — ${order.status || 'Pending'}`;
-    openTracking(order._id || order.id || '');
+    priceModal.classList.add('hidden');
+    showToast('success', 'Order created. Await admin confirmation.');
     await loadHistory();
-    alert('Order created. Await admin to confirm payment.');
+    openTracking(order._id || order.id || order._doc?._id || order._doc?._id || '');
   } catch (err) {
-    calcMsg.innerText = err.message || 'Could not submit order.';
+    showToast('error', err.message || 'Order creation failed');
   }
-});
-
-/* ---------- tracking (polling & map) ---------- */
-document.getElementById('openTrackingBtn').addEventListener('click', () => {
-  if (!activeOrder) { alert('No active order'); return; }
-  openOverlay('tracking');
-  openTracking(activeOrder._id || activeOrder.id || activeOrder._doc?._id || '');
-});
-
-async function openTracking(orderId) {
-  trackOrderIdEl.innerText = orderId;
-  await pollOrder(orderId);
-  if (pollingInterval) clearInterval(pollingInterval);
-  pollingInterval = setInterval(()=>pollOrder(orderId), 5000);
 }
 
-async function pollOrder(orderId) {
+// ---------- Submit order directly (without modal) ----------
+async function onSubmitOrder(){
+  const items = [{ itemType: itemTypeInput.value || 'Item', weight: Number(weightInput.value || 0), quantity: 1 }];
+  const payload = {
+    items,
+    pickupAddress: pickupInput.value || '',
+    deliveryAddress: dropoffInput.value || '',
+    paymentMethod: 'Bank Transfer'
+  };
   try {
-    const order = await apiFetch(`/api/orders/${orderId}`);
-    const status = order.status || order.order?.status || 'Unknown';
-    trackStatusEl.innerText = status;
-    renderTimeline(status, order);
-    // if agent exists, show contact buttons
-    const agentId = order.agent || order.order?.agent;
-    if (agentId) {
-      // fetch agent details if you have endpoint (best-effort)
-      try {
-        const agentProfile = await apiFetch(`/api/users/${agentId}`); // may 404 - optional
-        callAgentBtn.classList.remove('hidden');
-        callAgentBtn.onclick = () => { if (agentProfile.phone) window.location.href = `tel:${agentProfile.phone}`; else alert('Agent phone not available'); };
-      } catch (e) {
-        // ignore if endpoint doesn't exist
-      }
-    } else {
-      callAgentBtn.classList.add('hidden');
-    }
-
-    // map: if order contains geo (agentLat, agentLng) or order.agentLocation, attempt to show
-    if ((order.agentLocation && order.agentLocation.lat) || (order.order && order.order.agentLocation && order.order.agentLocation.lat)) {
-      const agentLoc = (order.agentLocation || order.order?.agentLocation);
-      ensureGoogleMaps(() => {
-        updateMap(agentLoc, order);
-      });
-    }
-
+    const created = await apiFetch('/api/orders', { method: 'POST', body: JSON.stringify(payload) });
+    const order = created.order || created;
+    localStorage.setItem('su_active_order', JSON.stringify(order));
+    activeOrder = order;
+    showToast('success', 'Order created. Await admin confirmation.');
+    await loadHistory();
+    openTracking(order._id || order.id || '');
   } catch (err) {
-    console.info('Polling error (order):', err.message);
+    showToast('error', err.message || 'Could not submit order.');
   }
 }
 
-function renderTimeline(status, order) {
-  const steps = [
-    { key:'PendingPayment', label:'Pending Payment' },
-    { key:'PaymentConfirmed', label:'Payment Confirmed' },
-    { key:'EnRouteToPickup', label:'Agent En Route to Pickup' },
-    { key:'EnRouteToDelivery', label:'Agent En Route to Delivery' },
-    { key:'Completed', label:'Delivered' },
-    { key:'Delivered', label:'Delivered' },
-  ];
-  trackingTimeline.innerHTML = steps.map(s => {
-    const active = (status === s.key || (s.key === 'Completed' && status === 'Delivered'));
-    return `<div class="py-1"><span class="${active ? 'font-bold text-green-600' : 'text-gray-600'}">${s.label}</span></div>`;
-  }).join('');
-}
-
-/* ---------- history ---------- */
+// ---------- Load order history ----------
 async function loadHistory() {
+  historyList.innerHTML = 'Loading...';
   try {
-    historyContent.innerText = 'Loading...';
-    // try endpoint with query param
-    const uid = currentUser.id || currentUser._id;
-    let data;
-    try {
-      data = await apiFetch(`/api/orders?customerId=${uid}`);
-    } catch (e) {
-      // fallback: fetch all and filter
-      const all = await apiFetch('/api/orders');
-      data = (Array.isArray(all) ? all : all.orders || []).filter(o => String(o.customer || o.customerId || o.customer?._id) === String(uid));
-    }
-    if (!data || (Array.isArray(data) && data.length === 0)) {
-      historyContent.innerHTML = '<div class="small-muted">No past orders found.</div>';
+    const userId = currentUser.id || currentUser._id;
+    // try /api/orders?customerId=<id>
+    const res = await apiFetch(`/api/orders?customerId=${userId}`);
+    const list = Array.isArray(res) ? res : (res.orders || res.items || []);
+    if (!list || list.length === 0) {
+      historyList.innerHTML = '<div class="muted">No orders yet.</div>';
       return;
     }
-    const list = Array.isArray(data) ? data : (data.orders || []);
-    historyContent.innerHTML = list.map(o => {
-      const id = o._id || o.id || (o.order && o.order._id) || '—';
+    historyList.innerHTML = list.slice().reverse().map(o => {
+      const id = o._id || o.id || (o.order && (o.order._id || o.order.id)) || '—';
       const status = o.status || o.order?.status || 'Unknown';
-      const price = o.finalPrice || o.order?.finalPrice || '—';
-      return `<div class="p-3 border rounded"><div class="flex justify-between"><div class="font-semibold">${id}</div><div class="text-sm">${status}</div></div><div class="text-sm mt-2">Price: ₦${Number(price || 0).toLocaleString()}</div><div class="mt-2"><button class="px-3 py-1 border rounded" onclick="openOrderDetails('${id}')">Open</button></div></div>`;
+      const price = o.finalPrice || o.finalprice || (o.order && o.order.finalPrice) || 0;
+      return `<div class="border rounded p-3 flex justify-between items-center">
+        <div>
+          <div class="font-medium">${id}</div>
+          <div class="text-sm muted">${o.pickupAddress || ''} → ${o.deliveryAddress || ''}</div>
+        </div>
+        <div class="text-right">
+          <div class="font-semibold">${status}</div>
+          <div class="muted">₦${Number(price).toLocaleString()}</div>
+          <div class="mt-2">
+            <button data-order="${id}" class="btn-outline open-order">Open</button>
+          </div>
+        </div>
+      </div>`;
     }).join('');
+    // wire up open-order buttons
+    document.querySelectorAll('.open-order').forEach(b => {
+      b.addEventListener('click', async (ev) => {
+        const id = ev.currentTarget.getAttribute('data-order');
+        try {
+          const order = await apiFetch(`/api/orders/${id}`);
+          if (order) {
+            openTracking(id, order);
+          } else {
+            showToast('error','Order not found');
+          }
+        } catch (err) {
+          showToast('error', err.message || 'Could not open order');
+        }
+      });
+    });
   } catch (err) {
-    historyContent.innerText = 'Failed to load history';
+    historyList.innerHTML = '<div class="muted">Failed to load history</div>';
     console.error(err);
   }
 }
 
-/* order details action placeholder (could open tracking for that order) */
-function openOrderDetails(orderId) {
-  openOverlay('tracking');
-  openTracking(orderId);
+// ---------- Tracking: open tracking UI and start polling ----------
+function openTracking(orderId, orderData) {
+  trackingCard.classList.remove('hidden');
+  trackIdEl.innerText = orderId;
+  if (orderData) {
+    renderTracking(orderData);
+  } else {
+    pollOrder(orderId);
+  }
+  if (pollingInterval) clearInterval(pollingInterval);
+  pollingInterval = setInterval(()=> pollOrder(orderId), 5000);
 }
 
-/* ---------- referral actions ---------- */
-copyRefBtn.addEventListener('click', async () => {
+// poll order
+async function pollOrder(orderId) {
   try {
-    const link = `${location.origin}/signup?ref=${currentUser.referralCode || (currentUser._id ? ('REF' + String(currentUser._id).slice(-6)) : 'REF-UNKNOWN')}`;
-    await navigator.clipboard.writeText(link);
-    refStatus.innerText = 'Referral link copied to clipboard.';
-    setTimeout(()=>refStatus.innerText='', 3000);
-  } catch (e) {
-    refStatus.innerText = 'Copy failed.';
-  }
-});
-shareRefBtn.addEventListener('click', async () => {
-  const link = `${location.origin}/signup?ref=${currentUser.referralCode || (currentUser._id ? ('REF' + String(currentUser._id).slice(-6)) : 'REF-UNKNOWN')}`;
-  try {
-    if (navigator.share) await navigator.share({ title: 'Join SkyUltimate', text:'Use my referral link', url: link });
-    else { await navigator.clipboard.writeText(link); alert('Link copied: ' + link); }
-  } catch (e) { alert('Share failed'); }
-});
-
-refCopyFullBtn.addEventListener('click', async () => {
-  const link = refFullLink.innerText;
-  try { await navigator.clipboard.writeText(link); alert('Copied'); } catch (e) { alert('Copy failed'); }
-});
-refShareFullBtn.addEventListener('click', async () => {
-  const link = refFullLink.innerText;
-  try {
-    if (navigator.share) await navigator.share({ title: 'Join SkyUltimate', url: link });
-    else { await navigator.clipboard.writeText(link); alert('Copied: ' + link); }
-  } catch (e) { alert('Share failed'); }
-});
-
-/* ---------- announcements overlay ---------- */
-async function loadAnnouncementsOverlay() {
-  try {
-    const a = await apiFetch('/api/announcements/latest'); // same endpoint
-    if (!a) {
-      announcementsList.innerText = 'No announcements.';
-      return;
-    }
-    announcementsList.innerHTML = `<div class="p-3 border rounded"><div class="font-semibold">${a.title || 'Announcement'}</div><div class="text-sm mt-2">${a.message || ''}</div></div>`;
-  } catch (e) {
-    announcementsList.innerText = 'Failed to load announcements.';
-  }
-}
-
-/* ---------- rate orders ---------- */
-async function loadRateOrders() {
-  try {
-    rateOrdersList.innerHTML = 'Loading...';
-    const uid = currentUser._id || currentUser.id;
-    // fetch history & filter for completed
-    let list = [];
-    try {
-      const res = await apiFetch(`/api/orders?customerId=${uid}`);
-      list = Array.isArray(res) ? res : (res.orders || []);
-    } catch (e) {
-      const all = await apiFetch('/api/orders');
-      list = (Array.isArray(all) ? all : (all.orders || [])).filter(o => String(o.customer) === String(uid));
-    }
-    const completed = list.filter(o => (o.status || o.order?.status) === 'Completed' || (o.status || '').toLowerCase() === 'delivered');
-    if (completed.length === 0) {
-      rateOrdersList.innerHTML = '<div class="small-muted">No completed orders to rate yet.</div>';
-      return;
-    }
-    rateOrdersList.innerHTML = completed.map(o => {
-      const id = o._id || o.id;
-      return `<div class="p-3 border rounded flex justify-between items-center"><div><div class="font-semibold">${id}</div><div class="text-sm small-muted">${o.finalPrice ? '₦' + Number(o.finalPrice).toLocaleString() : ''}</div></div><div><button class="px-3 py-1 btn-primary rounded" onclick="openRateModal('${id}')">Rate</button></div></div>`;
-    }).join('');
+    const order = await apiFetch(`/api/orders/${orderId}`);
+    if (order) renderTracking(order);
   } catch (err) {
-    rateOrdersList.innerText = 'Failed to load rating list.';
+    console.info('pollOrder error', err.message);
   }
 }
 
-/* click handler to open a small rate modal (native prompt for simplicity) */
-async function openRateModal(orderId) {
-  const star = prompt('Rate agent 1-5 stars (enter a number):');
-  const comment = prompt('Add a comment (optional):') || '';
-  const rating = Number(star);
-  if (!rating || rating < 1 || rating > 5) { alert('Invalid rating'); return; }
-  try {
-    await apiFetch(`/api/orders/${orderId}/rate`, { method:'POST', body: JSON.stringify({ rating, comment }) });
-    alert('Thanks for rating!');
-    closeOverlay('rate');
-    await loadHistory();
-  } catch (e) {
-    alert(e.message || 'Submit failed');
+// render tracking info & map
+function renderTracking(order) {
+  activeOrder = order;
+  const status = order.status || order.order?.status || 'Unknown';
+  trackStatusEl.innerText = status;
+  // timeline
+  const steps = [
+    { key:'PendingPayment', label:'Pending Payment' },
+    { key:'PaymentConfirmed', label:'Payment Confirmed' },
+    { key:'EnRouteToPickup', label:'Agent en route to pickup' },
+    { key:'EnRouteToDelivery', label:'Agent en route to delivery' },
+    { key:'Completed', label:'Delivered' },
+    { key:'Delivered', label:'Delivered' }
+  ];
+  timelineEl.innerHTML = steps.map(s => {
+    const active = (status === s.key || (s.key==='Completed' && status==='Delivered'));
+    return `<div class="${active ? 'font-semibold text-green-600' : 'muted'}">${s.label}</div>`;
+  }).join('');
+
+  // update map if agent location provided
+  // we expect backend to include agentLocation: { lat, lng } when order assigned/agent moving
+  const loc = order.agentLocation || order.order?.agentLocation || null;
+  if (loc && loc.lat && loc.lng) {
+    showAgentOnMap({ lat: Number(loc.lat), lng: Number(loc.lng) }, order.agent || null, order.agentContact || null);
+  } else {
+    // if no agent location, but customer/pickup/dropoff exist, show route markers
+    const pickup = order.pickupAddress || order.order?.pickupAddress || null;
+    const drop = order.deliveryAddress || order.order?.deliveryAddress || null;
+    showRouteOnMap(pickup, drop);
+  }
+
+  // if agent contact available, show call button
+  const agentPhone = order.agentPhone || order.agentContact || order.agent?.phone;
+  if (agentPhone) {
+    callAgentBtn.classList.remove('hidden');
+    callAgentBtn.onclick = ()=> { window.open(`tel:${agentPhone}`); };
+  } else {
+    callAgentBtn.classList.add('hidden');
   }
 }
 
-/* ---------- report agent ---------- */
-async function loadReportOrdersSelect() {
-  try {
-    const uid = currentUser._id || currentUser.id;
-    let list = [];
-    try {
-      const res = await apiFetch(`/api/orders?customerId=${uid}`);
-      list = Array.isArray(res) ? res : (res.orders || []);
-    } catch (e) {
-      const all = await apiFetch('/api/orders');
-      list = (Array.isArray(all) ? all : (all.orders || [])).filter(o => String(o.customer) === String(uid));
-    }
-    reportOrderSelect.innerHTML = '<option value="">Select order</option>' + list.map(o => `<option value="${o._id||o.id}">${o._id||o.id} — ${o.status||''}</option>`).join('');
-  } catch (err) {
-    reportOrderSelect.innerHTML = '<option value="">Failed to load</option>';
+// ---------- Map helpers (Google Maps) ----------
+function ensureMap(center={lat:6.5244,lng:3.3792}, zoom=12) {
+  if (!map) {
+    map = new google.maps.Map(trackingMapEl, { center, zoom });
+  } else {
+    map.setCenter(center);
+    map.setZoom(zoom);
   }
 }
 
-submitReportBtn.addEventListener('click', async () => {
-  const orderId = reportOrderSelect.value;
-  const reason = document.getElementById('reportReason').value.trim();
-  const details = document.getElementById('reportDetails').value.trim();
-  if (!orderId || !reason) { alert('Choose order and give a reason'); return; }
-  try {
-    // send to /api/reports (preferred) and fallback to /api/admin-requests
-    try {
-      await apiFetch('/api/reports', { method: 'POST', body: JSON.stringify({ orderId, reason, details }) });
-    } catch (e) {
-      await apiFetch('/api/admin-requests', { method: 'POST', body: JSON.stringify({ orderId, reason, details }) });
-    }
-    reportStatus.innerText = 'Report sent to admin/superadmin for review.';
-    setTimeout(()=>reportStatus.innerText='', 4000);
-    closeOverlay('report');
-  } catch (err) {
-    alert(err.message || 'Report failed');
+function showAgentOnMap(latlng, agentId=null, agentContact=null) {
+  ensureMap(latlng, 14);
+  if (!agentMarker) {
+    agentMarker = new google.maps.Marker({ map, position: latlng, title: 'Agent' });
+  } else {
+    agentMarker.setPosition(latlng);
   }
-});
+  // optionally: place pickup/delivery markers if available
+}
 
-/* ---------- support ---------- */
-sendSupportBtn.addEventListener('click', async () => {
-  const subject = supportSubject.value.trim();
-  const message = supportMessage.value.trim();
-  if (!subject || !message) { alert('Please provide subject and message'); return; }
-  try {
-    await apiFetch('/api/feedback', { method: 'POST', body: JSON.stringify({ subject, message, userId: currentUser._id || currentUser.id }) });
-    supportStatus.innerText = 'Support message sent. We will get back to you.';
-    setTimeout(()=>supportStatus.innerText='', 4000);
-    closeOverlay('support');
-  } catch (e) {
-    // fallback: send to /api/contact or email via mailto
+function showRouteOnMap(pickupAddress, dropAddress) {
+  // if addresses are strings, try to geocode (best-effort). If not possible, just show default.
+  ensureMap();
+  // A more complete implementation would call PlacesService/Geocoder to place markers.
+}
+
+// ---------- Panel (hamburger) ----------
+function openPanel(){
+  panelOverlay.classList.remove('hidden');
+  panelOverlay.style.display = 'block';
+  // keep main content accessible behind semi-transparent overlay if wanted
+}
+
+function closePanelFunc(){
+  panelOverlay.classList.add('hidden');
+  panelOverlay.style.display = 'none';
+  panelContent.innerHTML = '';
+}
+
+// when panel nav clicked
+async function openPanelSection(section) {
+  panelContent.innerHTML = '<div class="muted">Loading...</div>';
+  if (section === 'profile') {
+    panelContent.innerHTML = `
+      <div>
+        <h4 class="font-semibold">Profile</h4>
+        <div class="mt-3 space-y-2">
+          <div><b>Name:</b> ${currentUser.name || ''}</div>
+          <div><b>Email:</b> ${currentUser.email || ''}</div>
+          <div><b>Phone:</b> ${currentUser.phone || ''}</div>
+          <div class="mt-3"><button id="editProfileBtn" class="btn">Edit Profile</button></div>
+        </div>
+      </div>`;
+    document.getElementById('editProfileBtn').addEventListener('click', ()=> { profileModal.classList.remove('hidden'); });
+  } else if (section === 'history') {
+    // full-screen history overlay
     try {
-      await apiFetch('/api/contact', { method:'POST', body: JSON.stringify({ subject, message }) });
-      supportStatus.innerText = 'Message sent.';
-      setTimeout(()=>supportStatus.innerText='',4000);
-      closeOverlay('support');
-    } catch (f) {
-      alert('Failed to send support message via API. Please email support.');
+      const userId = currentUser.id || currentUser._id;
+      const res = await apiFetch(`/api/orders?customerId=${userId}`);
+      const list = Array.isArray(res) ? res : (res.orders || []);
+      if (!list || list.length === 0) {
+        panelContent.innerHTML = '<div class="muted">No order history yet.</div>';
+      } else {
+        panelContent.innerHTML = list.slice().reverse().map(o => {
+          const id = o._id || o.id || '—';
+          const status = o.status || 'Unknown';
+          const price = o.finalPrice || 0;
+          return `<div class="border rounded p-3 mb-2">
+            <div class="flex justify-between"><div class="font-medium">${id}</div><div class="muted">${status}</div></div>
+            <div class="text-sm muted mt-1">${o.pickupAddress || ''} → ${o.deliveryAddress || ''}</div>
+            <div class="mt-2"><button data-order="${id}" class="btn-outline open-order-panel">Open</button></div>
+          </div>`;
+        }).join('');
+        // wire buttons
+        document.querySelectorAll('.open-order-panel').forEach(b => b.addEventListener('click', async (ev)=>{
+          const id = ev.currentTarget.getAttribute('data-order');
+          closePanelFunc();
+          openTracking(id);
+        }));
+      }
+    } catch (err) {
+      panelContent.innerHTML = `<div class="muted">Failed to load history: ${err.message}</div>`;
     }
+  } else if (section === 'referrals') {
+    // show referral & sharing controls + progress if backend has endpoint
+    try {
+      const res = await apiFetch('/api/referrals/my').catch(()=> null);
+      const myRef = (res && res.code) ? res.code : (currentUser.referralCode || ('REF'+String(currentUser._id||'').slice(-6)));
+      panelContent.innerHTML = `<div>
+        <h4 class="font-semibold">Refer & Earn</h4>
+        <div class="mt-3">Your code: <div class="font-mono font-bold mt-1">${myRef}</div></div>
+        <div class="mt-3 flex gap-2">
+          <button id="panelCopyRef" class="btn-outline">Copy</button>
+          <button id="panelShareRef" class="btn">Share</button>
+        </div>
+      </div>`;
+      document.getElementById('panelCopyRef').addEventListener('click', async ()=> {
+        await navigator.clipboard.writeText(`${location.origin}/signup?ref=${myRef}`);
+        showToast('success','Referral link copied');
+      });
+      document.getElementById('panelShareRef').addEventListener('click', async ()=> {
+        try {
+          if (navigator.share) await navigator.share({ title:'Join SkyUltimate', url:`${location.origin}/signup?ref=${myRef}` });
+          else { await navigator.clipboard.writeText(`${location.origin}/signup?ref=${myRef}`); showToast('success','Referral copied'); }
+        } catch(e){ showToast('error','Share failed'); }
+      });
+    } catch (err) {
+      panelContent.innerHTML = `<div class="muted">Referrals not available yet.</div>`;
+    }
+  } else if (section === 'announcements') {
+    try {
+      const a = await apiFetch('/api/announcements/latest');
+      if (!a) panelContent.innerHTML = '<div class="muted">No announcement.</div>';
+      else panelContent.innerHTML = `<div><h4 class="font-semibold">${a.title}</h4><div class="muted mt-2">${a.message}</div></div>`;
+    } catch (err) { panelContent.innerHTML = `<div class="muted">Failed to fetch announcement</div>`; }
+  } else if (section === 'rate') {
+    panelContent.innerHTML = `<div>
+      <h4 class="font-semibold">Rate an Agent</h4>
+      <div class="mt-3"><button id="openRatePanelBtn" class="btn">Open Rate Modal</button></div>
+    </div>`;
+    document.getElementById('openRatePanelBtn').addEventListener('click', ()=> { rateModal.classList.remove('hidden'); });
+  } else if (section === 'report') {
+    panelContent.innerHTML = `<div><h4 class="font-semibold">Report an Issue</h4>
+      <div class="mt-3"><button id="openReportPanelBtn" class="btn">Open Report Form</button></div></div>`;
+    document.getElementById('openReportPanelBtn').addEventListener('click', ()=> { reportModal.classList.remove('hidden'); });
+  } else if (section === 'support') {
+    panelContent.innerHTML = `<div><h4 class="font-semibold">Support</h4>
+      <div class="muted mt-2">Call: <a class="underline" href="tel:+2349128884830">+234 912 888 4830</a></div>
+      <div class="muted mt-1">Email: <a class="underline" href="mailto:nelsongodspower24@gmail.com">nelsongodspower24@gmail.com</a></div>
+      <div class="muted mt-3">Or use the report form to send a ticket to admins.</div>
+    </div>`;
+  } else if (section === 'settings') {
+    panelContent.innerHTML = `<div><h4 class="font-semibold">Settings</h4><div class="mt-3">Theme: <button id="panelThemeToggle" class="btn-outline">Toggle</button></div></div>`;
+    document.getElementById('panelThemeToggle').addEventListener('click', toggleTheme);
+  } else {
+    panelContent.innerHTML = `<div class="muted">Not implemented</div>`;
   }
-});
-
-/* ---------- profile save (uses /api/users/me/bank) ---------- */
-saveProfileBtn.addEventListener('click', async () => {
-  const phone = profilePhone.value.trim();
-  const bankName = profileBankName.value.trim();
-  const accountNumber = profileAccountNumber.value.trim();
-  const accountHolderName = profileAccountHolder.value.trim();
+  }
+  // ---------- Profile save ----------
+async function onSaveProfile(){
+  const payload = { phone: profilePhone.value };
+  if (profileBankName.value || profileAccountNumber.value || profileAccountHolder.value) {
+    payload.bankName = profileBankName.value;
+    payload.accountNumber = profileAccountNumber.value;
+    payload.accountHolderName = profileAccountHolder.value;
+  }
   try {
-    const payload = { phone };
-    if (bankName || accountNumber || accountHolderName) {
-      payload.bankName = bankName;
-      payload.accountNumber = accountNumber;
-      payload.accountHolderName = accountHolderName;
-    }
     await apiFetch('/api/users/me/bank', { method: 'PUT', body: JSON.stringify(payload) });
-    profileStatus.innerText = 'Profile updated.';
     // update local copy
-    currentUser.phone = phone || currentUser.phone;
-    currentUser.bankDetails = currentUser.bankDetails || {};
-    if (bankName) currentUser.bankDetails.bankName = bankName;
-    if (accountNumber) currentUser.bankDetails.accountNumber = accountNumber;
-    if (accountHolderName) currentUser.bankDetails.accountHolderName = accountHolderName;
-    localStorage.setItem('su_user', JSON.stringify(currentUser));
-    setTimeout(()=>closeOverlay('profile'), 900);
-  } catch (e) {
-    profileStatus.innerText = e.message || 'Update failed.';
-  }
-});
-
-/* ---------- overlays open/close helpers ---------- */
-function openOverlay(name) {
-  closeMenuOverlay();
-  // hide all to prevent duplicates
-  [historyOverlay, referralOverlay, announcementsOverlay, rateOverlay, reportOverlay, supportOverlay, profileOverlay, trackingOverlay].forEach(hideOverlay);
-  switch (name) {
-    case 'history': showOverlay(historyOverlay); loadHistory(); break;
-    case 'referral': showOverlay(referralOverlay); /* nothing extra */ break;
-    case 'announcements': showOverlay(announcementsOverlay); loadAnnouncementsOverlay(); break;
-    case 'rate': showOverlay(rateOverlay); loadRateOrders(); break;
-    case 'report': showOverlay(reportOverlay); loadReportOrdersSelect(); break;
-    case 'support': showOverlay(supportOverlay); break;
-    case 'profile': showOverlay(profileOverlay); break;
-    case 'tracking': showOverlay(trackingOverlay); break;
-  }
-}
-function closeOverlay(name) {
-  switch (name) {
-    case 'history': hideOverlay(historyOverlay); break;
-    case 'referral': hideOverlay(referralOverlay); break;
-    case 'announcements': hideOverlay(announcementsOverlay); break;
-    case 'rate': hideOverlay(rateOverlay); break;
-    case 'report': hideOverlay(reportOverlay); break;
-    case 'support': hideOverlay(supportOverlay); break;
-    case 'profile': hideOverlay(profileOverlay); break;
-    case 'tracking': hideOverlay(trackingOverlay); if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; } break;
+    const user = { ...(currentUser || {}) };
+    user.phone = profilePhone.value || user.phone;
+    user.bankDetails = user.bankDetails || {};
+    if (profileBankName.value) user.bankDetails.bankName = profileBankName.value;
+    if (profileAccountNumber.value) user.bankDetails.accountNumber = profileAccountNumber.value;
+    if (profileAccountHolder.value) user.bankDetails.accountHolderName = profileAccountHolder.value;
+    localStorage.setItem('su_user', JSON.stringify(user));
+    currentUser = user;
+    profileMsg.innerText = 'Saved';
+    setTimeout(()=>{ profileModal.classList.add('hidden'); profileMsg.innerText = ''; }, 900);
+    showToast('success','Profile updated');
+  } catch (err) {
+    profileMsg.innerText = err.message || 'Update failed';
+    showToast('error', err.message || 'Update failed');
   }
 }
 
-/* menu open */
-document.getElementById('hamburgerBtn').addEventListener('click', openMenuOverlay);
-document.getElementById('profileBtnHeader').addEventListener('click', ()=> openOverlay('profile'));
-function openOverlay(name){ openOverlay; openOverlay(name); } // placeholder - replaced below
+// ---------- Rate submit ----------
+function renderStars(){
+  starRow.innerHTML = '';
+  for (let i=1;i<=5;i++){
+    const s = document.createElement('span');
+    s.textContent = (i <= selectedRating) ? '★' : '☆';
+    s.style.cursor='pointer';
+    s.style.color = i <= selectedRating ? '#f59e0b' : '#9ca3af';
+    s.dataset.value = i;
+    s.addEventListener('click', ()=> {
+      selectedRating = Number(s.dataset.value);
+      renderStars();
+    });
+    starRow.appendChild(s);
+  }
+}
 
-// override the above dummy with correct function reference
-window.openOverlay = openOverlay;
+async function onSubmitRating(){
+  if (!activeOrder || !activeOrder._id) {
+    rateMsg.innerText = 'No order selected for rating';
+    showToast('error','No active order');
+    return;
+  }
+  const payload = { rating: selectedRating, comment: rateComment.value || '' };
+  try {
+    await apiFetch(`/api/orders/${activeOrder._id}/rate`, { method: 'POST', body: JSON.stringify(payload) });
+    rateMsg.innerText = 'Thanks for rating!';
+    showToast('success','Rating submitted');
+    rateModal.classList.add('hidden');
+    await loadHistory();
+  } catch (err) {
+    rateMsg.innerText = err.message || 'Submit failed';
+    showToast('error', err.message || 'Submit failed');
+  }
+}
 
-/* close menu overlay pressing backdrop */
-function closeMenuOverlay() { menuOverlay.classList.remove('show'); }
+// ---------- Report submit ----------
+async function onSubmitReport(){
+  if (!activeOrder || !activeOrder._id) {
+    reportMsg.innerText = 'No order associated';
+    showToast('error','No order selected');
+    return;
+  }
+  const payload = {
+    orderId: activeOrder._id,
+    type: reportType.value,
+    details: reportDetails.value
+  };
+  try {
+    await apiFetch('/api/reports', { method: 'POST', body: JSON.stringify(payload) });
+    reportMsg.innerText = 'Report sent. Admin will review.';
+    showToast('success','Report submitted');
+    reportModal.classList.add('hidden');
+  } catch (err) {
+    reportMsg.innerText = err.message || 'Failed to submit';
+    showToast('error', err.message || 'Report failed');
+  }
+}
 
-/* logout */
+// ---------- Panel action: logout ----------
 function doLogout() {
   localStorage.removeItem('su_token');
   localStorage.removeItem('su_user');
-  localStorage.removeItem('su_active_order');
   window.location.href = 'index.html';
 }
 
-/* refresh button */
-refreshBtn.addEventListener('click', async () => {
-  await loadHistory();
-  await loadAnnouncement();
-  alert('Refreshed');
-});
-
-/* open menu helpers */
-document.getElementById('logoutBtn').addEventListener('click', doLogout);
-document.getElementById('profileBtnHeader').addEventListener('click', () => openOverlay('profile'));
-
-/* convenience UI mapping */
-document.getElementById('hamburgerBtn').addEventListener('click', openMenuOverlay);
-document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-
-/* helper to show/hide overlay elements easily */
-function showOverlay(el) { if (el) el.classList.add('show'); }
-function hideOverlay(el) { if (el) el.classList.remove('show'); }
-
-/* ---------- Google Maps Places (lazy load) ---------- */
-function ensureGoogleMaps(cb) {
-  if (googleMapsLoaded) { if (cb) cb(); return; }
-  const script = document.createElement('script');
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places`;
-  script.defer = true;
-  script.async = true;
-  script.onload = () => {
-    googleMapsLoaded = true;
-    if (cb) cb();
-  };
-  script.onerror = () => { console.warn('Google Maps failed to load'); if (cb) cb(); };
-  document.head.appendChild(script);
-}
-
-/* Attach places autocomplete to pickup/dropoff inputs when they get focus (lazy) */
-function attachPlacesAutocomplete() {
-  ensureGoogleMaps(() => {
-    try {
-      const pickup = document.getElementById('pickup');
-      const dropoff = document.getElementById('dropoff');
-      if (window.google && google.maps && google.maps.places) {
-        if (!pickup.__pl) {
-          const ac1 = new google.maps.places.Autocomplete(pickup, { types: ['geocode'] });
-          pickup.__pl = ac1;
-        }
-        if (!dropoff.__pl) {
-          const ac2 = new google.maps.places.Autocomplete(dropoff, { types: ['geocode'] });
-          dropoff.__pl = ac2;
-        }
-      }
-    } catch (e) { console.warn('Places attach failed', e); }
-  });
-}
-document.getElementById('pickup').addEventListener('focus', attachPlacesAutocomplete);
-document.getElementById('dropoff').addEventListener('focus', attachPlacesAutocomplete);
-
-/* map update */
-function updateMap(agentLoc, order) {
-  if (!googleMapsLoaded || !window.google) return;
-  try {
-    if (!map) {
-      map = new google.maps.Map(mapContainer, { center: { lat: 6.5244, lng: 3.3792 }, zoom: 12 });
-    }
-    // place pickup & dropoff if available in order payload
-    if (order.pickupLocation && order.pickupLocation.lat) {
-      const p = { lat: Number(order.pickupLocation.lat), lng: Number(order.pickupLocation.lng) };
-      if (!pickupMarker) pickupMarker = new google.maps.Marker({ map, position: p, title: 'Pickup' });
-      else pickupMarker.setPosition(p);
-      map.setCenter(p);
-    }
-    if (order.deliveryLocation && order.deliveryLocation.lat) {
-      const d = { lat: Number(order.deliveryLocation.lat), lng: Number(order.deliveryLocation.lng) };
-      if (!dropoffMarker) dropoffMarker = new google.maps.Marker({ map, position: d, title: 'Dropoff' });
-      else dropoffMarker.setPosition(d);
-    }
-    if (agentLoc && agentLoc.lat) {
-      const a = { lat: Number(agentLoc.lat), lng: Number(agentLoc.lng) };
-      if (!agentMarker) agentMarker = new google.maps.Marker({ map, position: a, title: 'Agent', icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: '#ff0000', fillOpacity: 1, strokeWeight: 2 } });
-      else agentMarker.setPosition(a);
-    }
-  } catch (err) { console.warn('map update error', err); }
-}
-
-/* ---------- UI wiring for overlays open/close (connect earlier functions properly) ---------- */
-function openMenuOverlay() { menuOverlay.classList.add('show'); document.getElementById('menuName').innerText = currentUser.name || 'User'; document.getElementById('menuRole').innerText = currentUser.role || 'Customer'; document.getElementById('menuThemeBtn').innerText = isDarkMode() ? 'Light' : 'Dark'; }
-function closeMenuOverlay() { menuOverlay.classList.remove('show'); }
-
-function openOverlay(name) {
-  closeMenuOverlay();
-  // close all others first
-  [historyOverlay, referralOverlay, announcementsOverlay, rateOverlay, reportOverlay, supportOverlay, profileOverlay, trackingOverlay].forEach(hideOverlay);
-  switch (name) {
-    case 'history': showOverlay(historyOverlay); loadHistory(); break;
-    case 'referral': showOverlay(referralOverlay); break;
-    case 'announcements': showOverlay(announcementsOverlay); loadAnnouncementsOverlay(); break;
-    case 'rate': showOverlay(rateOverlay); loadRateOrders(); break;
-    case 'report': showOverlay(reportOverlay); loadReportOrdersSelect(); break;
-    case 'support': showOverlay(supportOverlay); break;
-    case 'profile': showOverlay(profileOverlay); break;
-    case 'tracking': showOverlay(trackingOverlay); break;
-  }
-}
-function closeOverlay(name) {
-  switch (name) {
-    case 'history': hideOverlay(historyOverlay); break;
-    case 'referral': hideOverlay(referralOverlay); break;
-    case 'announcements': hideOverlay(announcementsOverlay); break;
-    case 'rate': hideOverlay(rateOverlay); break;
-    case 'report': hideOverlay(reportOverlay); break;
-    case 'support': hideOverlay(supportOverlay); break;
-    case 'profile': hideOverlay(profileOverlay); break;
-    case 'tracking': hideOverlay(trackingOverlay); if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; } break;
+// ---------- Toggle theme ----------
+function toggleTheme(){
+  const isDark = document.body.classList.contains('dark');
+  if (isDark) {
+    document.body.classList.remove('dark');
+    document.body.classList.add('light');
+    themeToggle.innerText = 'Dark';
+  } else {
+    document.body.classList.remove('light');
+    document.body.classList.add('dark');
+    themeToggle.innerText = 'Light';
   }
 }
 
-/* make menu buttons work */
-document.querySelectorAll('[onclick^="openOverlay"]').forEach(btn => {
-  // already set via inline onclick in markup - keep as-is
-});
+// ---------- init map when tracking visible ----------
+function initMapOnce(){
+  if (typeof google === 'undefined') {
+    console.warn('Google maps not loaded');
+    return;
+  }
+  if (!map) {
+    map = new google.maps.Map(trackingMapEl, { center: { lat: 6.5244, lng: 3.3792 }, zoom: 12 });
+  }
+}
 
-/* ---------- startup ---------- */
-applyTheme();
+// ---------- initial startup ----------
 initUI();
-loadAnnouncement();
-loadHistory();
-loadAnnouncementsOverlay(); // prepare announcements content
+initMapOnce();
+loadHistory(); // ensure history shown
 
-// ensure referral overlay link is set
-refFullLink.innerText = `${location.origin}/signup?ref=${currentUser.referralCode || (currentUser._id ? ('REF' + String(currentUser._id).slice(-6)) : 'REF-UNKNOWN')}`;
-
-/* attach quick handlers */
-document.getElementById('hamburgerBtn').addEventListener('click', openMenuOverlay);
-document.getElementById('profileBtnHeader').addEventListener('click', () => openOverlay('profile'));
-document.getElementById('themeToggle').addEventListener('click', () => { toggleTheme(); applyTheme(); });
-
-document.getElementById('refFullLink')?.addEventListener('click', () => {});
-document.getElementById('refCopyFullBtn')?.addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText(refFullLink.innerText); alert('Copied'); } catch (e) { alert('Failed'); }
-});
-document.getElementById('refShareFullBtn')?.addEventListener('click', async () => {
-  try { if (navigator.share) await navigator.share({ title: 'Join SkyUltimate', url: refFullLink.innerText }); else await navigator.clipboard.writeText(refFullLink.innerText); } catch(e) { alert('Share failed'); }
-});
-
-/* ensure we attach places autocomplete if user focuses inputs */
-document.getElementById('pickup').addEventListener('focus', attachPlacesAutocomplete);
-document.getElementById('dropoff').addEventListener('focus', attachPlacesAutocomplete);
-
-/* finalize: wire menu overlay buttons (some are inline, but attach the dynamic ones too) */
-document.querySelectorAll('#menuOverlay nav button').forEach(btn => {
-  // already wired inline via onclick; no-op
-});
-
-/* Export small functions for console debugging if needed */
-window.apiFetch = apiFetch;
-window.openOverlay = openOverlay;
-window.closeOverlay = closeOverlay;
-window.doLogout = doLogout;
+// if there is an active order in localStorage, open tracking
+try {
+  const maybe = JSON.parse(localStorage.getItem('su_active_order') || 'null');
+  if (maybe && (maybe._id || maybe.id)) {
+    openTracking(maybe._id || maybe.id);
+  }
+} catch(e){ /* ignore */ }
 
 </script>
 </body>
 </html>
+  
