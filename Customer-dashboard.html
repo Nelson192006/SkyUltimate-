@@ -2,1091 +2,933 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SkyUltimate — Customer Dashboard</title>
 
-  <!-- Tailwind CDN for utility styles -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
+  <!-- Inline Tailwind-like minimalist style (no external deps) -->
   <style>
-    /* Embedded premium styling */
     :root{
-      --brand-red: #C00000;
-      --brand-red-dark: #940000;
-      --glass: rgba(255,255,255,0.92);
-      --card-radius: 18px;
-      --shadow: 0 8px 30px rgba(0,0,0,0.12);
+      --brand:#C00000;
+      --brand-dark:#900000;
+      --bg:#f6f6f7;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --shadow: 0 12px 30px rgba(0,0,0,0.12);
+      --radius:14px;
     }
-    html,body { height:100%; margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
-    body.light { background: linear-gradient(180deg,#fff 0%, #fff 100%); color:#111; }
-    body.dark { background: linear-gradient(180deg,#0b1020 0%, #071029 100%); color:#e6eefb; }
-    .app-bg { background: linear-gradient(180deg,var(--brand-red) 0%, #9a0000 100%); min-height:100vh; padding-bottom: 100px; }
-    .card { background: var(--glass); border-radius: var(--card-radius); box-shadow: var(--shadow); padding: 16px; }
-    .rounded-logo { width:56px; height:56px; border-radius:999px; object-fit:cover; box-shadow: 0 8px 24px rgba(0,0,0,0.24); }
-    .btn { background:var(--brand-red); color:#fff; padding:10px 14px; border-radius:12px; font-weight:700; }
-    .btn-outline { background:transparent; color:var(--brand-red); border:2px solid rgba(255,255,255,0.12); padding:8px 12px; border-radius:10px; font-weight:700; }
-    .glass-soft { background: rgba(255,255,255,0.06); border-radius:14px; padding:10px; }
-    .toast { position: fixed; right: 20px; bottom: 20px; z-index:10000; min-width:260px; border-radius:12px; padding:12px 16px; box-shadow:0 8px 30px rgba(0,0,0,0.24); color:#fff; }
-    .toast.success{ background:#16a34a } .toast.error{ background:#b91c1c } .toast.info{ background:#0ea5e9 }
-    .overlay-full { position: fixed; inset:0; background: rgba(3,7,18,0.6); z-index:2000; display:flex; align-items:center; justify-content:center; }
-    .hidden { display:none; }
-    /* map container */
-    #map { width:100%; height:260px; border-radius:12px; overflow:hidden; }
-    /* hamburger overlay screens take full content area */
-    .panel-screen { position: fixed; inset: 72px 12px 12px 12px; z-index:1500; overflow:auto; border-radius:14px; padding:18px; box-shadow: var(--shadow); background: rgba(255,255,255,0.96); }
-    .dark .panel-screen { background: rgba(8,10,20,0.95); color:#e6eefb; }
-    .chip { background: rgba(255,255,255,0.85); padding:6px 10px; border-radius:999px; font-weight:600; }
-    .muted { color: #6b7280; }
-    /* small screens adjustments */
-    @media (max-width:640px){
-      .panel-screen { inset: 72px 8px 8px 8px; padding:12px; }
+    [data-theme="dark"]{
+      --bg:#0b0b0c; --card:#0f1112; --muted:#9ca3af;
     }
+    *{box-sizing:border-box}
+    html,body{height:100%; margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+    body{background:var(--bg); color: #111827; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
+    header{height:64px; display:flex; align-items:center; justify-content:space-between; padding:0 18px; background: linear-gradient(90deg,var(--brand),var(--brand-dark)); color:#fff; position:sticky; top:0; z-index:40; box-shadow: 0 4px 12px rgba(0,0,0,0.08);}
+    .header-left{display:flex; gap:12px; align-items:center;}
+    .logo-only{width:44px; height:44px; border-radius:9999px; object-fit:cover; box-shadow: 0 6px 18px rgba(0,0,0,0.2);}
+    .hamburger{background:transparent; border:none; color:#fff; font-size:22px; cursor:pointer; padding:8px; border-radius:8px;}
+    .container{max-width:980px; margin:20px auto; padding:16px; display:grid; grid-template-columns: 1fr; gap:16px;}
+    .card{background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px;}
+    h1{margin:0; font-size:20px;}
+    .sub{color:var(--muted); margin-top:6px;}
+    /* form */
+    .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+    label{font-size:13px; color:var(--muted); display:block; margin-bottom:6px;}
+    input, select, textarea{width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:10px; background:transparent; font-size:14px; color:inherit;}
+    textarea{min-height:80px; resize:vertical;}
+    .btn{background:var(--brand); color:#fff; padding:12px; border-radius:12px; border:none; font-weight:700; cursor:pointer; width:100%;}
+    .btn.secondary{background:transparent; color:var(--brand); border:1px solid var(--brand); font-weight:600;}
+    .row{display:flex; gap:10px;}
+    .muted{color:var(--muted); font-size:13px;}
+    .small{font-size:13px;}
+    .pill{display:inline-block; padding:6px 10px; border-radius:999px; background:#f3f4f6; color:var(--muted); font-weight:600; font-size:13px;}
+    /* modal */
+    .modal-backdrop{position:fixed; inset:0; background:rgba(0,0,0,0.5); display:none; align-items:center; justify-content:center; z-index:60;}
+    .modal{width:92%; max-width:720px; background:var(--card); border-radius:12px; padding:18px; box-shadow:0 18px 50px rgba(2,6,23,0.4);}
+    .modal.show, .modal-backdrop.show{display:flex;}
+    /* tracking map */
+    #map{height:340px; width:100%; border-radius:10px; overflow:hidden;}
+    /* side menu (hamburger overlay) */
+    .side-menu{position:fixed; left:-320px; top:0; height:100%; width:320px; background:var(--card); box-shadow: 8px 0 30px rgba(0,0,0,0.18); z-index:80; padding:18px; transition:left .28s ease;}
+    .side-menu.open{left:0;}
+    .menu-header{display:flex; gap:12px; align-items:center; margin-bottom:12px;}
+    .menu-item{display:flex; align-items:center; justify-content:space-between; padding:10px 8px; border-radius:10px; cursor:pointer;}
+    .menu-item:hover{background:#f3f4f6;}
+    /* overlay "full-screen" content area (when selecting items in menu) */
+    .overlay-screen{position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none; z-index:100; align-items:center; justify-content:center;}
+    .overlay-screen.open{display:flex;}
+    .panel{width:94%; max-width:1000px; max-height:90vh; overflow:auto; background:var(--card); border-radius:14px; padding:20px;}
+    /* responsive */
+    @media (max-width:780px){
+      .grid-2{grid-template-columns:1fr;}
+      .container{padding:12px;}
+      .side-menu{width:86%; max-width:360px;}
+    }
+    /* toast */
+    .toast{position:fixed; right:20px; bottom:20px; background:var(--brand); color:#fff; padding:12px 16px; border-radius:10px; z-index:110; display:none;}
+    .toast.show{display:block;}
+    /* small helpers */
+    .flex{display:flex; align-items:center;}
+    .gap{gap:10px;}
+    .spacer{flex:1}
   </style>
 </head>
-<body class="app-bg light">
+<body data-theme="light">
 
-  <!-- APP SHELL -->
-  <div class="max-w-4xl mx-auto pt-6">
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Open menu">☰</button>
+      <!-- logo only as requested -->
+      <img class="logo-only" src="https://i.ibb.co/h1QvR2B/logo.png" alt="SkyUltimate Logo" />
+    </div>
 
-    <!-- HEADER -->
-    <header class="flex items-center justify-between px-3 mb-6">
-      <div class="flex items-center gap-3">
-        <img class="rounded-logo" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="logo">
-        <!-- No text beside logo as requested -->
-        <div id="welcomeWrap" class="ml-2">
-          <div id="welcomeMsg" class="text-white text-lg font-semibold">Welcome!</div>
-          <div id="welcomeSub" class="text-white/90 text-sm muted">Your hub</div>
-        </div>
-      </div>
+    <!-- right actions -->
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div id="user-first" class="pill small">Welcome</div>
+    </div>
+  </header>
 
-      <div class="flex items-center gap-2">
-        <button id="themeToggle" class="btn-outline">Dark</button>
-        <button id="menuBtn" class="btn-outline">Menu</button>
-        <button id="logoutBtn" class="btn" title="Logout">Logout</button>
-      </div>
-    </header>
+  <div class="container">
 
-    <!-- MAIN GRID -->
-    <main id="mainContent" class="grid grid-cols-1 gap-4 px-3">
-
-      <!-- ANNOUNCEMENT (dynamic) -->
-      <section id="announcementBox" class="card hidden">
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <div id="announceTitle" class="text-red-700 font-bold"></div>
-            <div id="announceBody" class="text-sm mt-1 muted"></div>
-          </div>
-          <div>
-            <button id="dismissAnnouncement" class="btn-outline">Dismiss</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- HERO/REFERRAL -->
-      <section class="card flex items-center justify-between gap-4">
+    <!-- Welcome + quick info (main) -->
+    <section class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between;">
         <div>
-          <h2 id="heroGreeting" class="text-xl font-bold">Hello, <span id="firstName">there</span> 👋</h2>
-          <p class="muted text-sm mt-1">Ready to send something? Place an order or view your history.</p>
+          <h1 id="welcomeHeading">Hello, —</h1>
+          <div class="sub">Welcome back to SkyUltimate. Place an order or continue tracking an active delivery.</div>
         </div>
-        <div class="text-right">
-          <div class="muted text-xs">Your Referral</div>
-          <div id="refCode" class="font-mono text-lg font-bold">—</div>
-          <div class="mt-2 flex gap-2 justify-end">
-            <button id="copyRef" class="btn-outline">Copy</button>
-            <button id="shareRef" class="btn">Share</button>
+        <div style="text-align:right;">
+          <div id="roleBadge" class="pill small">Customer</div>
+          <div style="margin-top:8px"><button id="logoutBtn" class="btn secondary">Logout</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Order placement -->
+    <section id="placementCard" class="card" aria-labelledby="placeOrderTitle">
+      <h2 id="placeOrderTitle">Place an Order</h2>
+      <p class="muted">Fill the details below to get an accurate price and create an order. Use the map autocomplete for addresses.</p>
+
+      <form id="orderForm" style="margin-top:12px;">
+        <div class="grid-2">
+          <div>
+            <label for="pickup">Recipient Pickup Address</label>
+            <input id="pickup" placeholder="Recipient pickup address (use suggestions)" required />
+          </div>
+          <div>
+            <label for="delivery">Delivery Address</label>
+            <input id="delivery" placeholder="Delivery address (use suggestions)" required />
           </div>
         </div>
-      </section>
 
-      <!-- ORDER PLACEMENT -->
-      <section id="placementCard" class="card">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold">Place a New Order</h3>
-          <div class="muted text-sm">Choose service & details</div>
+        <div class="grid-2" style="margin-top:10px;">
+          <div>
+            <label for="itemType">Item Type</label>
+            <select id="itemType" required>
+              <option value="Food">Food</option>
+              <option value="Documents">Documents</option>
+              <option value="Groceries">Groceries</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="quantity">Quantity</label>
+            <input id="quantity" type="number" min="1" value="1" />
+          </div>
         </div>
 
-        <div class="mt-3 grid grid-cols-1 gap-3">
-          <input id="pickup" placeholder="Pickup address" class="w-full border rounded px-3 py-2" />
-          <input id="pickupContact" placeholder="Pickup contact name & phone" class="w-full border rounded px-3 py-2" />
-          <input id="dropoff" placeholder="Delivery address" class="w-full border rounded px-3 py-2" />
-          <input id="dropoffContact" placeholder="Recipient name & phone" class="w-full border rounded px-3 py-2" />
-          <div class="flex gap-2">
-            <input id="itemType" placeholder="Item type (Documents, Parcel)" class="flex-1 border rounded px-3 py-2" />
-            <input id="weight" type="number" min="0" placeholder="Weight (kg)" class="w-40 border rounded px-3 py-2" />
-          </div>
-          <div class="flex gap-2 items-center">
-            <select id="serviceType" class="border rounded px-3 py-2">
+        <div style="margin-top:10px;">
+          <label for="description">Description / Notes</label>
+          <textarea id="description" placeholder="e.g. fragile, handle with care (optional)"></textarea>
+        </div>
+
+        <div class="grid-2" style="margin-top:10px;">
+          <div>
+            <label for="serviceType">Service</label>
+            <select id="serviceType">
               <option value="standard">Standard</option>
               <option value="express">Express</option>
               <option value="same-day">Same-day</option>
             </select>
-
-            <button id="calcPrice" class="btn ml-auto">Calculate Final Price</button>
-            <button id="submitOrder" class="btn-outline">Confirm & Await Admin Approval</button>
-          </div>
-          <div id="calcMsg" class="text-sm text-red-600 mt-1"></div>
-        </div>
-      </section>
-
-      <!-- PRICE MODAL (hidden) -->
-      <div id="priceModal" class="overlay-full hidden">
-        <div class="card w-full max-w-xl">
-          <h3 class="text-xl font-semibold">Final Price</h3>
-          <div class="mt-3">
-            <div id="finalPrice" class="text-3xl font-bold">₦0</div>
-            <div class="muted text-sm mt-2">Pay via bank transfer to:</div>
-            <div class="mt-2">
-              <div id="bankName" class="font-bold">SkyUltimate Bank</div>
-              <div id="bankAccount" class="muted">0000000000</div>
-              <div id="bankHolder" class="muted">SkyUltimate</div>
-            </div>
-            <div class="mt-3 text-sm muted">After payment, the Admin will confirm and your order will move to tracking.</div>
-          </div>
-          <div class="mt-4 flex gap-2">
-            <button id="closePrice" class="btn-outline flex-1">Close</button>
-            <button id="iPaid" class="btn flex-1">I have Paid (Simulate)</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- TRACKING HUB -->
-      <section id="trackingCard" class="card hidden">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-lg font-semibold">Order Tracking</h3>
-            <div class="muted text-sm" id="trackSub">Realtime updates below</div>
           </div>
           <div>
-            <button id="closeTracking" class="btn-outline">Close</button>
+            <label for="paymentMethod">Payment Method</label>
+            <select id="paymentMethod">
+              <option value="BankTransfer">Bank Transfer</option>
+              <option value="Card">Card (coming soon)</option>
+              <option value="Wallet">Wallet</option>
+            </select>
           </div>
         </div>
 
-        <div class="mt-3 grid grid-cols-1 gap-3">
-          <div id="map" class="rounded-lg"></div>
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="muted text-xs">Order ID</div>
-              <div id="trackId" class="font-mono font-semibold">—</div>
-            </div>
-            <div>
-              <div class="muted text-xs">Status</div>
-              <div id="trackStatus" class="font-semibold">—</div>
-            </div>
-            <div>
-              <button id="callAgent" class="btn-outline hidden">Call Agent</button>
-            </div>
-          </div>
-          <div id="timeline" class="mt-2"></div>
-        </div>
-      </section>
-
-      <!-- ORDER HISTORY (compact list) -->
-      <section id="historyCard" class="card">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold">Order History</h3>
-          <div class="muted text-sm">Recent orders</div>
-        </div>
-        <div id="historyList" class="mt-3 space-y-3 text-sm">
-          Loading...
-        </div>
-      </section>
-
-      <!-- INFO: Mission / Vision / FAQ -->
-      <section class="card">
-        <h3 class="text-lg font-semibold">About SkyUltimate</h3>
-        <p class="muted mt-2">Welcome to SkyUltimate Delivery Services — your trusted partner for swift, secure, and reliable delivery solutions in Lagos.</p>
-
-        <div class="mt-4 grid grid-cols-1 gap-3">
-          <div>
-            <h4 class="font-semibold">Our Mission</h4>
-            <p class="muted text-sm mt-1">Provide the most efficient, transparent, and reliable delivery services in Lagos — empowering businesses and individuals.</p>
-          </div>
-          <div>
-            <h4 class="font-semibold">Our Vision</h4>
-            <p class="muted text-sm mt-1">To be the leading and most preferred delivery service provider in Nigeria, known for reliability and technological excellence.</p>
-          </div>
-
-          <div>
-            <h4 class="font-semibold mb-2">FAQ / Support</h4>
-
-            <div class="space-y-2">
-              <details class="border rounded p-3">
-                <summary class="font-medium">What are your operating hours?</summary>
-                <div class="mt-2 muted text-sm">We operate from 8:00 AM to 6:00 PM, Monday to Saturday.</div>
-              </details>
-
-              <details class="border rounded p-3">
-                <summary class="font-medium">What areas in Lagos do you cover?</summary>
-                <div class="mt-2 muted text-sm">Coverage across Ikeja, Victoria Island, Lekki, Surulere and many mainland areas. Contact support if unsure.</div>
-              </details>
-
-              <details class="border rounded p-3">
-                <summary class="font-medium">How can I place a delivery order?</summary>
-                <div class="mt-2 muted text-sm">Use the "Place a New Order" section above or call our support hotline with pickup/drop details.</div>
-              </details>
-
-              <details class="border rounded p-3">
-                <summary class="font-medium">What payment methods do you accept?</summary>
-                <div class="mt-2 muted text-sm">Currently Transfer (bank transfer). You'll see bank details at checkout.</div>
-              </details>
-
-              <details class="border rounded p-3">
-                <summary class="font-medium">How can I track my delivery?</summary>
-                <div class="mt-2 muted text-sm">After payment confirmation, tracking appears on this page with live agent location (if assigned).</div>
-              </details>
-
-              <details class="border rounded p-3">
-                <summary class="font-medium">What if my package is delayed or missing?</summary>
-                <div class="mt-2 muted text-sm">Contact support immediately with your tracking number. We'll investigate and work on a solution.</div>
-              </details>
-
-              <details class="border rounded p-3">
-                <summary class="font-medium">How do you calculate delivery fees?</summary>
-                <div class="mt-2 muted text-sm">Fees are based on distance, weight and service type. Use "Calculate Final Price" to preview fees.</div>
-              </details>
-            </div>
-          </div>
+        <div class="row" style="margin-top:14px;">
+          <button id="calcBtn" type="button" class="btn" style="flex:1; margin-right:8px;">Calculate Final Price</button>
+          <button id="submitBtn" type="button" class="btn secondary" style="width:210px;">Confirm & Await Admin Approval</button>
         </div>
 
-      </section>
+        <div style="margin-top:10px;" class="muted small">After you confirm and pay to the bank details shown, SuperAdmin will verify payment and dispatch an agent.</div>
+      </form>
+    </section>
 
-      <!-- FOOTER CONTACT -->
-      <footer class="mt-6 text-center muted">
-        <div>Contact: <a id="phoneLink" class="underline" href="tel:+2349128884830">+234 912 888 4830</a> · <a id="whatsappLink" class="underline" target="_blank" href="https://wa.me/2349128884830">WhatsApp</a> · <a id="emailLink" class="underline" href="mailto:nelsongodspower24@gmail.com">Email</a></div>
-      </footer>
-
-    </main>
-  </div>
-
-  <!-- HAMBURGER OVERLAY / PANEL (replaces main content when open) -->
-  <div id="panelOverlay" class="hidden">
-    <div class="panel-screen max-w-4xl mx-auto">
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-3">
-          <img class="w-12 h-12 rounded-full" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="logo">
-          <div>
-            <div id="panelUserName" class="font-bold">User</div>
-            <div id="panelUserRole" class="text-sm muted">Role</div>
-          </div>
-        </div>
-        <div class="flex gap-2">
-          <button id="closePanel" class="btn-outline">Close</button>
-          <button id="panelLogout" class="btn">Logout</button>
-        </div>
-      </div>
-
-      <nav class="grid grid-cols-1 gap-3">
-        <button class="p-3 text-left border rounded" data-panel="profile">My Profile</button>
-        <button class="p-3 text-left border rounded" data-panel="history">Order History</button>
-        <button class="p-3 text-left border rounded" data-panel="referrals">Refer & Earn</button>
-        <button class="p-3 text-left border rounded" data-panel="announcements">Announcements</button>
-        <button class="p-3 text-left border rounded" data-panel="rate">Rate Agent</button>
-        <button class="p-3 text-left border rounded" data-panel="report">Report Agent</button>
-        <button class="p-3 text-left border rounded" data-panel="support">Support</button>
-        <button class="p-3 text-left border rounded" data-panel="settings">Settings</button>
-      </nav>
-
-      <div id="panelContent" class="mt-6"></div>
-    </div>
-  </div>
-
-  <!-- PROFILE MODAL (simple) -->
-  <div id="profileModal" class="overlay-full hidden">
-    <div class="card w-full max-w-lg">
-      <h3 class="text-lg font-semibold">My Profile</h3>
-      <div class="mt-3 grid gap-2">
-        <input id="profileName" class="border rounded px-3 py-2" placeholder="Full name" />
-        <input id="profileEmail" class="border rounded px-3 py-2" placeholder="Email" readonly />
-        <input id="profilePhone" class="border rounded px-3 py-2" placeholder="Phone" />
-        <div id="profileBankFields" class="hidden">
-          <input id="profileBankName" class="border rounded px-3 py-2" placeholder="Bank name" />
-          <input id="profileAccountNumber" class="border rounded px-3 py-2" placeholder="Account number" />
-          <input id="profileAccountHolder" class="border rounded px-3 py-2" placeholder="Account holder" />
-        </div>
-        <div class="flex gap-2">
-          <button id="saveProfile" class="btn flex-1">Save</button>
-          <button id="closeProfile" class="btn-outline flex-1">Close</button>
-        </div>
-        <div id="profileMsg" class="text-sm text-green-600"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- RATE / REPORT MODALS -->
-  <div id="rateModal" class="overlay-full hidden">
-    <div class="card w-full max-w-md">
-      <h3 class="text-lg font-semibold">Rate Agent</h3>
-      <div class="mt-3">
-        <div id="starRow" class="flex gap-1 text-2xl">⭐⭐⭐⭐⭐</div>
-        <textarea id="rateComment" placeholder="Add a comment (optional)" class="w-full border rounded px-3 py-2 mt-3"></textarea>
-        <div class="flex gap-2 mt-3">
-          <button id="submitRating" class="btn flex-1">Submit Rating</button>
-          <button id="closeRate" class="btn-outline flex-1">Close</button>
-        </div>
-        <div id="rateMsg" class="text-sm text-green-600 mt-2"></div>
-      </div>
-    </div>
-  </div>
-
-  <div id="reportModal" class="overlay-full hidden">
-    <div class="card w-full max-w-md">
-      <h3 class="text-lg font-semibold">Report Agent</h3>
-      <div class="mt-3">
-        <select id="reportType" class="border rounded px-3 py-2 w-full">
-          <option value="late">Late Delivery</option>
-          <option value="rude">Rude Behavior</option>
-          <option value="lost">Lost Package</option>
-          <option value="other">Other</option>
-        </select>
-        <textarea id="reportDetails" placeholder="Describe the issue" class="w-full border rounded px-3 py-2 mt-3"></textarea>
-        <div class="flex gap-2 mt-3">
-          <button id="submitReport" class="btn flex-1">Send Report</button>
-          <button id="closeReport" class="btn-outline flex-1">Close</button>
-        </div>
-        <div id="reportMsg" class="text-sm text-green-600 mt-2"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast container -->
-  <div id="toastContainer"></div>
-
-  <!-- Google Maps -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDu1dptqgTwWWD6568jhf_tal7uYfdyMlQ&libraries=places"></script>
-
-<script>
-/*
-  Full single-file Customer Dashboard
-  - Wires to your API_BASE (change if needed)
-  - Uses localStorage.su_token and localStorage.su_user
-  - All buttons are functional and call appropriate endpoints (per earlier chat)
-  - If an endpoint is not yet implemented server-side, the UI will surface the error
-*/
-
-const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
-const token = localStorage.getItem('su_token');
-let currentUser = null;
-try { currentUser = JSON.parse(localStorage.getItem('su_user') || 'null'); } catch(e){ currentUser = null; }
-
-if (!token || !currentUser) {
-  // not authenticated -> redirect to login
-  window.location.href = 'index.html';
-}
-
-// ---------- helper: toast ----------
-function showToast(type='info', msg='', timeout=3500) {
-  const id = 't'+Date.now();
-  const el = document.createElement('div');
-  el.id = id;
-  el.className = `toast ${type}`;
-  el.textContent = msg;
-  document.body.appendChild(el);
-  setTimeout(()=> el.classList.add('visible'), 50);
-  setTimeout(()=> { el.remove(); }, timeout);
-}
-
-// ---------- helper: apiFetch ----------
-async function apiFetch(path, opts = {}) {
-  const headers = (opts.headers || {});
-  headers['Content-Type'] = headers['Content-Type'] || 'application/json';
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(API_BASE + path, { ...opts, headers });
-  if (res.status === 401) {
-    showToast('error', 'Session expired. Redirecting to login...');
-    localStorage.removeItem('su_token');
-    localStorage.removeItem('su_user');
-    setTimeout(()=> window.location.href='index.html', 900);
-    throw new Error('Unauthorized');
-  }
-  const text = await res.text();
-  let data = null;
-  try { data = text ? JSON.parse(text) : null; } catch(e) { data = text; }
-  if (!res.ok) {
-    const errMsg = data && (data.message || data.error) ? (data.message || data.error) : `HTTP ${res.status}`;
-    throw new Error(errMsg);
-  }
-  return data;
-}
-
-// ---------- UI refs ----------
-const firstNameEl = document.getElementById('firstName');
-const heroGreeting = document.getElementById('heroGreeting');
-const refCodeEl = document.getElementById('refCode');
-const copyRef = document.getElementById('copyRef');
-const shareRef = document.getElementById('shareRef');
-
-const calcPriceBtn = document.getElementById('calcPrice');
-const submitOrderBtn = document.getElementById('submitOrder');
-const priceModal = document.getElementById('priceModal');
-const finalPriceEl = document.getElementById('finalPrice');
-const bankNameEl = document.getElementById('bankName');
-const bankAccountEl = document.getElementById('bankAccount');
-const bankHolderEl = document.getElementById('bankHolder');
-const closePrice = document.getElementById('closePrice');
-const iPaidBtn = document.getElementById('iPaid');
-const calcMsg = document.getElementById('calcMsg');
-
-const trackingCard = document.getElementById('trackingCard');
-const trackingMapEl = document.getElementById('map');
-const trackIdEl = document.getElementById('trackId');
-const trackStatusEl = document.getElementById('trackStatus');
-const timelineEl = document.getElementById('timeline');
-const closeTracking = document.getElementById('closeTracking');
-const callAgentBtn = document.getElementById('callAgent');
-
-const historyList = document.getElementById('historyList');
-
-const announcementBox = document.getElementById('announcementBox');
-const announceTitle = document.getElementById('announceTitle');
-const announceBody = document.getElementById('announceBody');
-const dismissAnnouncement = document.getElementById('dismissAnnouncement');
-
-const menuBtn = document.getElementById('menuBtn');
-const panelOverlay = document.getElementById('panelOverlay');
-const closePanel = document.getElementById('closePanel');
-const panelContent = document.getElementById('panelContent');
-const panelUserName = document.getElementById('panelUserName');
-const panelUserRole = document.getElementById('panelUserRole');
-const panelLogout = document.getElementById('panelLogout');
-
-const logoutBtn = document.getElementById('logoutBtn');
-
-const themeToggle = document.getElementById('themeToggle');
-
-const profileModal = document.getElementById('profileModal');
-const profileName = document.getElementById('profileName');
-const profileEmail = document.getElementById('profileEmail');
-const profilePhone = document.getElementById('profilePhone');
-const profileBankFields = document.getElementById('profileBankFields');
-const profileBankName = document.getElementById('profileBankName');
-const profileAccountNumber = document.getElementById('profileAccountNumber');
-const profileAccountHolder = document.getElementById('profileAccountHolder');
-const saveProfile = document.getElementById('saveProfile');
-const closeProfile = document.getElementById('closeProfile');
-const profileMsg = document.getElementById('profileMsg');
-
-const rateModal = document.getElementById('rateModal');
-const rateComment = document.getElementById('rateComment');
-const submitRating = document.getElementById('submitRating');
-const closeRate = document.getElementById('closeRate');
-const starRow = document.getElementById('starRow');
-const rateMsg = document.getElementById('rateMsg');
-
-const reportModal = document.getElementById('reportModal');
-const reportType = document.getElementById('reportType');
-const reportDetails = document.getElementById('reportDetails');
-const submitReport = document.getElementById('submitReport');
-const closeReport = document.getElementById('closeReport');
-const reportMsg = document.getElementById('reportMsg');
-
-const placementCard = document.getElementById('placementCard');
-
-// order form fields
-const pickupInput = document.getElementById('pickup');
-const pickupContactInput = document.getElementById('pickupContact');
-const dropoffInput = document.getElementById('dropoff');
-const dropoffContactInput = document.getElementById('dropoffContact');
-const itemTypeInput = document.getElementById('itemType');
-const weightInput = document.getElementById('weight');
-const serviceInput = document.getElementById('serviceType');
-
-// ---------- state ----------
-let lastCalc = null;
-let activeOrder = null;
-let map = null;
-let agentMarker = null;
-let pollingInterval = null;
-let selectedRating = 5;
-
-// ---------- initialize UI ----------
-function initUI() {
-  // set first name
-  const name = currentUser.name || (currentUser.fullName) || "there";
-  const first = String(name).split(' ')[0] || 'there';
-  firstNameEl.innerText = first;
-  heroGreeting.innerText = `Hello, ${first}!`;
-
-  // referral code
-  const referralCode = currentUser.referralCode || (currentUser._id ? ('REF'+String(currentUser._id).slice(-6)) : 'REF-UNKNOWN');
-  refCodeEl.innerText = referralCode;
-
-  // panel user info
-  panelUserName.innerText = name;
-  panelUserRole.innerText = (currentUser.role || 'Customer');
-
-  // profile modal populate
-  profileName.value = currentUser.name || '';
-  profileEmail.value = currentUser.email || '';
-  profilePhone.value = currentUser.phone || '';
-  if ((currentUser.role || '').toLowerCase() === 'agent' || (currentUser.role || '').toLowerCase() === 'admin') {
-    profileBankFields.classList.remove('hidden');
-    profileBankName.value = (currentUser.bankDetails || {}).bankName || '';
-    profileAccountNumber.value = (currentUser.bankDetails || {}).accountNumber || '';
-    profileAccountHolder.value = (currentUser.bankDetails || {}).accountHolderName || '';
-  } else {
-    profileBankFields.classList.add('hidden');
-  }
-
-  // events
-  copyRef.addEventListener('click', async ()=> {
-    try { await navigator.clipboard.writeText(`${location.origin}/signup?ref=${referralCode}`); showToast('success','Referral link copied'); }
-    catch(e){ showToast('error','Copy failed'); }
-  });
-  shareRef.addEventListener('click', async ()=> {
-    const link = `${location.origin}/signup?ref=${referralCode}`;
-    try {
-      if (navigator.share) await navigator.share({ title:'Join SkyUltimate', text:'Use my link', url:link});
-      else { await navigator.clipboard.writeText(link); showToast('success','Referral link copied'); }
-    } catch(e){ showToast('error','Share failed'); }
-  });
-
-  // price & order
-  calcPriceBtn.addEventListener('click', onCalcPrice);
-  closePrice.addEventListener('click', ()=> priceModal.classList.add('hidden'));
-  iPaidBtn.addEventListener('click', onIPaid);
-  submitOrderBtn.addEventListener('click', onSubmitOrder);
-
-  // tracking
-  closeTracking.addEventListener('click', ()=> {
-    trackingCard.classList.add('hidden');
-    if (pollingInterval) clearInterval(pollingInterval);
-    pollingInterval = null;
-  });
-
-  // menu
-  menuBtn.addEventListener('click', openPanel);
-  closePanel.addEventListener('click', closePanelFunc);
-  panelLogout.addEventListener('click', ()=> { doLogout(); });
-
-  logoutBtn.addEventListener('click', ()=> { doLogout(); });
-
-  themeToggle.addEventListener('click', toggleTheme);
-
-  // profile modal
-  document.getElementById('panelContent'); // used later
-  document.querySelectorAll('[data-panel]').forEach(btn => {
-    btn.addEventListener('click', ()=> openPanelSection(btn.getAttribute('data-panel')));
-  });
-
-  closeProfile.addEventListener('click', ()=> profileModal.classList.add('hidden'));
-  saveProfile.addEventListener('click', onSaveProfile);
-
-  // rate/report modals
-  closeRate.addEventListener('click', ()=> rateModal.classList.add('hidden'));
-  submitRating.addEventListener('click', onSubmitRating);
-
-  document.querySelectorAll('#starRow, #starRow *').forEach(el=>{
-    // star click handled inside function
-  });
-  renderStars();
-
-  closeReport.addEventListener('click', ()=> reportModal.classList.add('hidden'));
-  submitReport.addEventListener('click', onSubmitReport);
-
-  // announcements
-  dismissAnnouncement.addEventListener('click', ()=> announcementBox.classList.add('hidden'));
-
-  // populate history
-  loadHistory();
-
-  // announcements
-  loadAnnouncement();
-
-  // try to fetch fresh profile & update referral code if backend has more data
-  fetchProfile();
-}
-
-// ---------- Fetch profile (fresh from server) ----------
-async function fetchProfile() {
-  try {
-    const p = await apiFetch('/api/users/profile');
-    if (p) {
-      currentUser = p;
-      localStorage.setItem('su_user', JSON.stringify(p));
-      initUI(); // refresh UI
-    }
-  } catch (err) {
-    console.warn('Could not refresh profile:', err.message);
-  }
-}
-
-// ---------- Announcement ----------
-async function loadAnnouncement() {
-  try {
-    const a = await apiFetch('/api/announcements/latest');
-    if (a && a.isActive) {
-      announcementBox.classList.remove('hidden');
-      announceTitle.innerText = a.title || 'Announcement';
-      announceBody.innerText = a.message || '';
-    } else {
-      announcementBox.classList.add('hidden');
-    }
-  } catch (err) {
-    console.info('No announcement:', err.message);
-    announcementBox.classList.add('hidden');
-  }
-}
-
-// ---------- Calculate price ----------
-async function onCalcPrice(){
-  calcMsg.innerText = '';
-  const items = [{ itemType: itemTypeInput.value || 'Item', weight: Number(weightInput.value || 0), quantity: 1 }];
-  const payload = {
-    items,
-    pickup: pickupInput.value || '',
-    dropoff: dropoffInput.value || '',
-    serviceType: serviceInput.value || 'standard'
-  };
-  try {
-    const res = await apiFetch('/api/orders/calc-price', { method: 'POST', body: JSON.stringify(payload) });
-    lastCalc = res;
-    const price = res.finalPrice || res.finalprice || 0;
-    finalPriceEl.innerText = `₦${Number(price).toLocaleString()}`;
-    const b = res.superAdminBankDetails || res.bankDetails || { bankName:'SkyUltimate Bank', accountNumber:'0000000000', accountHolderName:'SkyUltimate' };
-    bankNameEl.innerText = b.bankName || b.bank || 'SkyUltimate Bank';
-    bankAccountEl.innerText = b.accountNumber || b.account || '0000000000';
-    bankHolderEl.innerText = b.accountHolderName || b.accountHolder || 'SkyUltimate';
-    priceModal.classList.remove('hidden');
-  } catch (err) {
-    calcMsg.innerText = err.message || 'Could not calculate price.';
-    showToast('error', err.message || 'Calc failed');
-  }
-}
-
-// ---------- Confirm "I Paid" (simulate) ----------
-async function onIPaid(){
-  if (!lastCalc) { showToast('error', 'No price calculated'); return; }
-  // create order with same payload used earlier in calc
-  const items = [{ itemType: itemTypeInput.value || 'Item', weight: Number(weightInput.value || 0), quantity: 1 }];
-  const payload = {
-    items,
-    pickupAddress: pickupInput.value || '',
-    deliveryAddress: dropoffInput.value || '',
-    paymentMethod: 'Bank Transfer'
-  };
-  try {
-    const created = await apiFetch('/api/orders', { method: 'POST', body: JSON.stringify(payload) });
-    const order = created.order || created;
-    localStorage.setItem('su_active_order', JSON.stringify(order));
-    activeOrder = order;
-    priceModal.classList.add('hidden');
-    showToast('success', 'Order created. Await admin confirmation.');
-    await loadHistory();
-    openTracking(order._id || order.id || order._doc?._id || order._doc?._id || '');
-  } catch (err) {
-    showToast('error', err.message || 'Order creation failed');
-  }
-}
-
-// ---------- Submit order directly (without modal) ----------
-async function onSubmitOrder(){
-  const items = [{ itemType: itemTypeInput.value || 'Item', weight: Number(weightInput.value || 0), quantity: 1 }];
-  const payload = {
-    items,
-    pickupAddress: pickupInput.value || '',
-    deliveryAddress: dropoffInput.value || '',
-    paymentMethod: 'Bank Transfer'
-  };
-  try {
-    const created = await apiFetch('/api/orders', { method: 'POST', body: JSON.stringify(payload) });
-    const order = created.order || created;
-    localStorage.setItem('su_active_order', JSON.stringify(order));
-    activeOrder = order;
-    showToast('success', 'Order created. Await admin confirmation.');
-    await loadHistory();
-    openTracking(order._id || order.id || '');
-  } catch (err) {
-    showToast('error', err.message || 'Could not submit order.');
-  }
-}
-
-// ---------- Load order history ----------
-async function loadHistory() {
-  historyList.innerHTML = 'Loading...';
-  try {
-    const userId = currentUser.id || currentUser._id;
-    // try /api/orders?customerId=<id>
-    const res = await apiFetch(`/api/orders?customerId=${userId}`);
-    const list = Array.isArray(res) ? res : (res.orders || res.items || []);
-    if (!list || list.length === 0) {
-      historyList.innerHTML = '<div class="muted">No orders yet.</div>';
-      return;
-    }
-    historyList.innerHTML = list.slice().reverse().map(o => {
-      const id = o._id || o.id || (o.order && (o.order._id || o.order.id)) || '—';
-      const status = o.status || o.order?.status || 'Unknown';
-      const price = o.finalPrice || o.finalprice || (o.order && o.order.finalPrice) || 0;
-      return `<div class="border rounded p-3 flex justify-between items-center">
+    <!-- Tracking Hub (hidden until order exists) -->
+    <section id="trackingCard" class="card" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
-          <div class="font-medium">${id}</div>
-          <div class="text-sm muted">${o.pickupAddress || ''} → ${o.deliveryAddress || ''}</div>
+          <h2 id="trackingTitle">Order Tracking</h2>
+          <div id="trackingSubtitle" class="muted small">Track your current order in real time</div>
         </div>
-        <div class="text-right">
-          <div class="font-semibold">${status}</div>
-          <div class="muted">₦${Number(price).toLocaleString()}</div>
-          <div class="mt-2">
-            <button data-order="${id}" class="btn-outline open-order">Open</button>
+        <div>
+          <div id="trackingStatus" class="pill small">Status: —</div>
+        </div>
+      </div>
+
+      <div id="map" style="margin-top:12px;"></div>
+
+      <div style="margin-top:12px; display:flex; gap:8px;">
+        <button id="openRateBtn" class="btn secondary" style="width:160px;">Rate Agent</button>
+        <button id="openReportBtn" class="btn secondary" style="width:160px;">Report Agent</button>
+        <div class="spacer"></div>
+        <div class="muted small">Order ID: <span id="activeOrderId">—</span></div>
+      </div>
+
+      <div id="timeline" style="margin-top:12px;"></div>
+    </section>
+
+    <!-- Order History brief summary (also accessible via menu) -->
+    <section id="historySummary" class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <div><h3>Your Orders</h3><div class="muted small">Recent orders (click to view full history in menu)</div></div>
+        <div><button id="viewHistoryBtn" class="btn secondary">Open Order History</button></div>
+      </div>
+      <div id="recentOrders" style="margin-top:12px;"></div>
+    </section>
+
+    <!-- Referral / announcement quick -->
+    <section class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <h3>Refer & Earn</h3>
+          <div class="muted small">Share your referral link and earn rewards when friends sign up and complete qualifying actions.</div>
+        </div>
+        <div style="text-align:right;">
+          <div id="refCode" class="pill small">—</div>
+          <div style="margin-top:8px; display:flex; gap:8px;">
+            <button id="copyRef" class="btn secondary" style="width:110px;">Copy</button>
+            <button id="shareRef" class="btn" style="width:110px;">Share</button>
           </div>
         </div>
-      </div>`;
-    }).join('');
-    // wire up open-order buttons
-    document.querySelectorAll('.open-order').forEach(b => {
-      b.addEventListener('click', async (ev) => {
-        const id = ev.currentTarget.getAttribute('data-order');
-        try {
-          const order = await apiFetch(`/api/orders/${id}`);
-          if (order) {
-            openTracking(id, order);
-          } else {
-            showToast('error','Order not found');
-          }
-        } catch (err) {
-          showToast('error', err.message || 'Could not open order');
+      </div>
+      <div id="announceBanner" style="margin-top:12px; display:none; border-radius:10px; padding:12px; background:linear-gradient(90deg,#fff, #fff);">
+        <strong id="announceTitle">Announcement</strong>
+        <div id="announceMsg" class="muted small" style="margin-top:6px;"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Side menu (hamburger) -->
+  <aside id="sideMenu" class="side-menu" role="navigation" aria-label="Main menu">
+    <div class="menu-header">
+      <img src="https://i.ibb.co/h1QvR2B/logo.png" alt="logo" style="width:48px;height:48px;border-radius:9999px" />
+      <div>
+        <div id="menuName" style="font-weight:700">User</div>
+        <div id="menuRole" class="muted small">Customer</div>
+      </div>
+      <div style="flex:1"></div>
+      <button id="closeMenu" style="background:none;border:none;cursor:pointer;font-size:18px">✕</button>
+    </div>
+
+    <div style="margin-top:10px;">
+      <div class="menu-item" data-action="profile"><span>My Profile</span><span>›</span></div>
+      <div class="menu-item" data-action="history"><span>Order History</span><span>›</span></div>
+      <div class="menu-item" data-action="referrals"><span>Referrals</span><span>›</span></div>
+      <div class="menu-item" data-action="announcements"><span>Announcements</span><span>›</span></div>
+      <div class="menu-item" data-action="rate"><span>Rate Agent</span><span>›</span></div>
+      <div class="menu-item" data-action="report"><span>Report Agent</span><span>›</span></div>
+      <div class="menu-item" data-action="feedback"><span>Feedback</span><span>›</span></div>
+      <div class="menu-item" id="toggleThemeMenu"><span>Toggle Dark / Light</span><span>›</span></div>
+      <div class="menu-item" id="logoutMenuBtn"><span>Logout</span><span>›</span></div>
+    </div>
+  </aside>
+
+  <!-- Overlay panel (full-screen content for menu items) -->
+  <div id="overlayScreen" class="overlay-screen" aria-hidden="true">
+    <div class="panel" id="panelContent">
+      <!-- dynamic content injected -->
+    </div>
+  </div>
+
+  <!-- Modal for price & payment -->
+  <div id="priceBackdrop" class="modal-backdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="priceTitle">
+      <h3 id="priceTitle">Price Estimate</h3>
+      <div id="priceBody" style="margin-top:8px;"></div>
+      <div style="margin-top:12px; display:flex; gap:8px;">
+        <button id="confirmPayBtn" class="btn">I will pay now (Simulate)</button>
+        <button id="closePriceBtn" class="btn secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rate modal -->
+  <div id="rateBackdrop" class="modal-backdrop">
+    <div class="modal" role="dialog">
+      <h3>Rate Agent</h3>
+      <div style="margin-top:8px;">
+        <div id="starRow" style="display:flex; gap:6px;"></div>
+        <textarea id="rateComment" placeholder="Comment (optional)" style="margin-top:10px;"></textarea>
+      </div>
+      <div style="margin-top:12px; display:flex; gap:8px;">
+        <button id="submitRateBtn" class="btn">Submit Rating</button>
+        <button id="closeRateBtn" class="btn secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report modal -->
+  <div id="reportBackdrop" class="modal-backdrop">
+    <div class="modal" role="dialog">
+      <h3>Report Agent / Issue</h3>
+      <div style="margin-top:8px;">
+        <label>Order ID (optional)</label>
+        <input id="reportOrderId" />
+        <label style="margin-top:8px;">Description</label>
+        <textarea id="reportDesc"></textarea>
+      </div>
+      <div style="margin-top:12px; display:flex; gap:8px;">
+        <button id="submitReportBtn" class="btn">Send Report</button>
+        <button id="closeReportBtn" class="btn secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Socket.IO -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <!-- Google Maps Places (KEY provided by you earlier) -->
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDu1dptqgTwWWD6568jhf_tal7uYfdyMlQ&libraries=places"></script>
+
+  <script>
+  (function(){
+
+    const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
+    const token = localStorage.getItem('su_token');
+    let user = null; // object
+    let socket = null;
+    let activeOrder = null;
+    let map = null;
+    let pickupAC = null, deliveryAC = null;
+    let chosenAgentLocationMarker = null;
+
+    // helpers
+    const $ = id => document.getElementById(id);
+    const showToast = (msg, t=3000) => { const el = $('toast'); el.textContent = msg; el.classList.add('show'); setTimeout(()=> el.classList.remove('show'), t); };
+    const authHeaders = () => {
+      const h = {'Content-Type':'application/json'};
+      const t = localStorage.getItem('su_token') || token;
+      if (t) h['Authorization'] = `Bearer ${t}`;
+      return h;
+    };
+
+    // --- AUTH CHECK & PROFILE LOAD ---
+    async function ensureProfile(){
+      try {
+        const stored = localStorage.getItem('su_user');
+        if (stored){
+          user = JSON.parse(stored);
         }
+        // if no user or missing data, try fetch
+        if (!user || !user.name || !user.role){
+          const res = await fetch(API_BASE + '/api/users/profile', { headers: authHeaders() });
+          if (!res.ok) throw new Error('Failed to fetch profile');
+          user = await res.json();
+          localStorage.setItem('su_user', JSON.stringify(user));
+        }
+        applyProfileToUI();
+      } catch (e) {
+        // fallback: redirect to login if token missing / invalid
+        console.warn('Profile load failed:', e.message);
+        showToast('Please login again.');
+        setTimeout(()=> location.href = 'index.html', 900);
+      }
+    }
+
+    function applyProfileToUI(){
+      const first = (user && (user.name || user.fullName)) ? String(user.name || user.fullName).split(' ')[0] : 'there';
+      $('welcomeHeading').innerText = `Hello, ${first}!`;
+      $('user-first').textContent = `Welcome, ${first}`;
+      $('menuName').textContent = user.name || user.fullName || 'User';
+      $('menuRole').textContent = user.role || 'Customer';
+      $('roleBadge').textContent = user.role || 'Customer';
+      // referral code
+      const ref = user.referralCode || (user._id ? ('REF' + String(user._id).slice(-6)) : 'REF-UNKNOWN');
+      $('refCode').textContent = ref;
+    }
+
+    // --- side menu toggles ---
+    const sideMenu = $('sideMenu');
+    $('hamburgerBtn').addEventListener('click', ()=> sideMenu.classList.add('open'));
+    $('closeMenu').addEventListener('click', ()=> sideMenu.classList.remove('open'));
+    window.addEventListener('keydown', e => { if (e.key === 'Escape'){ sideMenu.classList.remove('open'); closeAllOverlays(); } });
+
+    // side menu clicks -> open overlay panel
+    document.querySelectorAll('.menu-item').forEach(it => {
+      it.addEventListener('click', async (ev) => {
+        const action = it.getAttribute('data-action');
+        sideMenu.classList.remove('open');
+        openPanelFor(action);
       });
     });
-  } catch (err) {
-    historyList.innerHTML = '<div class="muted">Failed to load history</div>';
-    console.error(err);
-  }
-}
+    $('logoutMenuBtn').addEventListener('click', doLogout);
+    $('logoutBtn').addEventListener('click', doLogout);
+    $('toggleThemeMenu').addEventListener('click', toggleTheme);
 
-// ---------- Tracking: open tracking UI and start polling ----------
-function openTracking(orderId, orderData) {
-  trackingCard.classList.remove('hidden');
-  trackIdEl.innerText = orderId;
-  if (orderData) {
-    renderTracking(orderData);
-  } else {
-    pollOrder(orderId);
-  }
-  if (pollingInterval) clearInterval(pollingInterval);
-  pollingInterval = setInterval(()=> pollOrder(orderId), 5000);
-}
+    // overlay screen methods
+    const overlay = $('overlayScreen');
+    const panel = $('panelContent');
+    function openPanelFor(action){
+      overlay.classList.add('open');
+      panel.innerHTML = `<h2 class="small">Loading ${action}...</h2>`;
+      // route
+      switch(action){
+        case 'profile': return loadProfilePanel();
+        case 'history': return loadHistoryPanel();
+        case 'referrals': return loadReferralsPanel();
+        case 'announcements': return loadAnnouncementsPanel();
+        case 'rate': return openRateModal(); // open modal instead
+        case 'report': return openReportModal();
+        case 'feedback': return loadFeedbackPanel();
+        default:
+          panel.innerHTML = `<h3>Unknown</h3>`;
+      }
+    }
+    function closeAllOverlays(){ overlay.classList.remove('open'); panel.innerHTML = ''; }
+    overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closeAllOverlays(); });
 
-// poll order
-async function pollOrder(orderId) {
-  try {
-    const order = await apiFetch(`/api/orders/${orderId}`);
-    if (order) renderTracking(order);
-  } catch (err) {
-    console.info('pollOrder error', err.message);
-  }
-}
+    // Panels implementations
+    async function loadProfilePanel(){
+      try {
+        const p = user || {};
+        panel.innerHTML = `
+          <h2>My Profile</h2>
+          <p class="muted">Update phone and bank details here.</p>
+          <div style="margin-top:12px">
+            <label>Full name</label><input id="panel_name" value="${escapeHtml(p.name||'')}" readonly />
+            <label style="margin-top:8px">Email</label><input id="panel_email" value="${escapeHtml(p.email||'')}" readonly />
+            <label style="margin-top:8px">Phone</label><input id="panel_phone" value="${escapeHtml(p.phone||'')}" />
+            <div id="bankFields" style="margin-top:8px; display:${(p.role && (p.role.toLowerCase()==='agent' || p.role.toLowerCase()==='admin')) ? 'block' : 'none'}">
+              <label>Bank Name</label><input id="panel_bankName" value="${escapeHtml((p.bankDetails && p.bankDetails.bankName)||'')}" />
+                           <label style="margin-top:8px">Account Number</label><input id="panel_account" value="${escapeHtml((p.bankDetails && p.bankDetails.accountNumber)||'')}" />
+              <label style="margin-top:8px">Account Holder</label><input id="panel_accountHolder" value="${escapeHtml((p.bankDetails && p.bankDetails.accountHolderName)||'')}" />
+            </div>
+            <div style="margin-top:12px; display:flex; gap:8px;">
+              <button id="panelSaveBtn" class="btn">Save</button>
+              <button id="panelCloseBtn" class="btn secondary">Close</button>
+            </div>
+            <div id="panelMsg" style="margin-top:10px;"></div>
+          </div>
+        `;
+        $('panelCloseBtn').addEventListener('click', closeAllOverlays);
+        $('panelSaveBtn').addEventListener('click', async ()=>{
+          const payload = { phone: $('panel_phone').value.trim() };
+          const bankName = $('panel_bankName')?.value.trim();
+          const accountNumber = $('panel_account')?.value.trim();
+          const accountHolderName = $('panel_accountHolder')?.value.trim();
+          if (bankName || accountNumber || accountHolderName){
+            payload.bankName = bankName;
+            payload.accountNumber = accountNumber;
+            payload.accountHolderName = accountHolderName;
+          }
+          try {
+            const res = await fetch(API_BASE + '/api/users/me/bank', { method:'PUT', headers: authHeaders(), body: JSON.stringify(payload) });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.message || 'Save failed');
+            // reflect locally
+            user.phone = payload.phone || user.phone;
+            user.bankDetails = user.bankDetails || {};
+            if (payload.bankName) user.bankDetails.bankName = payload.bankName;
+            if (payload.accountNumber) user.bankDetails.accountNumber = payload.accountNumber;
+            if (payload.accountHolderName) user.bankDetails.accountHolderName = payload.accountHolderName;
+            localStorage.setItem('su_user', JSON.stringify(user));
+            $('panelMsg').innerText = 'Saved';
+            applyProfileToUI();
+          } catch (err) {
+            $('panelMsg').innerText = err.message || 'Error';
+          }
+        });
+      } catch (e) {
+        panel.innerHTML = `<div class="muted">Failed to load profile</div>`;
+      }
+    }
 
-// render tracking info & map
-function renderTracking(order) {
-  activeOrder = order;
-  const status = order.status || order.order?.status || 'Unknown';
-  trackStatusEl.innerText = status;
-  // timeline
-  const steps = [
-    { key:'PendingPayment', label:'Pending Payment' },
-    { key:'PaymentConfirmed', label:'Payment Confirmed' },
-    { key:'EnRouteToPickup', label:'Agent en route to pickup' },
-    { key:'EnRouteToDelivery', label:'Agent en route to delivery' },
-    { key:'Completed', label:'Delivered' },
-    { key:'Delivered', label:'Delivered' }
-  ];
-  timelineEl.innerHTML = steps.map(s => {
-    const active = (status === s.key || (s.key==='Completed' && status==='Delivered'));
-    return `<div class="${active ? 'font-semibold text-green-600' : 'muted'}">${s.label}</div>`;
-  }).join('');
-
-  // update map if agent location provided
-  // we expect backend to include agentLocation: { lat, lng } when order assigned/agent moving
-  const loc = order.agentLocation || order.order?.agentLocation || null;
-  if (loc && loc.lat && loc.lng) {
-    showAgentOnMap({ lat: Number(loc.lat), lng: Number(loc.lng) }, order.agent || null, order.agentContact || null);
-  } else {
-    // if no agent location, but customer/pickup/dropoff exist, show route markers
-    const pickup = order.pickupAddress || order.order?.pickupAddress || null;
-    const drop = order.deliveryAddress || order.order?.deliveryAddress || null;
-    showRouteOnMap(pickup, drop);
-  }
-
-  // if agent contact available, show call button
-  const agentPhone = order.agentPhone || order.agentContact || order.agent?.phone;
-  if (agentPhone) {
-    callAgentBtn.classList.remove('hidden');
-    callAgentBtn.onclick = ()=> { window.open(`tel:${agentPhone}`); };
-  } else {
-    callAgentBtn.classList.add('hidden');
-  }
-}
-
-// ---------- Map helpers (Google Maps) ----------
-function ensureMap(center={lat:6.5244,lng:3.3792}, zoom=12) {
-  if (!map) {
-    map = new google.maps.Map(trackingMapEl, { center, zoom });
-  } else {
-    map.setCenter(center);
-    map.setZoom(zoom);
-  }
-}
-
-function showAgentOnMap(latlng, agentId=null, agentContact=null) {
-  ensureMap(latlng, 14);
-  if (!agentMarker) {
-    agentMarker = new google.maps.Marker({ map, position: latlng, title: 'Agent' });
-  } else {
-    agentMarker.setPosition(latlng);
-  }
-  // optionally: place pickup/delivery markers if available
-}
-
-function showRouteOnMap(pickupAddress, dropAddress) {
-  // if addresses are strings, try to geocode (best-effort). If not possible, just show default.
-  ensureMap();
-  // A more complete implementation would call PlacesService/Geocoder to place markers.
-}
-
-// ---------- Panel (hamburger) ----------
-function openPanel(){
-  panelOverlay.classList.remove('hidden');
-  panelOverlay.style.display = 'block';
-  // keep main content accessible behind semi-transparent overlay if wanted
-}
-
-function closePanelFunc(){
-  panelOverlay.classList.add('hidden');
-  panelOverlay.style.display = 'none';
-  panelContent.innerHTML = '';
-}
-
-// when panel nav clicked
-async function openPanelSection(section) {
-  panelContent.innerHTML = '<div class="muted">Loading...</div>';
-  if (section === 'profile') {
-    panelContent.innerHTML = `
-      <div>
-        <h4 class="font-semibold">Profile</h4>
-        <div class="mt-3 space-y-2">
-          <div><b>Name:</b> ${currentUser.name || ''}</div>
-          <div><b>Email:</b> ${currentUser.email || ''}</div>
-          <div><b>Phone:</b> ${currentUser.phone || ''}</div>
-          <div class="mt-3"><button id="editProfileBtn" class="btn">Edit Profile</button></div>
-        </div>
-      </div>`;
-    document.getElementById('editProfileBtn').addEventListener('click', ()=> { profileModal.classList.remove('hidden'); });
-  } else if (section === 'history') {
-    // full-screen history overlay
-    try {
-      const userId = currentUser.id || currentUser._id;
-      const res = await apiFetch(`/api/orders?customerId=${userId}`);
-      const list = Array.isArray(res) ? res : (res.orders || []);
-      if (!list || list.length === 0) {
-        panelContent.innerHTML = '<div class="muted">No order history yet.</div>';
-      } else {
-        panelContent.innerHTML = list.slice().reverse().map(o => {
-          const id = o._id || o.id || '—';
-          const status = o.status || 'Unknown';
-          const price = o.finalPrice || 0;
-          return `<div class="border rounded p-3 mb-2">
-            <div class="flex justify-between"><div class="font-medium">${id}</div><div class="muted">${status}</div></div>
-            <div class="text-sm muted mt-1">${o.pickupAddress || ''} → ${o.deliveryAddress || ''}</div>
-            <div class="mt-2"><button data-order="${id}" class="btn-outline open-order-panel">Open</button></div>
+    async function loadHistoryPanel(){
+      panel.innerHTML = `<h2>Order History</h2><div id="historyPanel" style="margin-top:12px;">Loading...</div>`;
+      try {
+        // try /api/orders?customerId=
+        const custId = user && (user._id||user.id);
+        let url = API_BASE + '/api/orders?customerId=' + encodeURIComponent(custId || '');
+        let res = await fetch(url, { headers: authHeaders() });
+        if (!res.ok){
+          // fallback to /api/orders/history
+          res = await fetch(API_BASE + '/api/orders/history', { headers: authHeaders() });
+        }
+        const json = await res.json();
+        const arr = Array.isArray(json) ? json : (json.orders || []);
+        if (!arr.length) {
+          $('historyPanel').innerHTML = '<div class="muted">No orders yet</div>';
+          return;
+        }
+        $('historyPanel').innerHTML = arr.slice(0,30).map(o => {
+          const id = o._id || o.id || o.orderId || '—';
+          const status = (o.status || o.order?.status || '—');
+          const created = new Date(o.createdAt || o.created || Date.now()).toLocaleString();
+          return `<div style="padding:10px;border-radius:8px;border:1px solid #f3f4f6;margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;">
+              <div><strong>Order</strong> ${escapeHtml(id)}</div>
+              <div class="muted small">${escapeHtml(status)}</div>
+            </div>
+            <div class="muted small">Placed: ${escapeHtml(created)}</div>
+            <div style="margin-top:8px;"><button class="btn secondary" onclick="openOrderDetail('${id}')">Open</button></div>
           </div>`;
         }).join('');
-        // wire buttons
-        document.querySelectorAll('.open-order-panel').forEach(b => b.addEventListener('click', async (ev)=>{
-          const id = ev.currentTarget.getAttribute('data-order');
-          closePanelFunc();
-          openTracking(id);
-        }));
+      } catch (e) {
+        $('historyPanel').innerHTML = `<div class="muted">Failed to fetch history: ${escapeHtml(e.message)}</div>`;
       }
-    } catch (err) {
-      panelContent.innerHTML = `<div class="muted">Failed to load history: ${err.message}</div>`;
     }
-  } else if (section === 'referrals') {
-    // show referral & sharing controls + progress if backend has endpoint
-    try {
-      const res = await apiFetch('/api/referrals/my').catch(()=> null);
-      const myRef = (res && res.code) ? res.code : (currentUser.referralCode || ('REF'+String(currentUser._id||'').slice(-6)));
-      panelContent.innerHTML = `<div>
-        <h4 class="font-semibold">Refer & Earn</h4>
-        <div class="mt-3">Your code: <div class="font-mono font-bold mt-1">${myRef}</div></div>
-        <div class="mt-3 flex gap-2">
-          <button id="panelCopyRef" class="btn-outline">Copy</button>
-          <button id="panelShareRef" class="btn">Share</button>
-        </div>
-      </div>`;
-      document.getElementById('panelCopyRef').addEventListener('click', async ()=> {
-        await navigator.clipboard.writeText(`${location.origin}/signup?ref=${myRef}`);
-        showToast('success','Referral link copied');
-      });
-      document.getElementById('panelShareRef').addEventListener('click', async ()=> {
+
+    window.openOrderDetail = async function(orderId){
+      // fetch and display in overlay panel
+      try {
+        panel.innerHTML = `<h2>Order ${escapeHtml(orderId)}</h2><div>Loading...</div>`;
+        const res = await fetch(API_BASE + '/api/orders/' + encodeURIComponent(orderId), { headers: authHeaders() });
+        const json = await res.json();
+        panel.innerHTML = `<h2>Order ${escapeHtml(orderId)}</h2><pre style="white-space:pre-wrap;">${escapeHtml(JSON.stringify(json, null, 2))}</pre>`;
+      } catch (err) {
+        panel.innerHTML = `<div class="muted">Failed to fetch order</div>`;
+      }
+    };
+
+    async function loadReferralsPanel(){
+      panel.innerHTML = `<h2>Referrals</h2><div id="refPanel">Loading...</div>`;
+      try {
+        const res = await fetch(API_BASE + '/api/referrals', { headers: authHeaders() });
+        const json = await res.json();
+        // if endpoint returns details show them else show fallback referral link
+        if (res.ok && json){
+          panel.innerHTML = `<h3>Your Code</h3><div class="pill">${escapeHtml(json.code || user.referralCode || 'REF-UNKNOWN')}</div>
+            <div style="margin-top:12px;">
+              <button class="btn" onclick="copyText('${escapeJs(json.link || (location.origin + '/signup?ref=' + (json.code || (user.referralCode || 'REF-UNKNOWN'))))}')">Copy Link</button>
+            </div>`;
+        } else {
+          const link = location.origin + '/signup?ref=' + encodeURIComponent(user.referralCode || ('REF' + String(user._id||'').slice(-6)));
+          panel.innerHTML = `<div class="muted">No referral details available from server.</div>
+            <div style="margin-top:12px;"><div class="pill">${escapeHtml(link)}</div>
+            <div style="margin-top:8px;"><button class="btn" onclick="copyText('${escapeJs(link)}')">Copy Link</button></div></div>`;
+        }
+      } catch (e){
+        panel.innerHTML = `<div class="muted">Failed to load referrals: ${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    async function loadAnnouncementsPanel(){
+      panel.innerHTML = `<h2>Announcements</h2><div id="announcePanel">Loading...</div>`;
+      try {
+        const res = await fetch(API_BASE + '/api/announcements/latest');
+        if (!res.ok){ panel.innerHTML = `<div class="muted">No announcements</div>`; return; }
+        const a = await res.json();
+        if (!a){ panel.innerHTML = `<div class="muted">No active announcements</div>`; return; }
+        panel.innerHTML = `<h3>${escapeHtml(a.title || 'Announcement')}</h3><div class="muted small">${escapeHtml(a.message || '')}</div>`;
+      } catch (e){
+        panel.innerHTML = `<div class="muted">Failed to load announcements: ${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    async function loadFeedbackPanel(){
+      panel.innerHTML = `<h2>Feedback</h2>
+        <label>Your message</label><textarea id="fbMsg"></textarea>
+        <div style="margin-top:8px; display:flex; gap:8px;"><button id="fbSendBtn" class="btn">Send</button><button id="fbCloseBtn" class="btn secondary">Close</button></div>
+        <div id="fbResult" style="margin-top:8px;"></div>`;
+      $('fbCloseBtn').addEventListener('click', closeAllOverlays);
+      $('fbSendBtn').addEventListener('click', async () => {
+        const msg = $('fbMsg').value.trim();
+        if (!msg) { $('fbResult').innerText = 'Please enter a message'; return; }
         try {
-          if (navigator.share) await navigator.share({ title:'Join SkyUltimate', url:`${location.origin}/signup?ref=${myRef}` });
-          else { await navigator.clipboard.writeText(`${location.origin}/signup?ref=${myRef}`); showToast('success','Referral copied'); }
-        } catch(e){ showToast('error','Share failed'); }
+          const res = await fetch(API_BASE + '/api/feedback', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ message: msg })});
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.message || 'Send failed');
+          $('fbResult').innerText = 'Thanks — feedback sent';
+        } catch (err) { $('fbResult').innerText = err.message || 'Failed'; }
       });
-    } catch (err) {
-      panelContent.innerHTML = `<div class="muted">Referrals not available yet.</div>`;
     }
-  } else if (section === 'announcements') {
-    try {
-      const a = await apiFetch('/api/announcements/latest');
-      if (!a) panelContent.innerHTML = '<div class="muted">No announcement.</div>';
-      else panelContent.innerHTML = `<div><h4 class="font-semibold">${a.title}</h4><div class="muted mt-2">${a.message}</div></div>`;
-    } catch (err) { panelContent.innerHTML = `<div class="muted">Failed to fetch announcement</div>`; }
-  } else if (section === 'rate') {
-    panelContent.innerHTML = `<div>
-      <h4 class="font-semibold">Rate an Agent</h4>
-      <div class="mt-3"><button id="openRatePanelBtn" class="btn">Open Rate Modal</button></div>
-    </div>`;
-    document.getElementById('openRatePanelBtn').addEventListener('click', ()=> { rateModal.classList.remove('hidden'); });
-  } else if (section === 'report') {
-    panelContent.innerHTML = `<div><h4 class="font-semibold">Report an Issue</h4>
-      <div class="mt-3"><button id="openReportPanelBtn" class="btn">Open Report Form</button></div></div>`;
-    document.getElementById('openReportPanelBtn').addEventListener('click', ()=> { reportModal.classList.remove('hidden'); });
-  } else if (section === 'support') {
-    panelContent.innerHTML = `<div><h4 class="font-semibold">Support</h4>
-      <div class="muted mt-2">Call: <a class="underline" href="tel:+2349128884830">+234 912 888 4830</a></div>
-      <div class="muted mt-1">Email: <a class="underline" href="mailto:nelsongodspower24@gmail.com">nelsongodspower24@gmail.com</a></div>
-      <div class="muted mt-3">Or use the report form to send a ticket to admins.</div>
-    </div>`;
-  } else if (section === 'settings') {
-    panelContent.innerHTML = `<div><h4 class="font-semibold">Settings</h4><div class="mt-3">Theme: <button id="panelThemeToggle" class="btn-outline">Toggle</button></div></div>`;
-    document.getElementById('panelThemeToggle').addEventListener('click', toggleTheme);
-  } else {
-    panelContent.innerHTML = `<div class="muted">Not implemented</div>`;
-  }
-  }
-  // ---------- Profile save ----------
-async function onSaveProfile(){
-  const payload = { phone: profilePhone.value };
-  if (profileBankName.value || profileAccountNumber.value || profileAccountHolder.value) {
-    payload.bankName = profileBankName.value;
-    payload.accountNumber = profileAccountNumber.value;
-    payload.accountHolderName = profileAccountHolder.value;
-  }
-  try {
-    await apiFetch('/api/users/me/bank', { method: 'PUT', body: JSON.stringify(payload) });
-    // update local copy
-    const user = { ...(currentUser || {}) };
-    user.phone = profilePhone.value || user.phone;
-    user.bankDetails = user.bankDetails || {};
-    if (profileBankName.value) user.bankDetails.bankName = profileBankName.value;
-    if (profileAccountNumber.value) user.bankDetails.accountNumber = profileAccountNumber.value;
-    if (profileAccountHolder.value) user.bankDetails.accountHolderName = profileAccountHolder.value;
-    localStorage.setItem('su_user', JSON.stringify(user));
-    currentUser = user;
-    profileMsg.innerText = 'Saved';
-    setTimeout(()=>{ profileModal.classList.add('hidden'); profileMsg.innerText = ''; }, 900);
-    showToast('success','Profile updated');
-  } catch (err) {
-    profileMsg.innerText = err.message || 'Update failed';
-    showToast('error', err.message || 'Update failed');
-  }
-}
 
-// ---------- Rate submit ----------
-function renderStars(){
-  starRow.innerHTML = '';
-  for (let i=1;i<=5;i++){
-    const s = document.createElement('span');
-    s.textContent = (i <= selectedRating) ? '★' : '☆';
-    s.style.cursor='pointer';
-    s.style.color = i <= selectedRating ? '#f59e0b' : '#9ca3af';
-    s.dataset.value = i;
-    s.addEventListener('click', ()=> {
-      selectedRating = Number(s.dataset.value);
-      renderStars();
+    // panel copy helper
+    window.copyText = async function(txt){
+      try {
+        await navigator.clipboard.writeText(txt);
+        showToast('Copied to clipboard');
+      } catch (e) {
+        alert(txt);
+      }
+    };
+
+    // --- Price & order flow ---
+    $('calcBtn').addEventListener('click', async ()=>{
+      const payload = buildOrderPayload();
+      if (!payload) return;
+      try {
+        const res = await fetch(API_BASE + '/api/orders/calc-price', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ items: payload.items, pickup: payload.pickupAddress, dropoff: payload.deliveryAddress, serviceType: payload.serviceType })});
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Price calc failed');
+        // show price modal (prefer finalPrice or finalprice)
+        const price = json.finalPrice || json.finalprice || json.price || 0;
+        const bank = json.superAdminBankDetails || json.superAdminBank || (json.bankDetails || {});
+        openPriceModal(price, bank, payload);
+      } catch (err){
+        showToast(err.message || 'Calculation failed');
+      }
     });
-    starRow.appendChild(s);
-  }
-}
 
-async function onSubmitRating(){
-  if (!activeOrder || !activeOrder._id) {
-    rateMsg.innerText = 'No order selected for rating';
-    showToast('error','No active order');
-    return;
-  }
-  const payload = { rating: selectedRating, comment: rateComment.value || '' };
-  try {
-    await apiFetch(`/api/orders/${activeOrder._id}/rate`, { method: 'POST', body: JSON.stringify(payload) });
-    rateMsg.innerText = 'Thanks for rating!';
-    showToast('success','Rating submitted');
-    rateModal.classList.add('hidden');
-    await loadHistory();
-  } catch (err) {
-    rateMsg.innerText = err.message || 'Submit failed';
-    showToast('error', err.message || 'Submit failed');
-  }
-}
+    $('submitBtn').addEventListener('click', async ()=>{
+      const payload = buildOrderPayload();
+      if (!payload) return;
+      try {
+        const res = await fetch(API_BASE + '/api/orders', { method:'POST', headers: authHeaders(), body: JSON.stringify(payload) });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Order creation failed');
+        // backend returns order and superAdminBankDetails
+        const order = json.order || json;
+        activeOrder = order;
+        localStorage.setItem('su_active_order', JSON.stringify(order));
+        showToast('Order created. Await admin payment confirmation.');
+        // display tracking view
+        showTrackingForOrder(order);
+        await loadHistory(); // refresh brief history
+      } catch (err){
+        showToast(err.message || 'Order failed');
+      }
+    });
 
-// ---------- Report submit ----------
-async function onSubmitReport(){
-  if (!activeOrder || !activeOrder._id) {
-    reportMsg.innerText = 'No order associated';
-    showToast('error','No order selected');
-    return;
-  }
-  const payload = {
-    orderId: activeOrder._id,
-    type: reportType.value,
-    details: reportDetails.value
-  };
-  try {
-    await apiFetch('/api/reports', { method: 'POST', body: JSON.stringify(payload) });
-    reportMsg.innerText = 'Report sent. Admin will review.';
-    showToast('success','Report submitted');
-    reportModal.classList.add('hidden');
-  } catch (err) {
-    reportMsg.innerText = err.message || 'Failed to submit';
-    showToast('error', err.message || 'Report failed');
-  }
-}
+    function buildOrderPayload(){
+      const pickup = $('pickup').value.trim();
+      const delivery = $('delivery').value.trim();
+      if (!pickup || !delivery){ showToast('Please enter pickup and delivery addresses'); return null; }
+      const itemType = $('itemType').value;
+      const qty = Number($('quantity').value || 1);
+      const desc = $('description').value.trim();
+      const paymentMethod = $('paymentMethod').value;
+      const serviceType = $('serviceType').value;
+      const items = [{ itemType, quantity: qty, description: desc }];
+      const payload = { items, pickupAddress: pickup, deliveryAddress: delivery, paymentMethod, serviceType };
+      return payload;
+    }
 
-// ---------- Panel action: logout ----------
-function doLogout() {
-  localStorage.removeItem('su_token');
-  localStorage.removeItem('su_user');
-  window.location.href = 'index.html';
-}
+    // Price modal controls
+    function openPriceModal(price, bank, payload){
+      $('priceBody').innerHTML = `<div><strong>Amount:</strong> ₦${Number(price || 0).toLocaleString()}</div>
+        <div style="margin-top:8px;"><strong>Pay to:</strong></div>
+        <div style="margin-top:6px;">
+          <div>Bank: ${escapeHtml(bank.bankName || bank.bank || 'SkyUltimate Bank')}</div>
+          <div>Account: ${escapeHtml(bank.accountNumber || bank.account || '0000000000')}</div>
+          <div>Account Holder: ${escapeHtml(bank.accountHolderName || bank.accountHolder || 'SkyUltimate')}</div>
+        </div>
+        <div style="margin-top:8px;" class="muted small">After payment, SuperAdmin will confirm and the order will be dispatched.</div>`;
+      $('priceBackdrop').classList.add('show');
+      // wire confirm pay (simulated)
+      const cbtn = $('confirmPayBtn');
+      cbtn.onclick = async () => {
+        try {
+          // create order with payload and mark "paid" simulation: just call create order then call confirm payment if possible
+          const res = await fetch(API_BASE + '/api/orders', { method: 'POST', headers: authHeaders(), body: JSON.stringify(payload) });
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.message || 'Order creation failed');
+          const order = json.order || json;
+          activeOrder = order;
+          localStorage.setItem('su_active_order', JSON.stringify(order));
+          showToast('Order created. Simulating payment...');
 
-// ---------- Toggle theme ----------
-function toggleTheme(){
-  const isDark = document.body.classList.contains('dark');
-  if (isDark) {
-    document.body.classList.remove('dark');
-    document.body.classList.add('light');
-    themeToggle.innerText = 'Dark';
-  } else {
-    document.body.classList.remove('light');
-    document.body.classList.add('dark');
-    themeToggle.innerText = 'Light';
-  }
-}
+          // try to call confirm endpoint if current user is admin (will likely 403) — skip in general
+          // After order created we just close modal and load tracking; actual payment confirmation is done by admin
+          $('priceBackdrop').classList.remove('show');
+          showTrackingForOrder(order);
+          await loadHistory();
+        } catch (err) {
+          showToast(err.message || 'Payment/Order failed');
+        }
+      };
+      $('closePriceBtn').onclick = ()=> $('priceBackdrop').classList.remove('show');
+    }
 
-// ---------- init map when tracking visible ----------
-function initMapOnce(){
-  if (typeof google === 'undefined') {
-    console.warn('Google maps not loaded');
-    return;
-  }
-  if (!map) {
-    map = new google.maps.Map(trackingMapEl, { center: { lat: 6.5244, lng: 3.3792 }, zoom: 12 });
-  }
-}
+    // --- Tracking logic (polling + socket) ---
+    function showTrackingForOrder(order){
+      const id = order._id || order.id || order.orderId;
+      activeOrder = order;
+      $('trackingCard').style.display = 'block';
+      $('placementCard').style.display = 'none';
+      $('activeOrderId').textContent = id || '—';
+      pollOrder(id);
+      // connect socket if not connected
+      ensureSocketConnected();
+    }
 
-// ---------- initial startup ----------
-initUI();
-initMapOnce();
-loadHistory(); // ensure history shown
+    let pollInterval = null;
+    async function pollOrder(orderId){
+      if (!orderId) return;
+      try {
+        const res = await fetch(API_BASE + '/api/orders/' + encodeURIComponent(orderId), { headers: authHeaders() });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Failed to fetch order');
+        const status = json.status || json.order?.status || '—';
+        $('trackingStatus').textContent = 'Status: ' + status;
+        renderTimeline(status, json);
+        // show rate/report if completed or delivered
+        document.getElementById('openRateBtn').style.display = (status === 'Completed' || status === 'Delivered') ? 'inline-block' : 'none';
+        document.getElementById('openReportBtn').style.display = 'inline-block';
+        // map marker for agent location if present
+        const agentLoc = json.agentLocation || json.order?.agentLocation || json.agentLocation;
+        if (agentLoc && map){
+          const pos = { lat: Number(agentLoc.lat), lng: Number(agentLoc.lng) };
+          if (!chosenAgentLocationMarker){
+            chosenAgentLocationMarker = new google.maps.Marker({ position: pos, map });
+          } else {
+            chosenAgentLocationMarker.setPosition(pos);
+          }
+          map.panTo(pos);
+        }
+      } catch (err){
+        console.info('Polling order failed', err.message);
+      } finally {
+        if (pollInterval) clearTimeout(pollInterval);
+        pollInterval = setTimeout(()=> pollOrder(orderId), 5000);
+      }
+    }
 
-// if there is an active order in localStorage, open tracking
-try {
-  const maybe = JSON.parse(localStorage.getItem('su_active_order') || 'null');
-  if (maybe && (maybe._id || maybe.id)) {
-    openTracking(maybe._id || maybe.id);
-  }
-} catch(e){ /* ignore */ }
+    function renderTimeline(status, order){
+      const steps = [
+        { key:'PendingPayment', label:'Pending Payment' },
+        { key:'PaymentConfirmed', label:'Payment Confirmed' },
+        { key:'EnRouteToPickup', label:'Agent En Route to Pickup' },
+        { key:'EnRouteToDelivery', label:'Agent En Route to Delivery' },
+        { key:'Completed', label:'Delivered' },
+        { key:'Delivered', label:'Delivered' }
+      ];
+      const out = steps.map(s => {
+        const active = (status === s.key || (s.key==='Completed' && status==='Delivered') || (status === 'Delivered' && s.key === 'Completed'));
+        return `<div style="padding:8px 0;"><span style="${active? 'font-weight:700;color:var(--brand);' : 'color:var(--muted);'}">${s.label}</span></div>`;
+      }).join('');
+      $('timeline').innerHTML = out;
+    }
 
-</script>
+    // socket
+    function ensureSocketConnected(){
+      if (socket && socket.connected) return;
+      try {
+        socket = io(API_BASE, { auth: { token: localStorage.getItem('su_token') } });
+        socket.on('connect', ()=> console.log('socket connected'));
+        socket.on('orderUpdate', data => {
+          // if update is for our active order, reflect
+          const id = activeOrder && (activeOrder._id || activeOrder.id);
+          if (data && id && (data.orderId === id || data._id === id || data.orderId === id.toString())){
+            // refresh
+            pollOrder(id);
+            showToast('Order update: ' + (data.status || 'updated'));
+          }
+        });
+        socket.on('disconnect', ()=> console.log('socket disconnected'));
+      } catch (e){
+        console.warn('Socket connection failed', e.message);
+      }
+    }
+
+    // --- Order history brief on main page ---
+    async function loadHistory(){
+      try {
+        const custId = user && (user._id||user.id);
+        let url = API_BASE + '/api/orders?customerId=' + encodeURIComponent(custId || '');
+        let res = await fetch(url, { headers: authHeaders() });
+        if (!res.ok) res = await fetch(API_BASE + '/api/orders/history', { headers: authHeaders() });
+        const json = await res.json();
+        const arr = Array.isArray(json) ? json : (json.orders || []);
+        const recent = arr.slice(0,3);
+        $('recentOrders').innerHTML = recent.length ? recent.map(o => {
+          const id = o._id || o.id || '—';
+          const status = o.status || o.order?.status || '—';
+          return `<div style="padding:8px;border-radius:8px;border:1px solid #f3f4f6;margin-bottom:8px;">
+            <div style="display:flex; justify-content:space-between;"><div><strong>${escapeHtml(id)}</strong></div><div class="muted small">${escapeHtml(status)}</div></div>
+            <div style="margin-top:6px;">
+              <button class="btn secondary" onclick="openOrderFromMain('${escapeJs(id)}')">Open</button>
+            </div>
+          </div>`;
+        }).join('') : '<div class="muted">No recent orders</div>';
+      } catch (e){
+        $('recentOrders').innerHTML = `<div class="muted">Failed to load</div>`;
+      }
+    }
+    window.openOrderFromMain = id => { sideMenu.classList.remove('open'); openPanelFor('history'); setTimeout(()=> openOrderDetail(id), 400); };
+
+    // --- rate / report flows ---
+    function openRateModal(){
+      $('rateBackdrop').classList.add('show');
+      // build star row
+      const starRow = $('starRow'); starRow.innerHTML = '';
+      for (let i=1;i<=5;i++){
+        const s = document.createElement('button');
+        s.className = 'btn secondary';
+        s.textContent = '☆';
+        s.dataset.value = i;
+        s.style.width = '44px';
+        s.onclick = ()=> {
+          // highlight
+          Array.from(starRow.children).forEach(c => c.textContent = '☆');
+          for (let j=0;j<i;j++) starRow.children[j].textContent = '★';
+          starRow.dataset.rating = i;
+        };
+        starRow.appendChild(s);
+      }
+    }
+    $('closeRateBtn').addEventListener('click', ()=> $('rateBackdrop').classList.remove('show'));
+    $('submitRateBtn').addEventListener('click', async ()=>{
+      const rating = Number($('starRow').dataset.rating || 5);
+      const comment = $('rateComment').value.trim();
+      // need an order id (active order)
+      const orderId = (activeOrder && (activeOrder._id || activeOrder.id));
+      if (!orderId) { showToast('No active order to rate'); return; }
+      try {
+        const res = await fetch(API_BASE + '/api/orders/' + encodeURIComponent(orderId) + '/rate', { method:'POST', headers: authHeaders(), body: JSON.stringify({ rating, comment })});
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Rate failed');
+        showToast('Thanks for rating!');
+        $('rateBackdrop').classList.remove('show');
+      } catch (err) { showToast(err.message || 'Rate failed'); }
+    });
+
+    // Report
+    function openReportModal(){
+      $('reportBackdrop').classList.add('show');
+      $('reportOrderId').value = activeOrder && (activeOrder._id||activeOrder.id) || '';
+      $('reportDesc').value = '';
+    }
+    $('closeReportBtn').addEventListener('click', ()=> $('reportBackdrop').classList.remove('show'));
+    $('submitReportBtn').addEventListener('click', async ()=>{
+      const orderId = $('reportOrderId').value.trim();
+      const desc = $('reportDesc').value.trim();
+      if (!desc) { showToast('Describe the issue'); return; }
+      try {
+        const res = await fetch(API_BASE + '/api/reports', { method:'POST', headers: authHeaders(), body: JSON.stringify({ orderId, description: desc }) });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Report failed');
+        showToast('Report submitted — admins will review');
+        $('reportBackdrop').classList.remove('show');
+      } catch (err) { showToast(err.message || 'Report failed'); }
+    });
+
+    // --- Referrals (buttons on main) ---
+    $('copyRef').addEventListener('click', async ()=>{
+      const link = location.origin + '/signup?ref=' + encodeURIComponent(user.referralCode || ('REF'+String(user._id||'').slice(-6)));
+      try { await navigator.clipboard.writeText(link); showToast('Referral link copied'); } catch (e) { alert(link); }
+    });
+    $('shareRef').addEventListener('click', async ()=>{
+      const link = location.origin + '/signup?ref=' + encodeURIComponent(user.referralCode || ('REF'+String(user._id||'').slice(-6)));
+      try { if (navigator.share) await navigator.share({title:'Join SkyUltimate', text:'Use my referral', url:link}); else { await navigator.clipboard.writeText(link); showToast('Link copied'); } } catch (e) { showToast('Share failed'); }
+    });
+
+    // announcement load
+    async function loadAnnouncement(){
+      try {
+        const res = await fetch(API_BASE + '/api/announcements/latest');
+        if (!res.ok) return;
+        const a = await res.json();
+        if (!a || !a.isActive) return;
+        $('announceTitle').textContent = a.title || 'Announcement';
+        $('announceMsg').textContent = a.message || '';
+        $('announceBanner').style.display = 'block';
+      } catch (e) { console.info('Announcements fail', e.message); }
+    }
+
+    // --- Google Maps Autocomplete + init ---
+    function initMap(){
+      try {
+        map = new google.maps.Map(document.getElementById('map'), { center: { lat:6.5244, lng:3.3792 }, zoom: 12, disableDefaultUI: false });
+        pickupAC = new google.maps.places.Autocomplete($('pickup'));
+        deliveryAC = new google.maps.places.Autocomplete($('delivery'));
+        // bias to Lagos if possible
+        const circle = new google.maps.Circle({ center:{lat:6.5244,lng:3.3792}, radius:50000 });
+        pickupAC.setBounds(circle.getBounds());
+        deliveryAC.setBounds(circle.getBounds());
+      } catch (e) { console.warn('Maps init failed', e.message); }
+    }
+    // wait for google script to attach
+    function waitForGoogle(){
+      if (window.google && google.maps && google.maps.places) return initMap();
+      setTimeout(waitForGoogle, 250);
+    }
+    waitForGoogle();
+
+    // --- Utility / misc ---
+    function escapeHtml(s){ if (!s) return ''; return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]); }
+    function escapeJs(s){ return escapeHtml(s).replace(/'/g,"\\'").replace(/"/g,'\\"'); }
+
+    // --- Theme toggle ---
+    function toggleTheme(){
+      const current = document.body.getAttribute('data-theme') || 'light';
+      const next = current === 'light' ? 'dark' : 'light';
+      document.body.setAttribute('data-theme', next);
+      localStorage.setItem('su_theme', next);
+    }
+    // load persisted theme
+    const savedTheme = localStorage.getItem('su_theme') || 'light';
+    document.body.setAttribute('data-theme', savedTheme);
+
+    // logout
+    function doLogout(){
+      localStorage.removeItem('su_token');
+      localStorage.removeItem('su_user');
+      localStorage.removeItem('su_active_order');
+      location.href = 'index.html';
+    }
+
+    // hook menu actions
+    document.getElementById('viewHistoryBtn').addEventListener('click', ()=> openPanelFor('history'));
+    document.getElementById('openRateBtn').addEventListener('click', openRateModal);
+    document.getElementById('openReportBtn').addEventListener('click', openReportModal);
+
+    // --- On load ---
+    (async function init(){
+      // ensure token present
+      const t = localStorage.getItem('su_token');
+      if (!t) { location.href = 'index.html'; return; }
+      await ensureProfile();
+      await loadHistory();
+      await loadAnnouncement();
+
+      // connect socket
+      ensureSocketConnected();
+
+      // if an active order exists in storage, resume tracking
+      const saved = localStorage.getItem('su_active_order');
+      if (saved){
+        try {
+          const o = JSON.parse(saved);
+          if (o && (o._id || o.id)) {
+            activeOrder = o;
+            showTrackingForOrder(o);
+          }
+        } catch(e){}
+      }
+
+    })();
+
+    // close overlay via outside click handled earlier
+
+    // small UI bindings
+    // Panel close by Escape handled
+    // Expose some functions for in-panel usage
+    window.toggleTheme = toggleTheme;
+    window.doLogout = doLogout;
+
+  })();
+  </script>
 </body>
 </html>
-  
