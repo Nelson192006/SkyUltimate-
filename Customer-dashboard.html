@@ -5,803 +5,876 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SkyUltimate — Customer Dashboard</title>
 
+  <!-- Tailwind CDN for layout + quick styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Maps / Places (uses your key) -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDu1dptqgTwWWD6568jhf_tal7uYfdyMlQ&libraries=places" async defer></script>
+
   <style>
     :root{
-      --brand:#C00000;
-      --brand-2:#900000;
-      --card:#ffffff;
-      --bg:#f6f7f9;
-      --muted:#6b7280;
-      --shadow: 0 12px 30px rgba(0,0,0,0.12);
-      --radius:14px;
-      --glass: rgba(255,255,255,0.7);
-      --text:#111827;
+      --brand-red: #C00000;
+      --brand-red-dark: #900000;
+      --bg: #f8fafc;
+      --glass: rgba(255,255,255,0.9);
     }
-    [data-theme="dark"]{
-      --card:#0f1113;
-      --bg:#0b0c0d;
-      --muted:#9aa3ad;
-      --text:#e6eef6;
-      --glass: rgba(255,255,255,0.03);
+    html,body{height:100%; margin:0; font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+    body{background:linear-gradient(180deg,#feecec 0%, #fff 100%); color:#0f172a; overflow-y:auto;}
+    .header { backdrop-filter: blur(6px); background: rgba(255,255,255,0.6); box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
+    .logo { width:56px; height:56px; border-radius:9999px; object-fit:cover; }
+    .card { background: var(--glass); border-radius:14px; box-shadow: 0 8px 28px rgba(0,0,0,0.08); padding:18px; }
+    .btn-primary { background:var(--brand-red); color:#fff; padding:10px 14px; border-radius:12px; font-weight:700; }
+    .overlay { position:fixed; inset:0; z-index:60; display:none; align-items:center; justify-content:center; }
+    .overlay.show { display:flex; }
+    .overlay-backdrop { position:absolute; inset:0; background:rgba(0,0,0,0.55); }
+    .modal { position:relative; z-index:70; width:100%; max-width:920px; margin:16px; }
+    .no-scroll { overflow:hidden; height:100%; }
+    .hamburger { width:36px; height:36px; display:grid; place-items:center; border-radius:8px; }
+    .toggle { cursor:pointer; }
+    /* Dark theme */
+    .dark body { background: #0b1220; color: #e6eef8; }
+    .dark .card { background: rgba(10,12,18,0.6); }
+    .dark .btn-primary { background: #ff6b6b; }
+    .map { width:100%; height:260px; border-radius:12px; overflow:hidden; }
+    .input { width:100%; padding:10px 12px; border-radius:10px; border:1px solid #e6e9ef; background:#fff; }
+    .dark .input { background: #071026; border-color: #122034; color: #e6eef8; }
+    .small { font-size:13px; color:#6b7280; }
+    .dark .small { color:#cbd5e1; }
+    .chip { display:inline-block; padding:6px 10px; border-radius:999px; background:#fff; color:#0f172a; border:1px solid #eee; }
+    .dark .chip { background:rgba(255,255,255,0.04); color:#e6eef8; border-color: rgba(255,255,255,0.04); }
+    .toast { position:fixed; right:20px; bottom:20px; z-index:90; background:#111827; color:white; padding:10px 14px; border-radius:10px; display:none; }
+    .toast.show { display:block; }
+    @media (max-width:640px){
+      .logo { width:48px; height:48px; }
+      .map { height:200px; }
     }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
-    header{height:64px; display:flex; align-items:center; justify-content:space-between; padding:0 18px; background: linear-gradient(90deg,var(--brand),var(--brand-2)); color:#fff; position:sticky; top:0; z-index:60; box-shadow: 0 4px 12px rgba(0,0,0,0.08);}
-    .header-left{display:flex; gap:12px; align-items:center;}
-    .logo-only{width:46px; height:46px; border-radius:9999px; object-fit:cover; box-shadow: 0 6px 18px rgba(0,0,0,0.18);}
-    .hamburger{background:transparent;border:none;color:#fff;font-size:22px;cursor:pointer;padding:8px;border-radius:8px}
-    .container{max-width:980px;margin:20px auto;padding:16px;display:grid;grid-template-columns:1fr;gap:16px}
-    .card{background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px}
-    h1{margin:0;font-size:20px}
-    .sub{color:var(--muted);margin-top:6px}
-    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
-    input,select,textarea{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;background:transparent;font-size:14px;color:var(--text)}
-    textarea{min-height:80px;resize:vertical}
-    .btn{background:var(--brand);color:#fff;padding:12px;border-radius:12px;border:none;font-weight:700;cursor:pointer;width:100%}
-    .btn.secondary{background:transparent;color:var(--brand);border:1px solid var(--brand);font-weight:600}
-    .row{display:flex;gap:10px}
-    .muted{color:var(--muted);font-size:13px}
-    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#f3f4f6;color:var(--muted);font-weight:600;font-size:13px}
-    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:140}
-    .modal{width:92%;max-width:720px;background:var(--card);border-radius:12px;padding:18px;box-shadow:0 18px 50px rgba(2,6,23,0.4)}
-    .modal.show,.modal-backdrop.show{display:flex}
-    #map{height:360px;width:100%;border-radius:10px;overflow:hidden}
-    .side-menu{position:fixed;left:-360px;top:0;height:100%;width:360px;background:var(--card);box-shadow:8px 0 30px rgba(0,0,0,0.18);z-index:160;padding:18px;transition:left .28s ease}
-    .side-menu.open{left:0}
-    .menu-header{display:flex;gap:12px;align-items:center;margin-bottom:12px}
-    .menu-item{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;cursor:pointer}
-    .menu-item:hover{background:rgba(0,0,0,0.03)}
-    .overlay-screen{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;z-index:170;align-items:center;justify-content:center}
-    .overlay-screen.open{display:flex}
-    .panel{width:94%;max-width:1000px;max-height:92vh;overflow:auto;background:var(--card);border-radius:14px;padding:20px}
-    @media (max-width:780px){.grid-2{grid-template-columns:1fr}.side-menu{width:86%;max-width:360px}}
-    .toast{position:fixed;right:20px;bottom:20px;background:var(--brand);color:#fff;padding:12px 16px;border-radius:10px;z-index:180;display:none}
-    .toast.show{display:block}
-    .full-page-payment{position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.6)}
-    .full-page-payment.show{display:flex}
-    .payment-panel{width:96%; max-width:760px; background:var(--card); border-radius:14px; padding:18px; box-shadow:var(--shadow); max-height:92vh; overflow:auto}
-    /* ensure readable in dark theme for important elements */
-    [data-theme="dark"] .menu-item:hover{background:rgba(255,255,255,0.02)}
   </style>
 </head>
-<body data-theme="light">
+<body>
 
-  <header>
-    <div class="header-left">
-      <button id="hamburgerBtn" class="hamburger" aria-label="Open menu">☰</button>
-      <!-- your real logo -->
-      <img class="logo-only" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="SkyUltimate Logo" />
-    </div>
+  <!-- Top header -->
+  <header class="header sticky top-0 z-40">
+    <div class="max-w-4xl mx-auto flex items-center justify-between px-4 py-3">
+      <div class="flex items-center gap-3">
+        <button id="hamburger" class="hamburger hover:bg-gray-100 p-2 rounded-md" title="Menu" aria-label="Menu">
+          <!-- 3-line hamburger -->
+          <svg width="22" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="#111827" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
 
-    <div style="display:flex;align-items:center;gap:12px">
-      <div id="user-first" class="pill small">Welcome</div>
+        <!-- logo only (no text beside) -->
+        <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true"
+             alt="SkyUltimate" class="logo" id="topLogo" />
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div id="welcomeFirst" class="font-semibold text-lg">Welcome!</div>
+        <button id="settingsBtn" class="p-2 rounded-md hover:bg-gray-100" title="Settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM19.4 12.7l1.1-2.1-2.3-4-2.4.6a8.4 8.4 0 00-1.6-.9l-.4-2.4h-4.4l-.4 2.4c-.5.2-1 .5-1.5.9l-2.4-.6-2.3 4 1.1 2.1c-.1.6-.1 1.3 0 1.9l-1.1 2.1 2.3 4 2.4-.6c.5.4 1 .7 1.5.9l.4 2.4h4.4l.4-2.4c.6-.2 1.1-.5 1.6-.9l2.4.6 2.3-4-1.1-2.1c.1-.6.1-1.3 0-1.9z" stroke="#111827" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
     </div>
   </header>
 
-  <div class="container" id="mainContainer">
+  <main class="max-w-4xl mx-auto px-4 py-6 space-y-6">
 
-    <!-- Welcome card -->
+    <!-- Announcement Banner (hidden unless active) -->
+    <div id="announceBanner" class="card hidden">
+      <div id="announceTitle" class="font-semibold text-red-700"></div>
+      <div id="announceMsg" class="small mt-1"></div>
+    </div>
+
+    <!-- Welcome + Place Order Hub -->
     <section class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between">
+      <div class="flex items-center justify-between gap-4">
         <div>
-          <h1 id="welcomeHeading">Hello, —</h1>
-          <div class="sub">Welcome back to SkyUltimate. Place an order or track your active delivery.</div>
+          <h1 id="greetingLarge" class="text-2xl font-bold">Hello!</h1>
+          <p class="small mt-1">Place a new delivery order — quick and secure.</p>
         </div>
-        <div style="text-align:right">
-          <div id="roleBadge" class="pill small">Customer</div>
-          <div style="margin-top:8px"><button id="logoutBtn" class="btn secondary">Logout</button></div>
+        <div class="text-right">
+          <div class="small">Account</div>
+          <div id="roleBadge" class="chip mt-1">Customer</div>
         </div>
       </div>
-    </section>
 
-    <!-- Order placement -->
-    <section id="placementCard" class="card" aria-labelledby="placeOrderTitle">
-      <h2 id="placeOrderTitle">Place an Order</h2>
-      <p class="muted">Fill the recipient pickup and delivery addresses (autocomplete). You’ll review payment and then mark that you paid.</p>
+      <hr class="my-4">
 
-      <form id="orderForm" style="margin-top:12px;">
-        <div class="grid-2">
-          <div>
-            <label for="pickup">Recipient Pickup Address</label>
-            <input id="pickup" placeholder="Recipient pickup address (use suggestions)" required autocomplete="off" />
-          </div>
-          <div>
-            <label for="delivery">Delivery Address</label>
-            <input id="delivery" placeholder="Delivery address (use suggestions)" required autocomplete="off" />
-          </div>
-        </div>
-
-        <div class="grid-2" style="margin-top:10px;">
-          <div>
-            <label for="itemType">Item Type</label>
-            <select id="itemType" required>
-              <option>Food</option>
-              <option>Documents</option>
-              <option>Groceries</option>
-              <option>Electronics</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div>
-            <label for="quantity">Quantity</label>
-            <input id="quantity" type="number" min="1" value="1" />
-          </div>
-        </div>
-
-        <div style="margin-top:10px;">
-          <label for="description">Description / Notes</label>
-          <textarea id="description" placeholder="e.g. fragile, handle with care (optional)"></textarea>
-        </div>
-
-        <div class="grid-2" style="margin-top:10px;">
-          <div>
-            <label for="serviceType">Service</label>
-            <select id="serviceType">
-              <option value="standard">Standard</option>
-              <option value="express">Express</option>
-              <option value="same-day">Same-day</option>
-            </select>
-          </div>
-          <div>
-            <label for="paymentMethod">Payment Method</label>
-            <select id="paymentMethod">
-              <option value="BankTransfer">Bank Transfer</option>
-              <option value="Wallet">Wallet</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row" style="margin-top:14px;">
-          <button id="calcBtn" type="button" class="btn" style="flex:1;margin-right:8px;">Calculate Final Price</button>
-          <button id="payBtn" type="button" class="btn secondary" style="width:260px;">Proceed with Payment</button>
-        </div>
-
-        <div style="margin-top:10px;" class="muted small">After payment, SuperAdmin will verify and dispatch an agent. Click "Proceed with Payment" to select bank and mark payment.</div>
-      </form>
-    </section>
-
-    <!-- Tracking hub (hidden by default) -->
-    <section id="trackingCard" class="card" style="display:none;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
+      <!-- Order form -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <h2 id="trackingTitle">Order Tracking</h2>
-          <div id="trackingSubtitle" class="muted small">Track your current order in real-time</div>
+          <label class="small">Recipient / Pickup full address</label>
+          <input id="pickupInput" class="input mt-1" placeholder="Full address, e.g., 123 Allen Ave, Ikeja" />
         </div>
-        <div><div id="trackingStatus" class="pill small">Status: —</div></div>
+        <div>
+          <label class="small">Delivery (drop-off) full address</label>
+          <input id="dropInput" class="input mt-1" placeholder="Full delivery address" />
+        </div>
+
+        <div>
+          <label class="small">Recipient name</label>
+          <input id="recipientName" class="input mt-1" placeholder="Recipient full name" />
+        </div>
+        <div>
+          <label class="small">Recipient phone</label>
+          <input id="recipientPhone" class="input mt-1" placeholder="+234 9xxxxxxxxx" />
+        </div>
+
+        <div>
+          <label class="small">Item category</label>
+          <select id="itemCategory" class="input mt-1">
+            <option value="documents">Documents</option>
+            <option value="food">Food</option>
+            <option value="groceries">Groceries</option>
+            <option value="parcel">Parcel</option>
+            <option value="others">Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="small">Weight (kg)</label>
+          <input id="weightInput" class="input mt-1" type="number" min="0" placeholder="e.g., 2" />
+        </div>
+
+        <div>
+          <label class="small">Service</label>
+          <select id="serviceSelect" class="input mt-1">
+            <option value="standard">Standard</option>
+            <option value="express">Express</option>
+            <option value="same-day">Same-day</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-2 mt-2 flex gap-3">
+          <button id="calcBtn" class="btn-primary flex-1">Calculate Final Price</button>
+          <button id="submitBtn" class="bg-white border border-gray-200 px-4 py-2 rounded-md flex-1">Proceed with Payment</button>
+        </div>
+
+        <div id="calcNotice" class="md:col-span-2 small text-red-600 mt-1"></div>
       </div>
-
-      <div id="map" style="margin-top:12px"></div>
-      <div id="mapError" style="display:none;margin-top:12px;color:var(--muted)"></div>
-
-      <div style="margin-top:12px;display:flex;gap:8px;">
-        <button id="openRateBtn" class="btn secondary" style="width:160px;display:none">Rate Agent</button>
-        <button id="openReportBtn" class="btn secondary" style="width:160px;display:none">Report Agent</button>
-        <div class="spacer"></div>
-        <div class="muted small">Order ID: <span id="activeOrderId">—</span></div>
-      </div>
-
-      <div id="timeline" style="margin-top:12px"></div>
     </section>
 
+    <!-- Map & Tracking (will switch to tracking view when order active) -->
+    <section id="trackingCard" class="card hidden">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="font-semibold">Order Tracking</h3>
+          <div class="small mt-1">Order ID: <span id="trackId">—</span></div>
+        </div>
+        <div>
+          <div class="chip" id="trackStatus">Pending</div>
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <div id="map" class="map"></div>
+          <div class="small mt-2">Agent: <span id="agentName">—</span> • Phone: <a id="agentPhone" href="#">—</a></div>
+        </div>
+        <div>
+          <h4 class="font-semibold">Journey</h4>
+          <div id="timeline" class="mt-3 small text-gray-700"></div>
+
+          <div class="mt-6 flex gap-2">
+            <button id="btnContactAgent" class="bg-white px-3 py-2 rounded-md border">Contact Agent</button>
+            <button id="btnReportAgent" class="bg-red-600 text-white px-3 py-2 rounded-md">Report Agent</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer / contact -->
+    <footer class="text-center small">
+      Contact: <a id="phoneLink" href="tel:+2349128884830" class="underline">+234 912 888 4830</a> ·
+      <a id="whatsappLink" href="https://wa.me/2349128884830" target="_blank" class="underline">WhatsApp</a> ·
+      <a id="emailLink" href="mailto:nelsongodspower24@gmail.com" class="underline">Email</a>
+    </footer>
+  </main>
+
+  <!-- =========== FULL-SCREEN OVERLAYS (menu items) =========== -->
+  <div id="overlay" class="overlay">
+    <div class="overlay-backdrop" id="overlayBackdrop"></div>
+    <div class="modal card">
+      <!-- content injected dynamically -->
+      <div id="overlayContent"></div>
+    </div>
   </div>
 
-  <!-- Side menu -->
-  <aside id="sideMenu" class="side-menu" role="navigation" aria-label="Main menu">
-    <div class="menu-header">
-      <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="logo" style="width:48px;height:48px;border-radius:9999px" />
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+<script>
+/* Customer Dashboard - Single-file app
+   - Replace API_BASE to your backend if different
+   - Requires login to have localStorage.su_token and localStorage.su_user
+*/
+
+const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
+const GOOGLE_MAPS_KEY = "AIzaSyDu1dptqgTwWWD6568jhf_tal7uYfdyMlQ"; // provided
+
+// ----- Auth guard -----
+const token = localStorage.getItem('su_token');
+const suUser = JSON.parse(localStorage.getItem('su_user') || 'null');
+if (!token || !suUser) {
+  // not logged in
+  window.location.href = 'index.html';
+}
+
+// ----- DOM refs -----
+const welcomeFirst = document.getElementById('welcomeFirst');
+const greetingLarge = document.getElementById('greetingLarge');
+const roleBadge = document.getElementById('roleBadge');
+
+const pickupInput = document.getElementById('pickupInput');
+const dropInput = document.getElementById('dropInput');
+const recipientName = document.getElementById('recipientName');
+const recipientPhone = document.getElementById('recipientPhone');
+const itemCategory = document.getElementById('itemCategory');
+const weightInput = document.getElementById('weightInput');
+const serviceSelect = document.getElementById('serviceSelect');
+
+const calcBtn = document.getElementById('calcBtn');
+const submitBtn = document.getElementById('submitBtn');
+const calcNotice = document.getElementById('calcNotice');
+
+const announceBanner = document.getElementById('announceBanner');
+const announceTitle = document.getElementById('announceTitle');
+const announceMsg = document.getElementById('announceMsg');
+
+const overlay = document.getElementById('overlay');
+const overlayBackdrop = document.getElementById('overlayBackdrop');
+const overlayContent = document.getElementById('overlayContent');
+const toastEl = document.getElementById('toast');
+
+const hamburger = document.getElementById('hamburger');
+const settingsBtn = document.getElementById('settingsBtn');
+
+const trackingCard = document.getElementById('trackingCard');
+const trackId = document.getElementById('trackId');
+const trackStatus = document.getElementById('trackStatus');
+const timelineEl = document.getElementById('timeline');
+const agentNameEl = document.getElementById('agentName');
+const agentPhoneEl = document.getElementById('agentPhone');
+const btnContactAgent = document.getElementById('btnContactAgent');
+const btnReportAgent = document.getElementById('btnReportAgent');
+
+const mapContainer = document.getElementById('map');
+
+let currentOrder = null;
+let pollInterval = null;
+let map = null, mapMarker = null, agentMarker = null;
+let pickupAutocomplete, dropAutocomplete;
+
+// ----- Initialize UI -----
+(function initUI(){
+  // welcome
+  const first = (suUser.name || '').split(' ')[0] || 'there';
+  welcomeFirst.innerText = `Hello, ${first}!`;
+  greetingLarge.innerText = `Welcome back, ${first}!`;
+  roleBadge.innerText = suUser.role || suUser.role || 'Customer';
+
+  // wire buttons
+  hamburger.addEventListener('click', openMenu);
+  settingsBtn.addEventListener('click', openSettingsOverlay);
+  overlayBackdrop.addEventListener('click', closeOverlay);
+
+  calcBtn.addEventListener('click', onCalculatePrice);
+  submitBtn.addEventListener('click', onProceedPayment);
+
+  btnContactAgent.addEventListener('click', () => {
+    if (agentPhoneEl && agentPhoneEl.href) window.location.href = agentPhoneEl.href;
+  });
+  btnReportAgent.addEventListener('click', openReportOverlay);
+
+  // init google places autocompletes when Maps is ready (script loaded)
+  initPlaces();
+  loadAnnouncement();
+  updateFromLocalUser();
+})();
+
+// ----- Helpers -----
+function apiFetch(path, opts = {}) {
+  const headers = opts.headers || {};
+  headers['Content-Type'] = 'application/json';
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return fetch(API_BASE + path, { ...opts, headers }).then(async res => {
+    if (res.status === 401) {
+      toast('Session expired, redirecting to login.');
+      localStorage.removeItem('su_token'); localStorage.removeItem('su_user');
+      setTimeout(()=>window.location.href='index.html',900);
+      throw new Error('Unauthorized');
+    }
+    const data = await res.json().catch(()=>null);
+    if (!res.ok) throw new Error((data && data.message) || `HTTP ${res.status}`);
+    return data;
+  });
+}
+function toast(msg, ms=3500){
+  toastEl.innerText = msg;
+  toastEl.classList.add('show');
+  setTimeout(()=> toastEl.classList.remove('show'), ms);
+}
+function openOverlay(htmlOrNode) {
+  if (typeof htmlOrNode === 'string') overlayContent.innerHTML = htmlOrNode;
+  else { overlayContent.innerHTML = ''; overlayContent.appendChild(htmlOrNode); }
+  overlay.classList.add('show');
+  document.documentElement.classList.add('no-scroll');
+}
+function closeOverlay(){
+  overlay.classList.remove('show');
+  document.documentElement.classList.remove('no-scroll');
+  overlayContent.innerHTML = '';
+}
+
+// ----- Announcement -----
+async function loadAnnouncement(){
+  try {
+    const res = await fetch(API_BASE + '/api/announcements/latest');
+    if (!res.ok) return;
+    const a = await res.json();
+    if (a && a.isActive) {
+      announceTitle.innerText = a.title || 'Announcement';
+      announceMsg.innerText = a.message || '';
+      announceBanner.classList.remove('hidden');
+    }
+  } catch (e) { console.info('announcement load failed', e.message); }
+}
+
+// ----- Places Autocomplete -----
+function initPlaces(){
+  try {
+    if (!google || !google.maps || !google.maps.places) {
+      console.warn('Google Maps not ready yet');
+      setTimeout(initPlaces, 800);
+      return;
+    }
+  } catch(e){ setTimeout(initPlaces, 800); return; }
+
+  const pickupEl = document.getElementById('pickupInput');
+  const dropEl = document.getElementById('dropInput');
+
+  pickupAutocomplete = new google.maps.places.Autocomplete(pickupEl, { types: ['address'] });
+  dropAutocomplete = new google.maps.places.Autocomplete(dropEl, { types: ['address'] });
+
+  // If you want to bias to a region, you can set componentRestrictions here
+  // e.g., { country: 'ng' }
+}
+
+// ----- Price calculation -----
+// Build items array per backend expectations
+function makeItemsPayload(){
+  return [{
+    itemType: itemCategory.value || 'parcel',
+    weight: Number(weightInput.value || 0),
+    quantity: 1
+  }];
+}
+
+let lastCalcResult = null;
+async function onCalculatePrice(){
+  calcNotice.innerText = '';
+  const items = makeItemsPayload();
+  try {
+    const payload = { items, serviceType: serviceSelect.value, pickup: pickupInput.value, dropoff: dropInput.value };
+    const res = await apiFetch('/api/orders/calc-price', { method: 'POST', body: JSON.stringify(payload) });
+    lastCalcResult = res;
+    showPriceModal(res);
+  } catch (err) {
+    calcNotice.innerText = err.message || 'Price calculation failed.';
+  }
+}
+
+// show price modal (overlay)
+function showPriceModal(res){
+  const final = res.finalPrice || res.finalprice || 0;
+  const bank = res.superAdminBankDetails || {};
+  const html = `
+    <div>
+      <h3 class="text-xl font-bold mb-2">Final Price</h3>
+      <div class="text-3xl font-semibold mb-2">₦${Number(final).toLocaleString()}</div>
+      <div class="small mb-3">Pay to one of the accounts below. After payment click <strong>I have paid</strong>.</div>
+      <div class="space-y-2 mb-3">
+        <div class="p-3 rounded-md border">
+          <div class="font-semibold">Moniepoint</div>
+          <div class="small">Acct: 9128884830 • Nelson Emmanuel Godspower</div>
+        </div>
+        <div class="p-3 rounded-md border">
+          <div class="font-semibold">Opay</div>
+          <div class="small">Acct: 9128884830 • Nelson Emmanuel Godspower</div>
+        </div>
+        <div class="p-3 rounded-md border">
+          <div class="font-semibold">Palmpay</div>
+          <div class="small">Acct: 9128884830 • Nelson Emmanuel Godspower</div>
+        </div>
+        <div class="p-3 rounded-md border">
+          <div class="font-semibold">UBA</div>
+          <div class="small">Acct: 234 2 835 397 • Nelson Emmanuel Godspower</div>
+        </div>
+        <div class="p-3 rounded-md border">
+          <div class="font-semibold">GTB</div>
+          <div class="small">Acct: 0734090626 • Nelson Emmanuel Godspower</div>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button id="payNowBtn" class="btn-primary flex-1">I have paid (Create order)</button>
+        <button id="closePriceBtn" class="bg-white border px-4 py-2 rounded-md">Close</button>
+      </div>
+    </div>
+  `;
+  openOverlay(html);
+  document.getElementById('closePriceBtn').addEventListener('click', closeOverlay);
+  document.getElementById('payNowBtn').addEventListener('click', onConfirmPaymentAndCreateOrder);
+}
+
+// ----- Create Order after user says "I have paid" -----
+// This will POST /api/orders and create order with status "PendingPayment"
+async function onConfirmPaymentAndCreateOrder(){
+  if (!pickupInput.value || !dropInput.value) { toast('Please fill pickup and dropoff addresses.'); return; }
+  const payload = {
+    items: makeItemsPayload(),
+    pickupAddress: pickupInput.value,
+    deliveryAddress: dropInput.value,
+    paymentMethod: 'Bank Transfer',
+    recipientName: recipientName.value || '',
+    recipientPhone: recipientPhone.value || ''
+  };
+  try {
+    const res = await apiFetch('/api/orders', { method:'POST', body: JSON.stringify(payload) });
+    closeOverlay();
+    const order = res.order || res;
+    currentOrder = order;
+    localStorage.setItem('su_active_order', JSON.stringify(order));
+    toast('Order created. Awaiting admin confirmation.');
+    openTracking(order._id || order.id || order._doc?._id || order._doc?.id || '');
+    await loadHistory(); // refresh history
+  } catch (err) {
+    toast(err.message || 'Order creation failed.');
+  }
+}
+
+// Proceed with payment button (opens same price modal but triggers calc first if not done)
+async function onProceedPayment(){
+  if (!lastCalcResult) {
+    // try to calc first
+    await onCalculatePrice();
+    return;
+  }
+  showPriceModal(lastCalcResult);
+}
+
+// ----- Tracking & Polling -----
+function openTracking(orderId){
+  if (!orderId) return;
+  trackingCard.classList.remove('hidden');
+  trackId.innerText = orderId;
+  pollOrder(orderId);
+  if (pollInterval) clearInterval(pollInterval);
+  pollInterval = setInterval(()=>pollOrder(orderId), 5000);
+  // show map (init map)
+  ensureMap();
+}
+
+async function pollOrder(orderId){
+  try {
+    const order = await apiFetch(`/api/orders/${orderId}`);
+    currentOrder = order;
+    // update UI
+    const status = order.status || order.order?.status || 'Pending';
+    trackStatus.innerText = status;
+    renderTimeline(status, order);
+    // agent info
+    const agent = (order.agentDetails || order.agentProfile || order.agent) || null;
+    if (agent && typeof agent === 'object') {
+        agentNameEl.innerText = agent.name || 'Agent';
+      agentPhoneEl.innerText = agent.phone || agent.contact || '—';
+      agentPhoneEl.href = `tel:${agent.phone || agent.contact || ''}`;
+    } else if (order.agent) {
+      agentNameEl.innerText = order.agent;
+    }
+    // update map markers if lat/lng exist
+    if (order.agentLocation && order.agentLocation.lat && order.agentLocation.lng) {
+      updateAgentMarker(order.agentLocation.lat, order.agentLocation.lng);
+    }
+    // when payment confirmed -> show that; when agent assigned -> show agent details
+    if (status === 'PaymentConfirmed' && !order.agent) {
+      // show UI hint waiting for agent
+      timelineEl.innerHTML = `<div class="small">Payment confirmed. Waiting for an available agent to claim the job.</div>`;
+    }
+    if (status === 'Completed' || status === 'Delivered') {
+      timelineEl.innerHTML += `<div class="small text-green-600 mt-2">Order completed. Thanks!</div>`;
+      // stop polling after delivered
+      if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+    }
+  } catch(err){
+    console.info('Polling error:', err.message);
+  }
+}
+
+function renderTimeline(status, order){
+  const mapping = [
+    { key:'PendingPayment', label:'Pending Payment' },
+    { key:'PaymentConfirmed', label:'Payment Confirmed' },
+    { key:'EnRouteToPickup', label:'Agent en route to pickup' },
+    { key:'EnRouteToDelivery', label:'Agent en route to delivery' },
+    { key:'Completed', label:'Delivered / Completed' },
+    { key:'Delivered', label:'Delivered' },
+  ];
+  timelineEl.innerHTML = mapping.map(m => {
+    const active = (m.key === status || (m.key === 'Completed' && status === 'Delivered'));
+    return `<div class="py-1"><span class="${active ? 'font-bold text-green-600' : 'text-gray-600'}">${m.label}</span></div>`;
+  }).join('');
+}
+
+// ----- Map helpers -----
+function ensureMap(){
+  if (!map && window.google && window.google.maps) {
+    map = new google.maps.Map(mapContainer, {
+      center: { lat: 6.5244, lng: 3.3792 }, // Lagos default
+      zoom: 12,
+      disableDefaultUI: true,
+    });
+  }
+}
+function updateAgentMarker(lat, lng){
+  if (!map) ensureMap();
+  const pos = { lat: Number(lat), lng: Number(lng) };
+  if (!agentMarker) {
+    agentMarker = new google.maps.Marker({ position: pos, map, title: 'Agent', label: 'A' });
+    map.setCenter(pos);
+  } else {
+    agentMarker.setPosition(pos);
+  }
+}
+
+// ----- Menu / Overlays -----
+// Build menu UI and open overlay with content
+function openMenu(){
+  const html = `
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center gap-3">
+        <img src="${document.getElementById('topLogo').src}" class="w-12 h-12 rounded-full" />
+        <div>
+          <div class="font-semibold">${suUser.name || 'User'}</div>
+          <div class="small">${suUser.email || ''}</div>
+        </div>
+      </div>
       <div>
-        <div id="menuName" style="font-weight:700">User</div>
-        <div id="menuRole" class="muted small">Customer</div>
-      </div>
-      <div style="flex:1"></div>
-      <button id="closeMenu" style="background:none;border:none;cursor:pointer;font-size:18px">✕</button>
-    </div>
-
-    <div style="margin-top:8px">
-      <div class="menu-item" data-action="profile"><span>My Profile</span><span>›</span></div>
-      <div class="menu-item" data-action="history"><span>Order History</span><span>›</span></div>
-      <div class="menu-item" data-action="announcements"><span>Announcements</span><span>›</span></div>
-      <div class="menu-item" data-action="referrals"><span>Referrals</span><span>›</span></div>
-      <hr style="margin:12px 0;border:none;border-top:1px solid #eee" />
-      <div class="menu-item" id="menuSettings"><span>Settings</span><span>›</span></div>
-      <div class="menu-item" id="logoutMenuBtn"><span>Logout</span><span>›</span></div>
-    </div>
-  </aside>
-
-  <!-- Overlay full-screen (for menu items) -->
-  <div id="overlayScreen" class="overlay-screen" aria-hidden="true">
-    <div class="panel" id="panelContent"></div>
-  </div>
-
-  <!-- Full page payment overlay -->
-  <div id="paymentOverlay" class="full-page-payment" role="dialog" aria-modal="true">
-    <div class="payment-panel">
-      <h2>Proceed with Payment</h2>
-      <p class="muted">Select a bank and review account details. After payment, click "I have Paid" so we can await confirmation from SuperAdmin.</p>
-
-      <div style="margin-top:12px; display:flex; gap:12px; flex-wrap:wrap;">
-        <!-- bank options inserted by JS -->
-        <div id="banksList" style="flex:1; min-width:260px"></div>
-      </div>
-
-      <div style="margin-top:14px;">
-        <label>Order Note (optional)</label>
-        <textarea id="paymentNote"></textarea>
-      </div>
-
-      <div style="margin-top:12px; display:flex; gap:8px;">
-        <button id="paidConfirmBtn" class="btn">I have Paid</button>
-        <button id="closePaymentBtn" class="btn secondary">Cancel</button>
+        <button id="closeMenu" class="px-3 py-1 rounded-md border">Close</button>
       </div>
     </div>
-  </div>
 
-  <!-- Rate / Report modals (simple) -->
-  <div id="rateBackdrop" class="modal-backdrop">
-    <div class="modal">
-      <h3>Rate Agent</h3>
-      <div style="margin-top:10px"><div id="starRow" style="display:flex;gap:6px"></div>
-      <textarea id="rateComment" placeholder="Comment (optional)" style="margin-top:10px"></textarea>
-      <div style="margin-top:12px;display:flex;gap:8px"><button id="submitRateBtn" class="btn">Submit</button><button id="closeRateBtn" class="btn secondary">Close</button></div>
-      </div>
+    <div class="grid gap-2">
+      <button id="menuOrders" class="w-full text-left p-3 rounded-md hover:bg-gray-50">Order History</button>
+      <button id="menuReferral" class="w-full text-left p-3 rounded-md hover:bg-gray-50">Refer & Earn</button>
+      <button id="menuProfile" class="w-full text-left p-3 rounded-md hover:bg-gray-50">My Profile</button>
+      <button id="menuAnnouncements" class="w-full text-left p-3 rounded-md hover:bg-gray-50">Announcements</button>
+      <button id="menuRate" class="w-full text-left p-3 rounded-md hover:bg-gray-50">Rate a Delivered Order</button>
+      <button id="menuReport" class="w-full text-left p-3 rounded-md hover:bg-gray-50">Report an Issue</button>
+      <button id="menuSettings" class="w-full text-left p-3 rounded-md hover:bg-gray-50">Settings</button>
+      <button id="menuLogout" class="w-full text-left p-3 rounded-md text-red-600">Logout</button>
     </div>
-  </div>
+  `;
+  openOverlay(html);
+  document.getElementById('closeMenu').addEventListener('click', closeOverlay);
+  document.getElementById('menuOrders').addEventListener('click', openOrderHistoryOverlay);
+  document.getElementById('menuReferral').addEventListener('click', openReferralOverlay);
+  document.getElementById('menuProfile').addEventListener('click', openProfileOverlay);
+  document.getElementById('menuAnnouncements').addEventListener('click', openAnnouncementsOverlay);
+  document.getElementById('menuRate').addEventListener('click', openRateOverlay);
+  document.getElementById('menuReport').addEventListener('click', openReportOverlay);
+  document.getElementById('menuSettings').addEventListener('click', openSettingsOverlay);
+  document.getElementById('menuLogout').addEventListener('click', () => {
+    localStorage.removeItem('su_token'); localStorage.removeItem('su_user'); window.location.href='index.html';
+  });
+}
 
-  <div id="reportBackdrop" class="modal-backdrop">
-    <div class="modal">
-      <h3>Report Agent / Issue</h3>
-      <label>Order ID (optional)</label><input id="reportOrderId" />
-      <label style="margin-top:8px">Description</label><textarea id="reportDesc"></textarea>
-      <div style="margin-top:12px;display:flex;gap:8px"><button id="submitReportBtn" class="btn">Send Report</button><button id="closeReportBtn" class="btn secondary">Close</button></div>
-    </div>
-  </div>
-
-  <!-- toast -->
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-  <!-- Socket.IO -->
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <!-- Google Maps Places -->
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDu1dptqgTwWWD6568jhf_tal7uYfdyMlQ&libraries=places"></script>
-
-  <script>
-  (function(){
-    const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
-    const token = localStorage.getItem('su_token');
-    let user = null;
-    let socket = null;
-    let activeOrder = null;
-    let map = null, pickupAC=null, deliveryAC=null, agentMarker=null;
-    const banks = [
-      { bankName: "Moniepoint", accountNumber: "9128884830", accountHolderName: "Nelson Emmanuel Godspower" },
-      { bankName: "Opay", accountNumber: "9128884830", accountHolderName: "Nelson Emmanuel Godspower" },
-      { bankName: "Palmpay", accountNumber: "9128884830", accountHolderName: "Nelson Emmanuel Godspower" },
-      { bankName: "UBA", accountNumber: "234 2 835 397", accountHolderName: "Nelson Emmanuel Godspower" },
-      { bankName: "GTB", accountNumber: "0734090626", accountHolderName: "Nelson Emmanuel Godspower" }
-    ];
-
-    const $ = id => document.getElementById(id);
-    const showToast = (msg, t=3500) => {
-      if (!msg) return;
-      const el = $('toast'); el.textContent = msg; el.classList.add('show');
-      setTimeout(()=> el.classList.remove('show'), t);
-    };
-    function authHeaders(){ const h={'Content-Type':'application/json'}; const t=localStorage.getItem('su_token'); if(t) h['Authorization']='Bearer '+t; return h; }
-
-    async function ensureProfile(){
-      try {
-        const stored = localStorage.getItem('su_user');
-        if (stored) user = JSON.parse(stored);
-        if (!user || !user.name || !user.role){
-          const res = await fetch(API_BASE + '/api/users/profile', { headers: authHeaders() });
-          if (!res.ok) throw new Error('Failed to fetch profile');
-          user = await res.json(); localStorage.setItem('su_user', JSON.stringify(user));
-        }
-        applyProfile();
-      } catch (e) {
-        console.warn('Profile error', e.message);
-        showToast('Please login again.');
-        setTimeout(()=> location.href='index.html', 900);
-      }
-    }
-    function applyProfile(){
-      const first = (user && (user.name || '')).split(' ')[0] || 'there';
-      $('welcomeHeading').innerText = `Hello, ${first}!`;
-      $('user-first').textContent = `Welcome, ${first}`;
-      $('menuName').textContent = user.name || 'User';
-      $('menuRole').textContent = user.role || 'Customer';
-      $('roleBadge').textContent = user.role || 'Customer';
-      const ref = user.referralCode || (user._id ? 'REF' + String(user._id).slice(-6) : 'REF-UNKNOWN');
-      // note: referrals only in menu
-    }
-
-    // side menu
-    const sideMenu = $('sideMenu');
-    $('hamburgerBtn').addEventListener('click', ()=> sideMenu.classList.add('open'));
-    $('closeMenu').addEventListener('click', ()=> sideMenu.classList.remove('open'));
-    window.addEventListener('keydown', e => { if (e.key === 'Escape'){ sideMenu.classList.remove('open'); closeAllOverlays(); closeFullPayment(); } });
-
-    document.querySelectorAll('.menu-item').forEach(it=>{
-      it.addEventListener('click', ()=> {
-        const action = it.getAttribute('data-action');
-        sideMenu.classList.remove('open');
-        openPanelFor(action);
-      });
-    });
-    $('menuSettings').addEventListener('click', ()=> {
-      sideMenu.classList.remove('open');
-      openPanelFor('settings');
-    });
-    $('logoutMenuBtn').addEventListener('click', doLogout);
-    $('logoutBtn').addEventListener('click', doLogout);
-
-    // overlay panel
-    const overlay = $('overlayScreen'), panel = $('panelContent');
-    function openPanelFor(action){
-      disableBodyScroll();
-      overlay.classList.add('open');
-      panel.innerHTML = `<h3>Loading...</h3>`;
-      switch(action){
-        case 'profile': return loadProfilePanel();
-        case 'history': return loadHistoryPanel();
-        case 'announcements': return loadAnnouncementsPanel();
-        case 'referrals': return loadReferralsPanel();
-        case 'settings': return loadSettingsPanel();
-        default: panel.innerHTML = `<div class="muted">Unknown section</div>`;
-      }
-    }
-    function closeAllOverlays(){ enableBodyScroll(); overlay.classList.remove('open'); panel.innerHTML=''; }
-    overlay.addEventListener('click', (e)=> { if (e.target === overlay) closeAllOverlays(); });
-
-    // panels
-    async function loadProfilePanel(){
-      panel.innerHTML = `<h2>My Profile</h2><p class="muted">Update phone and bank details</p>
-        <div style="margin-top:12px">
-          <label>Full name</label><input id="panel_name" value="${escapeHtml(user.name||'')}" readonly />
-          <label style="margin-top:8px">Email</label><input id="panel_email" value="${escapeHtml(user.email||'')}" readonly />
-          <label style="margin-top:8px">Phone</label><input id="panel_phone" value="${escapeHtml(user.phone||'')}" />
-          <div id="bankFields" style="margin-top:8px; display:${(user.role && (user.role.toLowerCase()==='agent'||user.role.toLowerCase()==='admin')) ? 'block' : 'none'}">
-            <label>Bank Name</label><input id="panel_bankName" value="${escapeHtml((user.bankDetails && user.bankDetails.bankName)||'')}" />
-            <label style="margin-top:8px">Account Number</label><input id="panel_account" value="${escapeHtml((user.bankDetails && user.bankDetails.accountNumber)||'')}" />
-            <label style="margin-top:8px">Account Holder</label><input id="panel_accountHolder" value="${escapeHtml((user.bankDetails && user.bankDetails.accountHolderName)||'')}" />
-          </div>
-          <div style="margin-top:12px;display:flex;gap:8px">
-            <button id="panelSaveBtn" class="btn">Save</button><button id="panelCloseBtn" class="btn secondary">Close</button>
-          </div>
-          <div id="panelMsg" style="margin-top:10px"></div>
+async function openOrderHistoryOverlay(){
+  openOverlay('<div>Loading order history...</div>');
+  try {
+    const res = await apiFetch(`/api/orders?customerId=${suUser.id || suUser._id || suUser.id}`);
+    const list = Array.isArray(res) ? res : (res.orders || res.data || []);
+    const html = document.createElement('div');
+    html.innerHTML = `<h3 class="text-xl font-semibold mb-2">Order History</h3>`;
+    if (!list || list.length === 0) {
+      html.innerHTML += `<div class="small">No orders yet.</div>`;
+    } else {
+      const items = list.map(o => {
+        const id = o._id || o.id;
+        const status = o.status || 'Unknown';
+        const created = new Date(o.createdAt || o.createdAt || Date.now()).toLocaleString();
+        return `<div class="p-3 border rounded mb-2">
+          <div class="font-medium">Order ${id}</div>
+          <div class="small text-gray-600">Status: ${status} • ${created}</div>
+          <div class="small mt-2">Pickup: ${o.pickupAddress || ''}</div>
+          <div class="small">Dropoff: ${o.deliveryAddress || ''}</div>
+          <div class="mt-2"><button data-id="${id}" class="viewOrderBtn btn-primary">View</button></div>
         </div>`;
-      $('panelCloseBtn').addEventListener('click', closeAllOverlays);
-      $('panelSaveBtn').addEventListener('click', async ()=>{
-        const payload = { phone: $('panel_phone').value.trim() };
-        const bankName = $('panel_bankName')?.value.trim();
-        const accountNumber = $('panel_account')?.value.trim();
-        const accountHolderName = $('panel_accountHolder')?.value.trim();
-        if (bankName||accountNumber||accountHolderName){ payload.bankName = bankName; payload.accountNumber = accountNumber; payload.accountHolderName = accountHolderName; }
-        try {
-          const res = await fetch(API_BASE + '/api/users/me/bank', { method:'PUT', headers: authHeaders(), body: JSON.stringify(payload) });
-          const json = await res.json();
-                 if (!res.ok) throw new Error(json.message||'Save failed');
-          user.phone = payload.phone || user.phone;
-          user.bankDetails = user.bankDetails || {};
-          if (payload.bankName) user.bankDetails.bankName = payload.bankName;
-          if (payload.accountNumber) user.bankDetails.accountNumber = payload.accountNumber;
-          if (payload.accountHolderName) user.bankDetails.accountHolderName = payload.accountHolderName;
-          localStorage.setItem('su_user', JSON.stringify(user));
-          $('panelMsg').innerText = 'Saved';
-          applyProfile();
-        } catch (err){ $('panelMsg').innerText = err.message || 'Error'; }
-      });
-    }
-
-    async function loadHistoryPanel(){
-      panel.innerHTML = `<h2>Order History</h2><div id="historyPanel" style="margin-top:12px">Loading...</div>`;
-      try {
-        const custId = user && (user._id||user.id);
-        let res = await fetch(API_BASE + '/api/orders?customerId=' + encodeURIComponent(custId||''), { headers: authHeaders() });
-        if (!res.ok) res = await fetch(API_BASE + '/api/orders/history', { headers: authHeaders() });
-        const json = await res.json();
-        const arr = Array.isArray(json) ? json : (json.orders || []);
-        if (!arr.length) { $('historyPanel').innerHTML = '<div class="muted">No orders yet</div>'; return; }
-        $('historyPanel').innerHTML = arr.map(o => {
-          const id = o._id || o.id || '—'; const status = o.status || o.order?.status || '—';
-          const created = new Date(o.createdAt || o.created || Date.now()).toLocaleString();
-          return `<div style="padding:10px;border-radius:8px;border:1px solid #f3f4f6;margin-bottom:8px">
-            <div style="display:flex;justify-content:space-between"><div><strong>${escapeHtml(id)}</strong></div><div class="muted small">${escapeHtml(status)}</div></div>
-            <div class="muted small">Placed: ${escapeHtml(created)}</div>
-            <div style="margin-top:8px"><button class="btn secondary" onclick="openOrderDetail('${escapeJs(id)}')">Open</button></div></div>`;
-        }).join('');
-      } catch (e) { $('historyPanel').innerHTML = `<div class="muted">Failed to load: ${escapeHtml(e.message)}</div>`; }
-    }
-
-    async function loadAnnouncementsPanel(){
-      panel.innerHTML = `<h2>Announcements</h2><div id="announcePanel">Loading...</div>`;
-      try {
-        const res = await fetch(API_BASE + '/api/announcements/latest');
-        if (!res.ok) { panel.innerHTML = '<div class="muted">No announcements</div>'; return; }
-        const a = await res.json();
-        if (!a) { panel.innerHTML = '<div class="muted">No active announcements</div>'; return; }
-        panel.innerHTML = `<h3>${escapeHtml(a.title||'Announcement')}</h3><div class="muted small">${escapeHtml(a.message||'')}</div>`;
-      } catch (e) { panel.innerHTML = `<div class="muted">Failed: ${escapeHtml(e.message)}</div>`; }
-    }
-
-    async function loadReferralsPanel(){
-      panel.innerHTML = `<h2>Referrals</h2><div id="refPanel">Loading...</div>`;
-      try {
-        const res = await fetch(API_BASE + '/api/referrals', { headers: authHeaders() });
-        if (!res.ok) {
-          const link = location.origin + '/signup?ref=' + encodeURIComponent(user.referralCode || ('REF'+String(user._id||'').slice(-6)));
-          panel.innerHTML = `<div class="muted">No referral details from server.</div><div style="margin-top:12px"><div class="pill">${escapeHtml(link)}</div><div style="margin-top:8px"><button class="btn" onclick="copyText('${escapeJs(link)}')">Copy Link</button></div></div>`;
-          return;
-        }
-        const json = await res.json();
-        const code = json.code || user.referralCode || ('REF'+String(user._id||'').slice(-6));
-        const link = json.link || (location.origin + '/signup?ref=' + encodeURIComponent(code));
-        panel.innerHTML = `<div><div class="muted small">Your code</div><div style="margin-top:8px" class="pill">${escapeHtml(code)}</div><div style="margin-top:12px"><button class="btn" onclick="copyText('${escapeJs(link)}')">Copy Link</button></div></div>`;
-      } catch (e) { panel.innerHTML = `<div class="muted">Failed: ${escapeHtml(e.message)}</div>`; }
-    }
-
-    function loadSettingsPanel(){
-      panel.innerHTML = `<h2>Settings</h2>
-        <div style="margin-top:12px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div>Dark / Light Theme</div><button id="panelThemeBtn" class="btn secondary">Toggle</button></div>
-          <div style="display:flex;align-items:center;justify-content:space-between"><div>Profile</div><button id="panelProfileOpen" class="btn secondary">Open</button></div>
-          <div style="margin-top:12px"><button id="panelLogout" class="btn">Logout</button></div>
-        </div>`;
-      $('panelThemeBtn').addEventListener('click', ()=> { toggleTheme(); });
-      $('panelProfileOpen').addEventListener('click', ()=> { loadProfilePanel(); });
-      $('panelLogout').addEventListener('click', doLogout);
-    }
-
-    // copy helper
-    window.copyText = async function(txt){
-      try { await navigator.clipboard.writeText(txt); showToast('Copied to clipboard'); } catch(e){ alert(txt); }
-    };
-
-    // Price calculation (tries multiple paths if 404)
-    async function tryCalcPrice(payload){
-      const attempts = [
-        '/api/orders/calc-price',
-        '/api/orders/calcprice',
-        '/api/orders/calc_price',
-        '/api/orders/calcPrice'
-      ];
-      for (const p of attempts){
-        try {
-          const res = await fetch(API_BASE + p, { method:'POST', headers: authHeaders(), body: JSON.stringify(payload) });
-          const json = await res.json().catch(()=>null);
-          if (res.ok) return json;
-          // if 404, try next
-          if (res.status === 404) continue;
-          // other failure: throw
-          throw new Error(json && json.message ? json.message : 'Price calc failed');
-        } catch (err) {
-          // try next
-          if (attempts.indexOf(p) === attempts.length -1) throw err;
-        }
-      }
-      throw new Error('Price calculation endpoint not found');
-    }
-
-    // calc button
-    $('calcBtn').addEventListener('click', async ()=>{
-      const payload = buildOrderPayload();
-      if (!payload) return;
-      try {
-        const resJson = await tryCalcPrice({ items: payload.items, pickup: payload.pickupAddress, dropoff: payload.deliveryAddress, serviceType: payload.serviceType });
-        const price = resJson.finalPrice || resJson.finalprice || resJson.price || 0;
-        const bank = resJson.superAdminBankDetails || resJson.superAdminBank || resJson.bankDetails || {};
-        showPriceModal(price, bank);
-      } catch (err){ showToast(err.message || 'Could not calculate price'); }
-    });
-
-    function buildOrderPayload(){
-      const pickup = $('pickup').value.trim();
-      const delivery = $('delivery').value.trim();
-      if (!pickup || !delivery){ showToast('Please enter pickup and delivery addresses'); return null; }
-      const itemType = $('itemType').value || 'Other';
-      const qty = Number($('quantity').value || 1);
-      const desc = $('description').value.trim();
-      const paymentMethod = $('paymentMethod').value;
-      const serviceType = $('serviceType').value;
-      const items = [{ itemType, quantity: qty, description: desc }];
-      return { items, pickupAddress: pickup, deliveryAddress: delivery, paymentMethod, serviceType };
-    }
-
-    // price modal uses payment overlay flow: here we will not show small modal but use payment overlay
-    function showPriceModal(price, bank){
-      // prefill payment overlay with bank list (we'll include the bank details provided, but allow override by server details)
-      openFullPaymentOverlay(price, bank);
-    }
-
-    // full page payment overlay
-    function openFullPaymentOverlay(price, bankFromServer){
-      disableBodyScroll();
-      const overlay = $('paymentOverlay'); overlay.classList.add('show');
-      const banksDiv = $('banksList'); banksDiv.innerHTML = '';
-      // prefer server-supplied bank if present (prepend)
-      const allBanks = (bankFromServer && Array.isArray(bankFromServer) && bankFromServer.length) ? bankFromServer.concat(banks) : banks;
-      allBanks.forEach((b, idx) => {
-        const div = document.createElement('div');
-        div.style.border = '1px solid #eee';
-        div.style.padding = '10px';
-        div.style.borderRadius = '10px';
-        div.style.marginBottom = '8px';
-        div.innerHTML = `<div style="font-weight:700">${escapeHtml(b.bankName||b.bank||'Bank')}</div>
-          <div class="muted small">${escapeHtml(b.accountNumber||b.account||'')}</div>
-          <div class="muted small">${escapeHtml(b.accountHolderName||b.accountHolder||'')}</div>
-          <div style="margin-top:8px"><button class="btn secondary" data-idx="${idx}">Select</button></div>`;
-        banksDiv.appendChild(div);
-      });
-      // wire select buttons
-      banksDiv.querySelectorAll('button').forEach(btn => {
-        btn.addEventListener('click', (ev)=>{
-          const idx = Number(btn.dataset.idx);
-          selectBankForPayment(allBanks[idx]);
-        });
-      });
-
-      $('paidConfirmBtn').onclick = async ()=>{
-        // when clicked: create order (if not created), then mark local awaiting confirmation
-        const payload = buildOrderPayload();
-        if (!payload) { showToast('Please complete order'); return; }
-        try {
-          const res = await fetch(API_BASE + '/api/orders', { method:'POST', headers: authHeaders(), body: JSON.stringify(payload) });
-          const json = await res.json();
-          if (!res.ok) throw new Error(json.message || 'Order creation failed');
-          const order = json.order || json;
-          activeOrder = order;
-          localStorage.setItem('su_active_order', JSON.stringify(order));
-          // optionally try to call confirm-payment endpoint (admin-only) but handle gracefully
-          try {
-            await fetch(API_BASE + '/api/orders/' + encodeURIComponent(order._id || order.id) + '/confirm-payment', { method:'PUT', headers: authHeaders() });
-            // if success, fine; if 403 or 404 we ignore and keep the order pending
-          } catch(e){}
-          showToast('Marked as paid — awaiting SuperAdmin confirmation');
-          closeFullPayment();
-          showTrackingForOrder(order);
-        } catch (err){ showToast(err.message || 'Payment/Order failed'); }
-      };
-
-      $('closePaymentBtn').onclick = closeFullPayment;
-    }
-    function closeFullPayment(){ enableBodyScroll(); $('paymentOverlay').classList.remove('show'); }
-
-    let selectedBank = null;
-    function selectBankForPayment(b){
-      selectedBank = b;
-      // copy bank details to clipboard for convenience
-      try { navigator.clipboard.writeText(`${b.bankName} - ${b.accountNumber} (${b.accountHolderName})`); showToast('Account copied to clipboard'); }
-      catch(e){ showToast('Selected bank details (copy failed)'); }
-    }
-
-    // payBtn opens payment overlay (requires building order payload but allows user to select bank first)
-    $('payBtn').addEventListener('click', async ()=>{
-      const payload = buildOrderPayload();
-      if (!payload) return;
-      // attempt to fetch server bank list first
-      let bankFromServer = null;
-      try {
-        const r = await fetch(API_BASE + '/api/settings', { headers: authHeaders() });
-        if (r.ok) { const j = await r.json(); bankFromServer = j.bankDetails ? [j.bankDetails] : null; }
-      } catch(e){}
-      openFullPaymentOverlay(0, bankFromServer);
-    });
-
-    // tracking / create order etc.
-    function showTrackingForOrder(order){
-      const id = order._id || order.id || order.orderId;
-      activeOrder = order;
-      $('trackingCard').style.display = 'block';
-      $('placementCard').style.display = 'none';
-      $('activeOrderId').textContent = id || '—';
-      pollOrder(id);
-      ensureSocketConnected();
-    }
-
-    // polling
-    let pollTimer = null;
-    async function pollOrder(orderId){
-      if (!orderId) return;
-      try {
-        const res = await fetch(API_BASE + '/api/orders/' + encodeURIComponent(orderId), { headers: authHeaders() });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.message || 'Failed to fetch order');
-        const status = json.status || json.order?.status || '—';
-        $('trackingStatus').textContent = 'Status: ' + status;
-        renderTimeline(status, json);
-        document.getElementById('openRateBtn').style.display = (status==='Completed' || status==='Delivered') ? 'inline-block' : 'none';
-        document.getElementById('openReportBtn').style.display = 'inline-block';
-        const agentLoc = json.agentLocation || json.order?.agentLocation || json.agentLocation;
-        if (agentLoc && window.google && map){
-          const pos = { lat: Number(agentLoc.lat), lng: Number(agentLoc.lng) };
-          if (!agentMarker) agentMarker = new google.maps.Marker({ position: pos, map });
-          else agentMarker.setPosition(pos);
-          map.panTo(pos);
-        }
-      } catch (err) {
-        console.info('Poll order err', err.message);
-      } finally {
-        clearTimeout(pollTimer);
-        pollTimer = setTimeout(()=> pollOrder(orderId), 5000);
-      }
-    }
-    function renderTimeline(status, order){
-      const steps = [
-        { key:'PendingPayment', label:'Pending Payment' },
-        { key:'PaymentConfirmed', label:'Payment Confirmed' },
-        { key:'EnRouteToPickup', label:'Agent En Route to Pickup' },
-        { key:'EnRouteToDelivery', label:'Agent En Route to Delivery' },
-        { key:'Completed', label:'Delivered' },
-        { key:'Delivered', label:'Delivered' },
-      ];
-      $('timeline').innerHTML = steps.map(s=>{
-        const active = (status === s.key || (status==='Delivered' && s.key==='Completed'));
-        return `<div style="padding:8px 0;"><span style="${active ? 'font-weight:700;color:var(--brand);' : 'color:var(--muted);'}">${s.label}</span></div>`;
       }).join('');
+      html.innerHTML += items;
     }
-
-    // socket.io
-    function ensureSocketConnected(){
-      if (socket && socket.connected) return;
-      try {
-        socket = io(API_BASE, { auth: { token: localStorage.getItem('su_token') } });
-        socket.on('connect', ()=> console.log('socket connected'));
-        socket.on('orderUpdate', data => {
-          const id = activeOrder && (activeOrder._id || activeOrder.id);
-          if (data && id && (data.orderId === id || data._id === id || String(data.orderId) === String(id))) {
-            pollOrder(id);
-            showToast('Order update: ' + (data.status || 'updated'));
-          }
-        });
-      } catch(e) { console.warn('socket failed', e.message); }
-    }
-
-    // order history brief -> only in menu (we removed from main)
-    async function loadHistoryBrief(){
-      try {
-        const custId = user && (user._id || user.id);
-        let res = await fetch(API_BASE + '/api/orders?customerId=' + encodeURIComponent(custId||''), { headers: authHeaders() });
-        if (!res.ok) res = await fetch(API_BASE + '/api/orders/history', { headers: authHeaders() });
-        const json = await res.json();
-        // doesn't render on main now (menu only)
-      } catch(e){}
-    }
-
-    // rate / report UI
-    function openRateModal(){
-      $('rateBackdrop').classList.add('show'); disableBodyScroll();
-      const starRow = $('starRow'); starRow.innerHTML = '';
-      for (let i=1;i<=5;i++){
-        const btn = document.createElement('button'); btn.className='btn secondary'; btn.textContent='☆'; btn.dataset.value=i; btn.style.width='44px';
-        btn.onclick = ()=>{ Array.from(starRow.children).forEach(c=>c.textContent='☆'); for (let j=0;j<i;j++) starRow.children[j].textContent='★'; starRow.dataset.rating = i; };
-        starRow.appendChild(btn);
-      }
-    }
-    $('closeRateBtn').addEventListener('click', ()=> { $('rateBackdrop').classList.remove('show'); enableBodyScroll();});
-    $('submitRateBtn').addEventListener('click', async ()=>{
-      const rating = Number($('starRow').dataset.rating || 5); const comment = $('rateComment').value.trim();
-      const orderId = activeOrder && (activeOrder._id || activeOrder.id);
-      if (!orderId) { showToast('No active order'); return; }
-      try {
-        const res = await fetch(API_BASE + '/api/orders/' + encodeURIComponent(orderId) + '/rate', { method:'POST', headers: authHeaders(), body: JSON.stringify({ rating, comment })});
-        const json = await res.json(); if (!res.ok) throw new Error(json.message||'Rate failed');
-        showToast('Thanks for rating!');
-        $('rateBackdrop').classList.remove('show'); enableBodyScroll();
-      } catch(e){ showToast(e.message || 'Rate failed'); }
+    overlayContent.innerHTML = '';
+    overlayContent.appendChild(html);
+    // wire view buttons
+    overlayContent.querySelectorAll('.viewOrderBtn').forEach(b => {
+      b.addEventListener('click', (ev)=>{
+        const id = ev.currentTarget.getAttribute('data-id');
+        closeOverlay();
+        openTracking(id);
+      });
     });
+  } catch (err) {
+    overlayContent.innerHTML = `<div class="small text-red-600">Failed to load history: ${err.message}</div>`;
+  }
+}
 
-    // report
-    $('openReportBtn').addEventListener('click', ()=> { $('reportBackdrop').classList.add('show'); disableBodyScroll(); $('reportOrderId').value = activeOrder && (activeOrder._id||activeOrder.id) || ''; });
-    $('closeReportBtn').addEventListener('click', ()=> { $('reportBackdrop').classList.remove('show'); enableBodyScroll(); });
-    $('submitReportBtn').addEventListener('click', async ()=>{
-      const orderId = $('reportOrderId').value.trim(); const desc = $('reportDesc').value.trim();
-      if (!desc) { showToast('Please describe the issue'); return; }
-      try {
-        const res = await fetch(API_BASE + '/api/reports', { method:'POST', headers: authHeaders(), body: JSON.stringify({ orderId, description: desc })});
-        const json = await res.json(); if (!res.ok) throw new Error(json.message||'Report failed');
-        showToast('Report sent — admins will review');
-        $('reportBackdrop').classList.remove('show'); enableBodyScroll();
-      } catch(e){ showToast(e.message || 'Report failed'); }
-    });
+function openReferralOverlay(){
+  const code = suUser.referralCode || (suUser._id ? ('REF' + String(suUser._id).slice(-6)) : 'REF-UNKNOWN');
+  const html = `
+    <h3 class="text-xl font-semibold mb-2">Refer & Earn</h3>
+    <div class="p-3 border rounded mb-3">
+      <div class="font-medium">Your referral code</div>
+      <div class="font-mono mt-2 text-lg">${code}</div>
+      <div class="small mt-2">Share this link to get credit: <br/><a href="${location.origin}/signup?ref=${code}" target="_blank" class="underline">${location.origin}/signup?ref=${code}</a></div>
+      <div class="mt-3 flex gap-2">
+        <button id="copyRefBtn" class="btn-primary">Copy</button>
+        <button id="shareRefBtn" class="border px-3 py-2 rounded-md">Share</button>
+      </div>
+    </div>
+    <div class="small">Referral tracking and reward issuance will be shown in your referral history.</div>
+  `;
+  openOverlay(html);
+  document.getElementById('copyRefBtn').addEventListener('click', async ()=>{
+    try {
+      await navigator.clipboard.writeText(`${location.origin}/signup?ref=${code}`);
+      toast('Referral link copied.');
+    } catch(e){ toast('Copy failed.'); }
+  });
+  document.getElementById('shareRefBtn').addEventListener('click', async ()=>{
+    try {
+      if (navigator.share) await navigator.share({ title:'Join SkyUltimate', text:'Use my referral link', url:`${location.origin}/signup?ref=${code}`});
+      else { await navigator.clipboard.writeText(`${location.origin}/signup?ref=${code}`); toast('Link copied.'); }
+    } catch(e){ toast('Share failed'); }
+  });
+}
 
-    // announcements load for banner (and panel)
-    async function loadAnnouncements(){
-      try {
-        const res = await fetch(API_BASE + '/api/announcements/latest');
-        if (!res.ok) return;
-        const a = await res.json(); if (!a || !a.isActive) return;
-        $('announceTitle').textContent = a.title || 'Announcement';
-        $('announceMsg').textContent = a.message || '';
-        // show small banner in a non-intrusive way (we removed main banner per request - we will not show on main)
-      } catch(e){ console.info('Announcements fail', e.message); }
+function openAnnouncementsOverlay(){
+  openOverlay('<div>Loading announcements...</div>');
+  fetch(API_BASE + '/api/announcements/latest').then(r=>r.json()).then(a=>{
+    const html = document.createElement('div');
+    if (!a) html.innerHTML = `<h3 class="text-xl font-semibold">Announcements</h3><div class="small">No active announcements</div>`;
+    else {
+      html.innerHTML = `<h3 class="text-xl font-semibold mb-2">${a.title}</h3><div class="small">${a.message}</div>`;
     }
+    overlayContent.innerHTML = ''; overlayContent.appendChild(html);
+  }).catch(e=>{
+    overlayContent.innerHTML = `<div class="small text-red-600">Failed to load announcements</div>`;
+  });
+}
 
-    // init Google Maps & Places gracefully
-    let mapsInitAttempted = false;
-    function initMapIfReady(){
-      if (mapsInitAttempted) return;
-      mapsInitAttempted = true;
-      if (window.google && google.maps && google.maps.places){
-        try {
-          map = new google.maps.Map(document.getElementById('map'), { center:{ lat:6.5244, lng:3.3792 }, zoom:12 });
-          pickupAC = new google.maps.places.Autocomplete($('pickup'));
-          deliveryAC = new google.maps.places.Autocomplete($('delivery'));
-          // small bias
-          try { const circle = new google.maps.Circle({ center:{lat:6.5244,lng:3.3792}, radius:50000 }); pickupAC.setBounds(circle.getBounds()); deliveryAC.setBounds(circle.getBounds()); } catch(e){}
-          document.getElementById('mapError').style.display='none';
-        } catch(e){
-          console.warn('Map init exception', e.message);
-          document.getElementById('map').style.display = 'none';
-          document.getElementById('mapError').style.display = 'block';
-          document.getElementById('mapError').textContent = 'Google Maps could not initialize. Please check API key & billing/domain restrictions.';
-        }
-      } else {
-        // wait a bit
-        setTimeout(initMapIfReady, 300);
+function openProfileOverlay(){
+  const content = document.createElement('div');
+  content.innerHTML = `
+    <h3 class="text-xl font-semibold mb-2">My Profile</h3>
+    <div class="grid gap-2">
+      <label class="small">Full Name</label><input id="pf_name" class="input" value="${escapeHtml(suUser.name||'')}" />
+      <label class="small">Email (readonly)</label><input class="input" value="${escapeHtml(suUser.email||'')}" readonly />
+      <label class="small">Phone</label><input id="pf_phone" class="input" value="${escapeHtml(suUser.phone||'')}" />
+      <div id="bankFields" style="display:${(suUser.role && ['Agent','Admin'].includes(suUser.role)) ? 'block' : 'none'}">
+        <label class="small mt-2">Bank Name</label><input id="pf_bankName" class="input" value="${escapeHtml((suUser.bankDetails||{}).bankName||'')}" />
+        <label class="small">Account Number</label><input id="pf_accountNumber" class="input" value="${escapeHtml((suUser.bankDetails||{}).accountNumber||'')}" />
+        <label class="small">Account Holder</label><input id="pf_accountHolder" class="input" value="${escapeHtml((suUser.bankDetails||{}).accountHolderName||'')}" />
+      </div>
+      <div class="flex gap-2 mt-3">
+        <button id="saveProfileBtn" class="btn-primary flex-1">Save</button>
+        <button id="closeProfileBtn" class="border px-3 py-2 rounded-md flex-1">Close</button>
+      </div>
+      <div id="profileMsg" class="small text-green-600 mt-2"></div>
+    </div>
+  `;
+  openOverlay(content);
+  document.getElementById('closeProfileBtn').addEventListener('click', closeOverlay);
+  document.getElementById('saveProfileBtn').addEventListener('click', async ()=>{
+    const phone = document.getElementById('pf_phone').value.trim();
+    const bankName = document.getElementById('pf_bankName') ? document.getElementById('pf_bankName').value.trim() : '';
+    const accountNumber = document.getElementById('pf_accountNumber') ? document.getElementById('pf_accountNumber').value.trim() : '';
+    const accountHolderName = document.getElementById('pf_accountHolder') ? document.getElementById('pf_accountHolder').value.trim() : '';
+    try {
+      const payload = { phone };
+      if (bankName || accountNumber || accountHolderName) {
+        payload.bankName = bankName;
+        payload.accountNumber = accountNumber;
+        payload.accountHolderName = accountHolderName;
       }
+      await apiFetch('/api/users/me/bank', { method:'PUT', body: JSON.stringify(payload) });
+      // update local copy
+      suUser.phone = phone || suUser.phone;
+      suUser.bankDetails = suUser.bankDetails || {};
+      if (bankName) suUser.bankDetails.bankName = bankName;
+      if (accountNumber) suUser.bankDetails.accountNumber = accountNumber;
+      if (accountHolderName) suUser.bankDetails.accountHolderName = accountHolderName;
+      localStorage.setItem('su_user', JSON.stringify(suUser));
+      document.getElementById('profileMsg').innerText = 'Saved';
+      setTimeout(()=>closeOverlay(),900);
+    } catch(err){
+      document.getElementById('profileMsg').innerText = err.message || 'Save failed';
     }
-    // Google auth failure hook (if Google triggers auth failure)
-    window.gm_authFailure = function() {
-      document.getElementById('map').style.display = 'none';
-      document.getElementById('mapError').style.display = 'block';
-      document.getElementById('mapError').textContent = 'Google Maps is blocked or the API key is restricted. Please enable Maps & Places for this key.';
-    };
+  });
+}
 
-    // theme toggle
-    function toggleTheme(){
-      const current = document.body.getAttribute('data-theme') || 'light';
-      const next = current === 'light' ? 'dark' : 'light';
-      document.body.setAttribute('data-theme', next);
-      localStorage.setItem('su_theme', next);
+function openRateOverlay(){
+  const html = `
+    <h3 class="text-xl font-semibold mb-2">Rate Delivered Order</h3>
+    <div class="small mb-2">Pick an order to rate (Delivered only)</div>
+    <div id="rateList">Loading...</div>
+  `;
+  openOverlay(html);
+  // load delivered orders
+  apiFetch(`/api/orders?customerId=${suUser.id || suUser._id}`).then(list=>{
+    const orders = Array.isArray(list) ? list : (list.orders || []);
+    const delivered = orders.filter(o => o.status === 'Completed' || o.status === 'Delivered');
+    if (!delivered.length) overlayContent.querySelector('#rateList').innerHTML = '<div class="small">No delivered orders yet.</div>';
+    else {
+      overlayContent.querySelector('#rateList').innerHTML = delivered.map(o => {
+        return `<div class="p-3 border rounded mb-2">
+          <div class="font-medium">Order ${o._id || o.id}</div>
+          <div class="small text-gray-600 mt-1">${o.pickupAddress || ''} → ${o.deliveryAddress || ''}</div>
+          <div class="mt-2"><button data-id="${o._id || o.id}" class="rateOrderBtn btn-primary">Rate</button></div>
+        </div>`;
+      }).join('');
+      overlayContent.querySelectorAll('.rateOrderBtn').forEach(b => {
+        b.addEventListener('click', ev => openRatingModal(ev.currentTarget.getAttribute('data-id')));
+      });
     }
-    (function loadTheme(){ const t = localStorage.getItem('su_theme') || 'light'; document.body.setAttribute('data-theme', t); })();
+  }).catch(e => overlayContent.querySelector('#rateList').innerHTML = `<div class="small text-red-600">Failed to load: ${e.message}</div>`);
+}
 
-    // utility
-    function escapeHtml(s){ if (!s) return ''; return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]); }
-    function escapeJs(s){ return escapeHtml(s).replace(/'/g,"\\'").replace(/"/g,'\\"'); }
-    function disableBodyScroll(){ document.body.style.overflow = 'hidden'; }
-    function enableBodyScroll(){ document.body.style.overflow = ''; }
+function openRatingModal(orderId){
+  const content = document.createElement('div');
+  content.innerHTML = `<h3 class="text-xl font-semibold mb-2">Rate Order ${orderId}</h3>
+    <div class="small mb-2">Choose stars and leave optional comment</div>
+    <div id="starRow" class="flex gap-1 text-2xl mb-2">★★★★★</div>
+    <textarea id="ratingComment" class="input" placeholder="Comment (optional)"></textarea>
+    <div class="flex gap-2 mt-3">
+      <button id="submitRatingBtn" class="btn-primary flex-1">Submit</button>
+      <button id="closeRatingBtn" class="border px-3 py-2 rounded-md">Close</button>
+    </div>`;
+  openOverlay(content);
+  const starRow = document.getElementById('starRow');
+  let rating = 5;
+  starRow.addEventListener('click', (ev)=>{
+    // simple star selector based on click position
+    const idx = Math.ceil((ev.offsetX / starRow.clientWidth) * 5);
+    rating = Math.max(1, Math.min(5, idx));
+    starRow.innerText = '★★★★★'.slice(0, rating) + '☆☆☆☆☆'.slice(rating);
+  });
+  document.getElementById('submitRatingBtn').addEventListener('click', async ()=>{
+    const comment = document.getElementById('ratingComment').value;
+    try {
+      await apiFetch(`/api/orders/${orderId}/rate`, { method:'POST', body: JSON.stringify({ rating, comment })});
+      toast('Thanks for rating!');
+      closeOverlay();
+    } catch(e){ toast(e.message || 'Rating failed'); }
+  });
+  document.getElementById('closeRatingBtn').addEventListener('click', closeOverlay);
+}
 
-    // logout
-    function doLogout(){ localStorage.removeItem('su_token'); localStorage.removeItem('su_user'); localStorage.removeItem('su_active_order'); location.href='index.html'; }
+function openReportOverlay(){
+  const html = `<h3 class="text-xl font-semibold mb-2">Report an Issue</h3>
+    <div class="small mb-2">Select order (if applicable) and describe the issue</div>
+    <div>
+      <label class="small">Order ID (optional)</label>
+      <input id="reportOrderId" class="input" />
+      <label class="small mt-2">Message</label>
+      <textarea id="reportMsg" class="input"></textarea>
+      <div class="flex gap-2 mt-3">
+        <button id="sendReportBtn" class="btn-primary">Send Report</button>
+        <button id="closeReportBtn" class="border px-3 py-2 rounded-md">Close</button>
+      </div>
+    </div>`;
+  openOverlay(html);
+  document.getElementById('closeReportBtn').addEventListener('click', closeOverlay);
+  document.getElementById('sendReportBtn').addEventListener('click', async ()=>{
+    const oid = document.getElementById('reportOrderId').value.trim();
+    const msg = document.getElementById('reportMsg').value.trim();
+    if (!msg) { toast('Please write a message'); return; }
+    try {
+      // Send to admin queue - use best-effort endpoint (you can adjust if different)
+      await apiFetch('/api/admin-requests', { method:'POST', body: JSON.stringify({ orderId: oid || null, message: msg })});
+      toast('Report sent. Admins will review.');
+      closeOverlay();
+    } catch(e){ toast(e.message || 'Report failed'); }
+  });
+}
 
-    // Small helpers for opening order detail from panel
-    window.openOrderDetail = async function(orderId){
-      panel.innerHTML = `<h2>Order ${escapeHtml(orderId)}</h2><div>Loading...</div>`;
-      try {
-        const res = await fetch(API_BASE + '/api/orders/' + encodeURIComponent(orderId), { headers: authHeaders() });
-        if (!res.ok) throw new Error('Fetch failed');
-        const json = await res.json();
-        panel.innerHTML = `<h2>Order ${escapeHtml(orderId)}</h2><pre style="white-space:pre-wrap;">${escapeHtml(JSON.stringify(json, null,2))}</pre>`;
-      } catch(e) { panel.innerHTML = `<div class="muted">Failed to fetch order</div>`; }
-    };
+function openSettingsOverlay(){
+  const html = `
+    <h3 class="text-xl font-semibold mb-2">Settings</h3>
+    <div class="grid gap-2">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="font-medium">Theme</div>
+          <div class="small">Toggle between light & dark</div>
+        </div>
+        <div>
+          <label class="inline-flex items-center">
+            <input id="themeToggle" type="checkbox" class="mr-2" />
+            <span class="small">Dark</span>
+          </label>
+        </div>
+      </div>
 
-    // init on load
-    (async function init(){
-      if (!localStorage.getItem('su_token')) { location.href = 'index.html'; return; }
-      await ensureProfile();
-      await loadAnnouncements();
-      await loadHistoryBrief();
-      initMapIfReady();
+      <div class="flex gap-2 mt-3">
+        <button id="closeSettings" class="border px-3 py-2 rounded-md">Close</button>
+        <button id="logoutBtn" class="text-red-600 border px-3 py-2 rounded-md">Logout</button>
+      </div>
+    </div>
+  `;
+  openOverlay(html);
+  const themeToggle = document.getElementById('themeToggle');
+  // read current
+  themeToggle.checked = !!localStorage.getItem('su_theme_dark');
+  applyTheme(themeToggle.checked);
+  themeToggle.addEventListener('change', (e)=> {
+    const dark = e.target.checked;
+    applyTheme(dark);
+    if (dark) localStorage.setItem('su_theme_dark', '1'); else localStorage.removeItem('su_theme_dark');
+  });
+  document.getElementById('closeSettings').addEventListener('click', closeOverlay);
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('su_token'); localStorage.removeItem('su_user'); window.location.href='index.html';
+  });
+}
 
-      // resume active order if stored
-      try {
-        const saved = localStorage.getItem('su_active_order');
-        if (saved){ const o = JSON.parse(saved); if (o && (o._id||o.id)) showTrackingForOrder(o); }
-      } catch(e){}
+// ----- Utility: Theme -----
+function applyTheme(dark){
+  if (dark) document.documentElement.classList.add('dark');
+  else document.documentElement.classList.remove('dark');
+}
 
-      // menu items: close overlay / menu functionality
-      // ensure rate/report buttons
-      $('openRateBtn').addEventListener('click', openRateModal);
-      $('openReportBtn').addEventListener('click', ()=> { $('reportBackdrop').classList.add('show'); disableBodyScroll(); });
+// ----- Misc helpers -----
+function updateFromLocalUser(){
+  // update suUser displayable if local changes
+  try {
+    const u = JSON.parse(localStorage.getItem('su_user') || '{}');
+    if (u && u.name) {
+      const first = (u.name || '').split(' ')[0] || 'there';
+      welcomeFirst.innerText = `Hello, ${first}!`;
+      greetingLarge.innerText = `Welcome back, ${first}!`;
+    }
+  } catch(e){}
+}
 
-    })();
+function escapeHtml(s){ if (!s) return ''; return String(s).replaceAll('<','&lt;').replaceAll('>','&gt;'); }
 
-    // small safety: hide map container if Google never initializes after 4s
-    setTimeout(()=>{ if (!map && !document.getElementById('mapError').innerText) { initMapIfReady(); } }, 4000);
+// ----- Order history reload helper -----
+async function loadHistory(){
+  try {
+    const res = await apiFetch(`/api/orders?customerId=${suUser.id || suUser._id || suUser.id}`);
+    return res;
+  } catch(e){ return []; }
+}
 
-  })();
-  </script>
+// initial theme
+applyTheme(!!localStorage.getItem('su_theme_dark'));
+
+</script>
 </body>
 </html>
