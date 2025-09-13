@@ -2,102 +2,93 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SkyUltimate — Customer Dashboard</title>
 
-  <!-- Inline Tailwind-like minimalist style (no external deps) -->
   <style>
     :root{
       --brand:#C00000;
-      --brand-dark:#900000;
-      --bg:#f6f6f7;
+      --brand-2:#900000;
       --card:#ffffff;
+      --bg:#f6f7f9;
       --muted:#6b7280;
       --shadow: 0 12px 30px rgba(0,0,0,0.12);
       --radius:14px;
+      --glass: rgba(255,255,255,0.7);
+      --text:#111827;
     }
     [data-theme="dark"]{
-      --bg:#0b0b0c; --card:#0f1112; --muted:#9ca3af;
+      --card:#0f1113;
+      --bg:#0b0c0d;
+      --muted:#9aa3ad;
+      --text:#e6eef6;
+      --glass: rgba(255,255,255,0.03);
     }
     *{box-sizing:border-box}
-    html,body{height:100%; margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
-    body{background:var(--bg); color: #111827; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
-    header{height:64px; display:flex; align-items:center; justify-content:space-between; padding:0 18px; background: linear-gradient(90deg,var(--brand),var(--brand-dark)); color:#fff; position:sticky; top:0; z-index:40; box-shadow: 0 4px 12px rgba(0,0,0,0.08);}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
+    header{height:64px; display:flex; align-items:center; justify-content:space-between; padding:0 18px; background: linear-gradient(90deg,var(--brand),var(--brand-2)); color:#fff; position:sticky; top:0; z-index:60; box-shadow: 0 4px 12px rgba(0,0,0,0.08);}
     .header-left{display:flex; gap:12px; align-items:center;}
-    .logo-only{width:44px; height:44px; border-radius:9999px; object-fit:cover; box-shadow: 0 6px 18px rgba(0,0,0,0.2);}
-    .hamburger{background:transparent; border:none; color:#fff; font-size:22px; cursor:pointer; padding:8px; border-radius:8px;}
-    .container{max-width:980px; margin:20px auto; padding:16px; display:grid; grid-template-columns: 1fr; gap:16px;}
-    .card{background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px;}
-    h1{margin:0; font-size:20px;}
-    .sub{color:var(--muted); margin-top:6px;}
-    /* form */
-    .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-    label{font-size:13px; color:var(--muted); display:block; margin-bottom:6px;}
-    input, select, textarea{width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:10px; background:transparent; font-size:14px; color:inherit;}
-    textarea{min-height:80px; resize:vertical;}
-    .btn{background:var(--brand); color:#fff; padding:12px; border-radius:12px; border:none; font-weight:700; cursor:pointer; width:100%;}
-    .btn.secondary{background:transparent; color:var(--brand); border:1px solid var(--brand); font-weight:600;}
-    .row{display:flex; gap:10px;}
-    .muted{color:var(--muted); font-size:13px;}
-    .small{font-size:13px;}
-    .pill{display:inline-block; padding:6px 10px; border-radius:999px; background:#f3f4f6; color:var(--muted); font-weight:600; font-size:13px;}
-    /* modal */
-    .modal-backdrop{position:fixed; inset:0; background:rgba(0,0,0,0.5); display:none; align-items:center; justify-content:center; z-index:60;}
-    .modal{width:92%; max-width:720px; background:var(--card); border-radius:12px; padding:18px; box-shadow:0 18px 50px rgba(2,6,23,0.4);}
-    .modal.show, .modal-backdrop.show{display:flex;}
-    /* tracking map */
-    #map{height:340px; width:100%; border-radius:10px; overflow:hidden;}
-    /* side menu (hamburger overlay) */
-    .side-menu{position:fixed; left:-320px; top:0; height:100%; width:320px; background:var(--card); box-shadow: 8px 0 30px rgba(0,0,0,0.18); z-index:80; padding:18px; transition:left .28s ease;}
-    .side-menu.open{left:0;}
-    .menu-header{display:flex; gap:12px; align-items:center; margin-bottom:12px;}
-    .menu-item{display:flex; align-items:center; justify-content:space-between; padding:10px 8px; border-radius:10px; cursor:pointer;}
-    .menu-item:hover{background:#f3f4f6;}
-    /* overlay "full-screen" content area (when selecting items in menu) */
-    .overlay-screen{position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none; z-index:100; align-items:center; justify-content:center;}
-    .overlay-screen.open{display:flex;}
-    .panel{width:94%; max-width:1000px; max-height:90vh; overflow:auto; background:var(--card); border-radius:14px; padding:20px;}
-    /* responsive */
-    @media (max-width:780px){
-      .grid-2{grid-template-columns:1fr;}
-      .container{padding:12px;}
-      .side-menu{width:86%; max-width:360px;}
-    }
-    /* toast */
-    .toast{position:fixed; right:20px; bottom:20px; background:var(--brand); color:#fff; padding:12px 16px; border-radius:10px; z-index:110; display:none;}
-    .toast.show{display:block;}
-    /* small helpers */
-    .flex{display:flex; align-items:center;}
-    .gap{gap:10px;}
-    .spacer{flex:1}
+    .logo-only{width:46px; height:46px; border-radius:9999px; object-fit:cover; box-shadow: 0 6px 18px rgba(0,0,0,0.18);}
+    .hamburger{background:transparent;border:none;color:#fff;font-size:22px;cursor:pointer;padding:8px;border-radius:8px}
+    .container{max-width:980px;margin:20px auto;padding:16px;display:grid;grid-template-columns:1fr;gap:16px}
+    .card{background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px}
+    h1{margin:0;font-size:20px}
+    .sub{color:var(--muted);margin-top:6px}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
+    input,select,textarea{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;background:transparent;font-size:14px;color:var(--text)}
+    textarea{min-height:80px;resize:vertical}
+    .btn{background:var(--brand);color:#fff;padding:12px;border-radius:12px;border:none;font-weight:700;cursor:pointer;width:100%}
+    .btn.secondary{background:transparent;color:var(--brand);border:1px solid var(--brand);font-weight:600}
+    .row{display:flex;gap:10px}
+    .muted{color:var(--muted);font-size:13px}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#f3f4f6;color:var(--muted);font-weight:600;font-size:13px}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:140}
+    .modal{width:92%;max-width:720px;background:var(--card);border-radius:12px;padding:18px;box-shadow:0 18px 50px rgba(2,6,23,0.4)}
+    .modal.show,.modal-backdrop.show{display:flex}
+    #map{height:360px;width:100%;border-radius:10px;overflow:hidden}
+    .side-menu{position:fixed;left:-360px;top:0;height:100%;width:360px;background:var(--card);box-shadow:8px 0 30px rgba(0,0,0,0.18);z-index:160;padding:18px;transition:left .28s ease}
+    .side-menu.open{left:0}
+    .menu-header{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+    .menu-item{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;cursor:pointer}
+    .menu-item:hover{background:rgba(0,0,0,0.03)}
+    .overlay-screen{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;z-index:170;align-items:center;justify-content:center}
+    .overlay-screen.open{display:flex}
+    .panel{width:94%;max-width:1000px;max-height:92vh;overflow:auto;background:var(--card);border-radius:14px;padding:20px}
+    @media (max-width:780px){.grid-2{grid-template-columns:1fr}.side-menu{width:86%;max-width:360px}}
+    .toast{position:fixed;right:20px;bottom:20px;background:var(--brand);color:#fff;padding:12px 16px;border-radius:10px;z-index:180;display:none}
+    .toast.show{display:block}
+    .full-page-payment{position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.6)}
+    .full-page-payment.show{display:flex}
+    .payment-panel{width:96%; max-width:760px; background:var(--card); border-radius:14px; padding:18px; box-shadow:var(--shadow); max-height:92vh; overflow:auto}
+    /* ensure readable in dark theme for important elements */
+    [data-theme="dark"] .menu-item:hover{background:rgba(255,255,255,0.02)}
   </style>
 </head>
 <body data-theme="light">
 
-  <!-- Header -->
   <header>
     <div class="header-left">
-      <button class="hamburger" id="hamburgerBtn" aria-label="Open menu">☰</button>
-      <!-- logo only as requested -->
-      <img class="logo-only" src="https://i.ibb.co/h1QvR2B/logo.png" alt="SkyUltimate Logo" />
+      <button id="hamburgerBtn" class="hamburger" aria-label="Open menu">☰</button>
+      <!-- your real logo -->
+      <img class="logo-only" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="SkyUltimate Logo" />
     </div>
 
-    <!-- right actions -->
-    <div style="display:flex; align-items:center; gap:10px;">
+    <div style="display:flex;align-items:center;gap:12px">
       <div id="user-first" class="pill small">Welcome</div>
     </div>
   </header>
 
-  <div class="container">
+  <div class="container" id="mainContainer">
 
-    <!-- Welcome + quick info (main) -->
+    <!-- Welcome card -->
     <section class="card">
-      <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div style="display:flex;align-items:center;justify-content:space-between">
         <div>
           <h1 id="welcomeHeading">Hello, —</h1>
-          <div class="sub">Welcome back to SkyUltimate. Place an order or continue tracking an active delivery.</div>
+          <div class="sub">Welcome back to SkyUltimate. Place an order or track your active delivery.</div>
         </div>
-        <div style="text-align:right;">
+        <div style="text-align:right">
           <div id="roleBadge" class="pill small">Customer</div>
           <div style="margin-top:8px"><button id="logoutBtn" class="btn secondary">Logout</button></div>
         </div>
@@ -107,17 +98,17 @@
     <!-- Order placement -->
     <section id="placementCard" class="card" aria-labelledby="placeOrderTitle">
       <h2 id="placeOrderTitle">Place an Order</h2>
-      <p class="muted">Fill the details below to get an accurate price and create an order. Use the map autocomplete for addresses.</p>
+      <p class="muted">Fill the recipient pickup and delivery addresses (autocomplete). You’ll review payment and then mark that you paid.</p>
 
       <form id="orderForm" style="margin-top:12px;">
         <div class="grid-2">
           <div>
             <label for="pickup">Recipient Pickup Address</label>
-            <input id="pickup" placeholder="Recipient pickup address (use suggestions)" required />
+            <input id="pickup" placeholder="Recipient pickup address (use suggestions)" required autocomplete="off" />
           </div>
           <div>
             <label for="delivery">Delivery Address</label>
-            <input id="delivery" placeholder="Delivery address (use suggestions)" required />
+            <input id="delivery" placeholder="Delivery address (use suggestions)" required autocomplete="off" />
           </div>
         </div>
 
@@ -125,11 +116,11 @@
           <div>
             <label for="itemType">Item Type</label>
             <select id="itemType" required>
-              <option value="Food">Food</option>
-              <option value="Documents">Documents</option>
-              <option value="Groceries">Groceries</option>
-              <option value="Electronics">Electronics</option>
-              <option value="Other">Other</option>
+              <option>Food</option>
+              <option>Documents</option>
+              <option>Groceries</option>
+              <option>Electronics</option>
+              <option>Other</option>
             </select>
           </div>
           <div>
@@ -156,81 +147,49 @@
             <label for="paymentMethod">Payment Method</label>
             <select id="paymentMethod">
               <option value="BankTransfer">Bank Transfer</option>
-              <option value="Card">Card (coming soon)</option>
               <option value="Wallet">Wallet</option>
             </select>
           </div>
         </div>
 
         <div class="row" style="margin-top:14px;">
-          <button id="calcBtn" type="button" class="btn" style="flex:1; margin-right:8px;">Calculate Final Price</button>
-          <button id="submitBtn" type="button" class="btn secondary" style="width:210px;">Confirm & Await Admin Approval</button>
+          <button id="calcBtn" type="button" class="btn" style="flex:1;margin-right:8px;">Calculate Final Price</button>
+          <button id="payBtn" type="button" class="btn secondary" style="width:260px;">Proceed with Payment</button>
         </div>
 
-        <div style="margin-top:10px;" class="muted small">After you confirm and pay to the bank details shown, SuperAdmin will verify payment and dispatch an agent.</div>
+        <div style="margin-top:10px;" class="muted small">After payment, SuperAdmin will verify and dispatch an agent. Click "Proceed with Payment" to select bank and mark payment.</div>
       </form>
     </section>
 
-    <!-- Tracking Hub (hidden until order exists) -->
+    <!-- Tracking hub (hidden by default) -->
     <section id="trackingCard" class="card" style="display:none;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
         <div>
           <h2 id="trackingTitle">Order Tracking</h2>
-          <div id="trackingSubtitle" class="muted small">Track your current order in real time</div>
+          <div id="trackingSubtitle" class="muted small">Track your current order in real-time</div>
         </div>
-        <div>
-          <div id="trackingStatus" class="pill small">Status: —</div>
-        </div>
+        <div><div id="trackingStatus" class="pill small">Status: —</div></div>
       </div>
 
-      <div id="map" style="margin-top:12px;"></div>
+      <div id="map" style="margin-top:12px"></div>
+      <div id="mapError" style="display:none;margin-top:12px;color:var(--muted)"></div>
 
-      <div style="margin-top:12px; display:flex; gap:8px;">
-        <button id="openRateBtn" class="btn secondary" style="width:160px;">Rate Agent</button>
-        <button id="openReportBtn" class="btn secondary" style="width:160px;">Report Agent</button>
+      <div style="margin-top:12px;display:flex;gap:8px;">
+        <button id="openRateBtn" class="btn secondary" style="width:160px;display:none">Rate Agent</button>
+        <button id="openReportBtn" class="btn secondary" style="width:160px;display:none">Report Agent</button>
         <div class="spacer"></div>
         <div class="muted small">Order ID: <span id="activeOrderId">—</span></div>
       </div>
 
-      <div id="timeline" style="margin-top:12px;"></div>
-    </section>
-
-    <!-- Order History brief summary (also accessible via menu) -->
-    <section id="historySummary" class="card">
-      <div style="display:flex; align-items:center; justify-content:space-between;">
-        <div><h3>Your Orders</h3><div class="muted small">Recent orders (click to view full history in menu)</div></div>
-        <div><button id="viewHistoryBtn" class="btn secondary">Open Order History</button></div>
-      </div>
-      <div id="recentOrders" style="margin-top:12px;"></div>
-    </section>
-
-    <!-- Referral / announcement quick -->
-    <section class="card">
-      <div style="display:flex; align-items:center; justify-content:space-between;">
-        <div>
-          <h3>Refer & Earn</h3>
-          <div class="muted small">Share your referral link and earn rewards when friends sign up and complete qualifying actions.</div>
-        </div>
-        <div style="text-align:right;">
-          <div id="refCode" class="pill small">—</div>
-          <div style="margin-top:8px; display:flex; gap:8px;">
-            <button id="copyRef" class="btn secondary" style="width:110px;">Copy</button>
-            <button id="shareRef" class="btn" style="width:110px;">Share</button>
-          </div>
-        </div>
-      </div>
-      <div id="announceBanner" style="margin-top:12px; display:none; border-radius:10px; padding:12px; background:linear-gradient(90deg,#fff, #fff);">
-        <strong id="announceTitle">Announcement</strong>
-        <div id="announceMsg" class="muted small" style="margin-top:6px;"></div>
-      </div>
+      <div id="timeline" style="margin-top:12px"></div>
     </section>
 
   </div>
 
-  <!-- Side menu (hamburger) -->
+  <!-- Side menu -->
   <aside id="sideMenu" class="side-menu" role="navigation" aria-label="Main menu">
     <div class="menu-header">
-      <img src="https://i.ibb.co/h1QvR2B/logo.png" alt="logo" style="width:48px;height:48px;border-radius:9999px" />
+      <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="logo" style="width:48px;height:48px;border-radius:9999px" />
       <div>
         <div id="menuName" style="font-weight:700">User</div>
         <div id="menuRole" class="muted small">Customer</div>
@@ -239,429 +198,397 @@
       <button id="closeMenu" style="background:none;border:none;cursor:pointer;font-size:18px">✕</button>
     </div>
 
-    <div style="margin-top:10px;">
+    <div style="margin-top:8px">
       <div class="menu-item" data-action="profile"><span>My Profile</span><span>›</span></div>
       <div class="menu-item" data-action="history"><span>Order History</span><span>›</span></div>
-      <div class="menu-item" data-action="referrals"><span>Referrals</span><span>›</span></div>
       <div class="menu-item" data-action="announcements"><span>Announcements</span><span>›</span></div>
-      <div class="menu-item" data-action="rate"><span>Rate Agent</span><span>›</span></div>
-      <div class="menu-item" data-action="report"><span>Report Agent</span><span>›</span></div>
-      <div class="menu-item" data-action="feedback"><span>Feedback</span><span>›</span></div>
-      <div class="menu-item" id="toggleThemeMenu"><span>Toggle Dark / Light</span><span>›</span></div>
+      <div class="menu-item" data-action="referrals"><span>Referrals</span><span>›</span></div>
+      <hr style="margin:12px 0;border:none;border-top:1px solid #eee" />
+      <div class="menu-item" id="menuSettings"><span>Settings</span><span>›</span></div>
       <div class="menu-item" id="logoutMenuBtn"><span>Logout</span><span>›</span></div>
     </div>
   </aside>
 
-  <!-- Overlay panel (full-screen content for menu items) -->
+  <!-- Overlay full-screen (for menu items) -->
   <div id="overlayScreen" class="overlay-screen" aria-hidden="true">
-    <div class="panel" id="panelContent">
-      <!-- dynamic content injected -->
-    </div>
+    <div class="panel" id="panelContent"></div>
   </div>
 
-  <!-- Modal for price & payment -->
-  <div id="priceBackdrop" class="modal-backdrop">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="priceTitle">
-      <h3 id="priceTitle">Price Estimate</h3>
-      <div id="priceBody" style="margin-top:8px;"></div>
+  <!-- Full page payment overlay -->
+  <div id="paymentOverlay" class="full-page-payment" role="dialog" aria-modal="true">
+    <div class="payment-panel">
+      <h2>Proceed with Payment</h2>
+      <p class="muted">Select a bank and review account details. After payment, click "I have Paid" so we can await confirmation from SuperAdmin.</p>
+
+      <div style="margin-top:12px; display:flex; gap:12px; flex-wrap:wrap;">
+        <!-- bank options inserted by JS -->
+        <div id="banksList" style="flex:1; min-width:260px"></div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <label>Order Note (optional)</label>
+        <textarea id="paymentNote"></textarea>
+      </div>
+
       <div style="margin-top:12px; display:flex; gap:8px;">
-        <button id="confirmPayBtn" class="btn">I will pay now (Simulate)</button>
-        <button id="closePriceBtn" class="btn secondary">Close</button>
+        <button id="paidConfirmBtn" class="btn">I have Paid</button>
+        <button id="closePaymentBtn" class="btn secondary">Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- Rate modal -->
+  <!-- Rate / Report modals (simple) -->
   <div id="rateBackdrop" class="modal-backdrop">
-    <div class="modal" role="dialog">
+    <div class="modal">
       <h3>Rate Agent</h3>
-      <div style="margin-top:8px;">
-        <div id="starRow" style="display:flex; gap:6px;"></div>
-        <textarea id="rateComment" placeholder="Comment (optional)" style="margin-top:10px;"></textarea>
-      </div>
-      <div style="margin-top:12px; display:flex; gap:8px;">
-        <button id="submitRateBtn" class="btn">Submit Rating</button>
-        <button id="closeRateBtn" class="btn secondary">Cancel</button>
+      <div style="margin-top:10px"><div id="starRow" style="display:flex;gap:6px"></div>
+      <textarea id="rateComment" placeholder="Comment (optional)" style="margin-top:10px"></textarea>
+      <div style="margin-top:12px;display:flex;gap:8px"><button id="submitRateBtn" class="btn">Submit</button><button id="closeRateBtn" class="btn secondary">Close</button></div>
       </div>
     </div>
   </div>
 
-  <!-- Report modal -->
   <div id="reportBackdrop" class="modal-backdrop">
-    <div class="modal" role="dialog">
+    <div class="modal">
       <h3>Report Agent / Issue</h3>
-      <div style="margin-top:8px;">
-        <label>Order ID (optional)</label>
-        <input id="reportOrderId" />
-        <label style="margin-top:8px;">Description</label>
-        <textarea id="reportDesc"></textarea>
-      </div>
-      <div style="margin-top:12px; display:flex; gap:8px;">
-        <button id="submitReportBtn" class="btn">Send Report</button>
-        <button id="closeReportBtn" class="btn secondary">Close</button>
-      </div>
+      <label>Order ID (optional)</label><input id="reportOrderId" />
+      <label style="margin-top:8px">Description</label><textarea id="reportDesc"></textarea>
+      <div style="margin-top:12px;display:flex;gap:8px"><button id="submitReportBtn" class="btn">Send Report</button><button id="closeReportBtn" class="btn secondary">Close</button></div>
     </div>
   </div>
 
-  <!-- Toast -->
-  <div id="toast" class="toast"></div>
+  <!-- toast -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <!-- Socket.IO -->
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <!-- Google Maps Places (KEY provided by you earlier) -->
+  <!-- Google Maps Places -->
   <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDu1dptqgTwWWD6568jhf_tal7uYfdyMlQ&libraries=places"></script>
 
   <script>
   (function(){
-
     const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
     const token = localStorage.getItem('su_token');
-    let user = null; // object
+    let user = null;
     let socket = null;
     let activeOrder = null;
-    let map = null;
-    let pickupAC = null, deliveryAC = null;
-    let chosenAgentLocationMarker = null;
+    let map = null, pickupAC=null, deliveryAC=null, agentMarker=null;
+    const banks = [
+      { bankName: "Moniepoint", accountNumber: "9128884830", accountHolderName: "Nelson Emmanuel Godspower" },
+      { bankName: "Opay", accountNumber: "9128884830", accountHolderName: "Nelson Emmanuel Godspower" },
+      { bankName: "Palmpay", accountNumber: "9128884830", accountHolderName: "Nelson Emmanuel Godspower" },
+      { bankName: "UBA", accountNumber: "234 2 835 397", accountHolderName: "Nelson Emmanuel Godspower" },
+      { bankName: "GTB", accountNumber: "0734090626", accountHolderName: "Nelson Emmanuel Godspower" }
+    ];
 
-    // helpers
     const $ = id => document.getElementById(id);
-    const showToast = (msg, t=3000) => { const el = $('toast'); el.textContent = msg; el.classList.add('show'); setTimeout(()=> el.classList.remove('show'), t); };
-    const authHeaders = () => {
-      const h = {'Content-Type':'application/json'};
-      const t = localStorage.getItem('su_token') || token;
-      if (t) h['Authorization'] = `Bearer ${t}`;
-      return h;
+    const showToast = (msg, t=3500) => {
+      if (!msg) return;
+      const el = $('toast'); el.textContent = msg; el.classList.add('show');
+      setTimeout(()=> el.classList.remove('show'), t);
     };
+    function authHeaders(){ const h={'Content-Type':'application/json'}; const t=localStorage.getItem('su_token'); if(t) h['Authorization']='Bearer '+t; return h; }
 
-    // --- AUTH CHECK & PROFILE LOAD ---
     async function ensureProfile(){
       try {
         const stored = localStorage.getItem('su_user');
-        if (stored){
-          user = JSON.parse(stored);
-        }
-        // if no user or missing data, try fetch
+        if (stored) user = JSON.parse(stored);
         if (!user || !user.name || !user.role){
           const res = await fetch(API_BASE + '/api/users/profile', { headers: authHeaders() });
           if (!res.ok) throw new Error('Failed to fetch profile');
-          user = await res.json();
-          localStorage.setItem('su_user', JSON.stringify(user));
+          user = await res.json(); localStorage.setItem('su_user', JSON.stringify(user));
         }
-        applyProfileToUI();
+        applyProfile();
       } catch (e) {
-        // fallback: redirect to login if token missing / invalid
-        console.warn('Profile load failed:', e.message);
+        console.warn('Profile error', e.message);
         showToast('Please login again.');
-        setTimeout(()=> location.href = 'index.html', 900);
+        setTimeout(()=> location.href='index.html', 900);
       }
     }
-
-    function applyProfileToUI(){
-      const first = (user && (user.name || user.fullName)) ? String(user.name || user.fullName).split(' ')[0] : 'there';
+    function applyProfile(){
+      const first = (user && (user.name || '')).split(' ')[0] || 'there';
       $('welcomeHeading').innerText = `Hello, ${first}!`;
       $('user-first').textContent = `Welcome, ${first}`;
-      $('menuName').textContent = user.name || user.fullName || 'User';
+      $('menuName').textContent = user.name || 'User';
       $('menuRole').textContent = user.role || 'Customer';
       $('roleBadge').textContent = user.role || 'Customer';
-      // referral code
-      const ref = user.referralCode || (user._id ? ('REF' + String(user._id).slice(-6)) : 'REF-UNKNOWN');
-      $('refCode').textContent = ref;
+      const ref = user.referralCode || (user._id ? 'REF' + String(user._id).slice(-6) : 'REF-UNKNOWN');
+      // note: referrals only in menu
     }
 
-    // --- side menu toggles ---
+    // side menu
     const sideMenu = $('sideMenu');
     $('hamburgerBtn').addEventListener('click', ()=> sideMenu.classList.add('open'));
     $('closeMenu').addEventListener('click', ()=> sideMenu.classList.remove('open'));
-    window.addEventListener('keydown', e => { if (e.key === 'Escape'){ sideMenu.classList.remove('open'); closeAllOverlays(); } });
+    window.addEventListener('keydown', e => { if (e.key === 'Escape'){ sideMenu.classList.remove('open'); closeAllOverlays(); closeFullPayment(); } });
 
-    // side menu clicks -> open overlay panel
-    document.querySelectorAll('.menu-item').forEach(it => {
-      it.addEventListener('click', async (ev) => {
+    document.querySelectorAll('.menu-item').forEach(it=>{
+      it.addEventListener('click', ()=> {
         const action = it.getAttribute('data-action');
         sideMenu.classList.remove('open');
         openPanelFor(action);
       });
     });
+    $('menuSettings').addEventListener('click', ()=> {
+      sideMenu.classList.remove('open');
+      openPanelFor('settings');
+    });
     $('logoutMenuBtn').addEventListener('click', doLogout);
     $('logoutBtn').addEventListener('click', doLogout);
-    $('toggleThemeMenu').addEventListener('click', toggleTheme);
 
-    // overlay screen methods
-    const overlay = $('overlayScreen');
-    const panel = $('panelContent');
+    // overlay panel
+    const overlay = $('overlayScreen'), panel = $('panelContent');
     function openPanelFor(action){
+      disableBodyScroll();
       overlay.classList.add('open');
-      panel.innerHTML = `<h2 class="small">Loading ${action}...</h2>`;
-      // route
+      panel.innerHTML = `<h3>Loading...</h3>`;
       switch(action){
         case 'profile': return loadProfilePanel();
         case 'history': return loadHistoryPanel();
-        case 'referrals': return loadReferralsPanel();
         case 'announcements': return loadAnnouncementsPanel();
-        case 'rate': return openRateModal(); // open modal instead
-        case 'report': return openReportModal();
-        case 'feedback': return loadFeedbackPanel();
-        default:
-          panel.innerHTML = `<h3>Unknown</h3>`;
+        case 'referrals': return loadReferralsPanel();
+        case 'settings': return loadSettingsPanel();
+        default: panel.innerHTML = `<div class="muted">Unknown section</div>`;
       }
     }
-    function closeAllOverlays(){ overlay.classList.remove('open'); panel.innerHTML = ''; }
-    overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closeAllOverlays(); });
+    function closeAllOverlays(){ enableBodyScroll(); overlay.classList.remove('open'); panel.innerHTML=''; }
+    overlay.addEventListener('click', (e)=> { if (e.target === overlay) closeAllOverlays(); });
 
-    // Panels implementations
+    // panels
     async function loadProfilePanel(){
-      try {
-        const p = user || {};
-        panel.innerHTML = `
-          <h2>My Profile</h2>
-          <p class="muted">Update phone and bank details here.</p>
-          <div style="margin-top:12px">
-            <label>Full name</label><input id="panel_name" value="${escapeHtml(p.name||'')}" readonly />
-            <label style="margin-top:8px">Email</label><input id="panel_email" value="${escapeHtml(p.email||'')}" readonly />
-            <label style="margin-top:8px">Phone</label><input id="panel_phone" value="${escapeHtml(p.phone||'')}" />
-            <div id="bankFields" style="margin-top:8px; display:${(p.role && (p.role.toLowerCase()==='agent' || p.role.toLowerCase()==='admin')) ? 'block' : 'none'}">
-              <label>Bank Name</label><input id="panel_bankName" value="${escapeHtml((p.bankDetails && p.bankDetails.bankName)||'')}" />
-                           <label style="margin-top:8px">Account Number</label><input id="panel_account" value="${escapeHtml((p.bankDetails && p.bankDetails.accountNumber)||'')}" />
-              <label style="margin-top:8px">Account Holder</label><input id="panel_accountHolder" value="${escapeHtml((p.bankDetails && p.bankDetails.accountHolderName)||'')}" />
-            </div>
-            <div style="margin-top:12px; display:flex; gap:8px;">
-              <button id="panelSaveBtn" class="btn">Save</button>
-              <button id="panelCloseBtn" class="btn secondary">Close</button>
-            </div>
-            <div id="panelMsg" style="margin-top:10px;"></div>
+      panel.innerHTML = `<h2>My Profile</h2><p class="muted">Update phone and bank details</p>
+        <div style="margin-top:12px">
+          <label>Full name</label><input id="panel_name" value="${escapeHtml(user.name||'')}" readonly />
+          <label style="margin-top:8px">Email</label><input id="panel_email" value="${escapeHtml(user.email||'')}" readonly />
+          <label style="margin-top:8px">Phone</label><input id="panel_phone" value="${escapeHtml(user.phone||'')}" />
+          <div id="bankFields" style="margin-top:8px; display:${(user.role && (user.role.toLowerCase()==='agent'||user.role.toLowerCase()==='admin')) ? 'block' : 'none'}">
+            <label>Bank Name</label><input id="panel_bankName" value="${escapeHtml((user.bankDetails && user.bankDetails.bankName)||'')}" />
+            <label style="margin-top:8px">Account Number</label><input id="panel_account" value="${escapeHtml((user.bankDetails && user.bankDetails.accountNumber)||'')}" />
+            <label style="margin-top:8px">Account Holder</label><input id="panel_accountHolder" value="${escapeHtml((user.bankDetails && user.bankDetails.accountHolderName)||'')}" />
           </div>
-        `;
-        $('panelCloseBtn').addEventListener('click', closeAllOverlays);
-        $('panelSaveBtn').addEventListener('click', async ()=>{
-          const payload = { phone: $('panel_phone').value.trim() };
-          const bankName = $('panel_bankName')?.value.trim();
-          const accountNumber = $('panel_account')?.value.trim();
-          const accountHolderName = $('panel_accountHolder')?.value.trim();
-          if (bankName || accountNumber || accountHolderName){
-            payload.bankName = bankName;
-            payload.accountNumber = accountNumber;
-            payload.accountHolderName = accountHolderName;
-          }
-          try {
-            const res = await fetch(API_BASE + '/api/users/me/bank', { method:'PUT', headers: authHeaders(), body: JSON.stringify(payload) });
-            const json = await res.json();
-            if (!res.ok) throw new Error(json.message || 'Save failed');
-            // reflect locally
-            user.phone = payload.phone || user.phone;
-            user.bankDetails = user.bankDetails || {};
-            if (payload.bankName) user.bankDetails.bankName = payload.bankName;
-            if (payload.accountNumber) user.bankDetails.accountNumber = payload.accountNumber;
-            if (payload.accountHolderName) user.bankDetails.accountHolderName = payload.accountHolderName;
-            localStorage.setItem('su_user', JSON.stringify(user));
-            $('panelMsg').innerText = 'Saved';
-            applyProfileToUI();
-          } catch (err) {
-            $('panelMsg').innerText = err.message || 'Error';
-          }
-        });
-      } catch (e) {
-        panel.innerHTML = `<div class="muted">Failed to load profile</div>`;
-      }
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button id="panelSaveBtn" class="btn">Save</button><button id="panelCloseBtn" class="btn secondary">Close</button>
+          </div>
+          <div id="panelMsg" style="margin-top:10px"></div>
+        </div>`;
+      $('panelCloseBtn').addEventListener('click', closeAllOverlays);
+      $('panelSaveBtn').addEventListener('click', async ()=>{
+        const payload = { phone: $('panel_phone').value.trim() };
+        const bankName = $('panel_bankName')?.value.trim();
+        const accountNumber = $('panel_account')?.value.trim();
+        const accountHolderName = $('panel_accountHolder')?.value.trim();
+        if (bankName||accountNumber||accountHolderName){ payload.bankName = bankName; payload.accountNumber = accountNumber; payload.accountHolderName = accountHolderName; }
+        try {
+          const res = await fetch(API_BASE + '/api/users/me/bank', { method:'PUT', headers: authHeaders(), body: JSON.stringify(payload) });
+          const json = await res.json();
+                 if (!res.ok) throw new Error(json.message||'Save failed');
+          user.phone = payload.phone || user.phone;
+          user.bankDetails = user.bankDetails || {};
+          if (payload.bankName) user.bankDetails.bankName = payload.bankName;
+          if (payload.accountNumber) user.bankDetails.accountNumber = payload.accountNumber;
+          if (payload.accountHolderName) user.bankDetails.accountHolderName = payload.accountHolderName;
+          localStorage.setItem('su_user', JSON.stringify(user));
+          $('panelMsg').innerText = 'Saved';
+          applyProfile();
+        } catch (err){ $('panelMsg').innerText = err.message || 'Error'; }
+      });
     }
 
     async function loadHistoryPanel(){
-      panel.innerHTML = `<h2>Order History</h2><div id="historyPanel" style="margin-top:12px;">Loading...</div>`;
+      panel.innerHTML = `<h2>Order History</h2><div id="historyPanel" style="margin-top:12px">Loading...</div>`;
       try {
-        // try /api/orders?customerId=
         const custId = user && (user._id||user.id);
-        let url = API_BASE + '/api/orders?customerId=' + encodeURIComponent(custId || '');
-        let res = await fetch(url, { headers: authHeaders() });
-        if (!res.ok){
-          // fallback to /api/orders/history
-          res = await fetch(API_BASE + '/api/orders/history', { headers: authHeaders() });
-        }
+        let res = await fetch(API_BASE + '/api/orders?customerId=' + encodeURIComponent(custId||''), { headers: authHeaders() });
+        if (!res.ok) res = await fetch(API_BASE + '/api/orders/history', { headers: authHeaders() });
         const json = await res.json();
         const arr = Array.isArray(json) ? json : (json.orders || []);
-        if (!arr.length) {
-          $('historyPanel').innerHTML = '<div class="muted">No orders yet</div>';
-          return;
-        }
-        $('historyPanel').innerHTML = arr.slice(0,30).map(o => {
-          const id = o._id || o.id || o.orderId || '—';
-          const status = (o.status || o.order?.status || '—');
+        if (!arr.length) { $('historyPanel').innerHTML = '<div class="muted">No orders yet</div>'; return; }
+        $('historyPanel').innerHTML = arr.map(o => {
+          const id = o._id || o.id || '—'; const status = o.status || o.order?.status || '—';
           const created = new Date(o.createdAt || o.created || Date.now()).toLocaleString();
-          return `<div style="padding:10px;border-radius:8px;border:1px solid #f3f4f6;margin-bottom:8px;">
-            <div style="display:flex;justify-content:space-between;">
-              <div><strong>Order</strong> ${escapeHtml(id)}</div>
-              <div class="muted small">${escapeHtml(status)}</div>
-            </div>
+          return `<div style="padding:10px;border-radius:8px;border:1px solid #f3f4f6;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between"><div><strong>${escapeHtml(id)}</strong></div><div class="muted small">${escapeHtml(status)}</div></div>
             <div class="muted small">Placed: ${escapeHtml(created)}</div>
-            <div style="margin-top:8px;"><button class="btn secondary" onclick="openOrderDetail('${id}')">Open</button></div>
-          </div>`;
+            <div style="margin-top:8px"><button class="btn secondary" onclick="openOrderDetail('${escapeJs(id)}')">Open</button></div></div>`;
         }).join('');
-      } catch (e) {
-        $('historyPanel').innerHTML = `<div class="muted">Failed to fetch history: ${escapeHtml(e.message)}</div>`;
-      }
-    }
-
-    window.openOrderDetail = async function(orderId){
-      // fetch and display in overlay panel
-      try {
-        panel.innerHTML = `<h2>Order ${escapeHtml(orderId)}</h2><div>Loading...</div>`;
-        const res = await fetch(API_BASE + '/api/orders/' + encodeURIComponent(orderId), { headers: authHeaders() });
-        const json = await res.json();
-        panel.innerHTML = `<h2>Order ${escapeHtml(orderId)}</h2><pre style="white-space:pre-wrap;">${escapeHtml(JSON.stringify(json, null, 2))}</pre>`;
-      } catch (err) {
-        panel.innerHTML = `<div class="muted">Failed to fetch order</div>`;
-      }
-    };
-
-    async function loadReferralsPanel(){
-      panel.innerHTML = `<h2>Referrals</h2><div id="refPanel">Loading...</div>`;
-      try {
-        const res = await fetch(API_BASE + '/api/referrals', { headers: authHeaders() });
-        const json = await res.json();
-        // if endpoint returns details show them else show fallback referral link
-        if (res.ok && json){
-          panel.innerHTML = `<h3>Your Code</h3><div class="pill">${escapeHtml(json.code || user.referralCode || 'REF-UNKNOWN')}</div>
-            <div style="margin-top:12px;">
-              <button class="btn" onclick="copyText('${escapeJs(json.link || (location.origin + '/signup?ref=' + (json.code || (user.referralCode || 'REF-UNKNOWN'))))}')">Copy Link</button>
-            </div>`;
-        } else {
-          const link = location.origin + '/signup?ref=' + encodeURIComponent(user.referralCode || ('REF' + String(user._id||'').slice(-6)));
-          panel.innerHTML = `<div class="muted">No referral details available from server.</div>
-            <div style="margin-top:12px;"><div class="pill">${escapeHtml(link)}</div>
-            <div style="margin-top:8px;"><button class="btn" onclick="copyText('${escapeJs(link)}')">Copy Link</button></div></div>`;
-        }
-      } catch (e){
-        panel.innerHTML = `<div class="muted">Failed to load referrals: ${escapeHtml(e.message)}</div>`;
-      }
+      } catch (e) { $('historyPanel').innerHTML = `<div class="muted">Failed to load: ${escapeHtml(e.message)}</div>`; }
     }
 
     async function loadAnnouncementsPanel(){
       panel.innerHTML = `<h2>Announcements</h2><div id="announcePanel">Loading...</div>`;
       try {
         const res = await fetch(API_BASE + '/api/announcements/latest');
-        if (!res.ok){ panel.innerHTML = `<div class="muted">No announcements</div>`; return; }
+        if (!res.ok) { panel.innerHTML = '<div class="muted">No announcements</div>'; return; }
         const a = await res.json();
-        if (!a){ panel.innerHTML = `<div class="muted">No active announcements</div>`; return; }
-        panel.innerHTML = `<h3>${escapeHtml(a.title || 'Announcement')}</h3><div class="muted small">${escapeHtml(a.message || '')}</div>`;
-      } catch (e){
-        panel.innerHTML = `<div class="muted">Failed to load announcements: ${escapeHtml(e.message)}</div>`;
-      }
+        if (!a) { panel.innerHTML = '<div class="muted">No active announcements</div>'; return; }
+        panel.innerHTML = `<h3>${escapeHtml(a.title||'Announcement')}</h3><div class="muted small">${escapeHtml(a.message||'')}</div>`;
+      } catch (e) { panel.innerHTML = `<div class="muted">Failed: ${escapeHtml(e.message)}</div>`; }
     }
 
-    async function loadFeedbackPanel(){
-      panel.innerHTML = `<h2>Feedback</h2>
-        <label>Your message</label><textarea id="fbMsg"></textarea>
-        <div style="margin-top:8px; display:flex; gap:8px;"><button id="fbSendBtn" class="btn">Send</button><button id="fbCloseBtn" class="btn secondary">Close</button></div>
-        <div id="fbResult" style="margin-top:8px;"></div>`;
-      $('fbCloseBtn').addEventListener('click', closeAllOverlays);
-      $('fbSendBtn').addEventListener('click', async () => {
-        const msg = $('fbMsg').value.trim();
-        if (!msg) { $('fbResult').innerText = 'Please enter a message'; return; }
-        try {
-          const res = await fetch(API_BASE + '/api/feedback', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ message: msg })});
-          const json = await res.json();
-          if (!res.ok) throw new Error(json.message || 'Send failed');
-          $('fbResult').innerText = 'Thanks — feedback sent';
-        } catch (err) { $('fbResult').innerText = err.message || 'Failed'; }
-      });
-    }
-
-    // panel copy helper
-    window.copyText = async function(txt){
+    async function loadReferralsPanel(){
+      panel.innerHTML = `<h2>Referrals</h2><div id="refPanel">Loading...</div>`;
       try {
-        await navigator.clipboard.writeText(txt);
-        showToast('Copied to clipboard');
-      } catch (e) {
-        alert(txt);
-      }
+        const res = await fetch(API_BASE + '/api/referrals', { headers: authHeaders() });
+        if (!res.ok) {
+          const link = location.origin + '/signup?ref=' + encodeURIComponent(user.referralCode || ('REF'+String(user._id||'').slice(-6)));
+          panel.innerHTML = `<div class="muted">No referral details from server.</div><div style="margin-top:12px"><div class="pill">${escapeHtml(link)}</div><div style="margin-top:8px"><button class="btn" onclick="copyText('${escapeJs(link)}')">Copy Link</button></div></div>`;
+          return;
+        }
+        const json = await res.json();
+        const code = json.code || user.referralCode || ('REF'+String(user._id||'').slice(-6));
+        const link = json.link || (location.origin + '/signup?ref=' + encodeURIComponent(code));
+        panel.innerHTML = `<div><div class="muted small">Your code</div><div style="margin-top:8px" class="pill">${escapeHtml(code)}</div><div style="margin-top:12px"><button class="btn" onclick="copyText('${escapeJs(link)}')">Copy Link</button></div></div>`;
+      } catch (e) { panel.innerHTML = `<div class="muted">Failed: ${escapeHtml(e.message)}</div>`; }
+    }
+
+    function loadSettingsPanel(){
+      panel.innerHTML = `<h2>Settings</h2>
+        <div style="margin-top:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div>Dark / Light Theme</div><button id="panelThemeBtn" class="btn secondary">Toggle</button></div>
+          <div style="display:flex;align-items:center;justify-content:space-between"><div>Profile</div><button id="panelProfileOpen" class="btn secondary">Open</button></div>
+          <div style="margin-top:12px"><button id="panelLogout" class="btn">Logout</button></div>
+        </div>`;
+      $('panelThemeBtn').addEventListener('click', ()=> { toggleTheme(); });
+      $('panelProfileOpen').addEventListener('click', ()=> { loadProfilePanel(); });
+      $('panelLogout').addEventListener('click', doLogout);
+    }
+
+    // copy helper
+    window.copyText = async function(txt){
+      try { await navigator.clipboard.writeText(txt); showToast('Copied to clipboard'); } catch(e){ alert(txt); }
     };
 
-    // --- Price & order flow ---
+    // Price calculation (tries multiple paths if 404)
+    async function tryCalcPrice(payload){
+      const attempts = [
+        '/api/orders/calc-price',
+        '/api/orders/calcprice',
+        '/api/orders/calc_price',
+        '/api/orders/calcPrice'
+      ];
+      for (const p of attempts){
+        try {
+          const res = await fetch(API_BASE + p, { method:'POST', headers: authHeaders(), body: JSON.stringify(payload) });
+          const json = await res.json().catch(()=>null);
+          if (res.ok) return json;
+          // if 404, try next
+          if (res.status === 404) continue;
+          // other failure: throw
+          throw new Error(json && json.message ? json.message : 'Price calc failed');
+        } catch (err) {
+          // try next
+          if (attempts.indexOf(p) === attempts.length -1) throw err;
+        }
+      }
+      throw new Error('Price calculation endpoint not found');
+    }
+
+    // calc button
     $('calcBtn').addEventListener('click', async ()=>{
       const payload = buildOrderPayload();
       if (!payload) return;
       try {
-        const res = await fetch(API_BASE + '/api/orders/calc-price', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ items: payload.items, pickup: payload.pickupAddress, dropoff: payload.deliveryAddress, serviceType: payload.serviceType })});
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.message || 'Price calc failed');
-        // show price modal (prefer finalPrice or finalprice)
-        const price = json.finalPrice || json.finalprice || json.price || 0;
-        const bank = json.superAdminBankDetails || json.superAdminBank || (json.bankDetails || {});
-        openPriceModal(price, bank, payload);
-      } catch (err){
-        showToast(err.message || 'Calculation failed');
-      }
-    });
-
-    $('submitBtn').addEventListener('click', async ()=>{
-      const payload = buildOrderPayload();
-      if (!payload) return;
-      try {
-        const res = await fetch(API_BASE + '/api/orders', { method:'POST', headers: authHeaders(), body: JSON.stringify(payload) });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.message || 'Order creation failed');
-        // backend returns order and superAdminBankDetails
-        const order = json.order || json;
-        activeOrder = order;
-        localStorage.setItem('su_active_order', JSON.stringify(order));
-        showToast('Order created. Await admin payment confirmation.');
-        // display tracking view
-        showTrackingForOrder(order);
-        await loadHistory(); // refresh brief history
-      } catch (err){
-        showToast(err.message || 'Order failed');
-      }
+        const resJson = await tryCalcPrice({ items: payload.items, pickup: payload.pickupAddress, dropoff: payload.deliveryAddress, serviceType: payload.serviceType });
+        const price = resJson.finalPrice || resJson.finalprice || resJson.price || 0;
+        const bank = resJson.superAdminBankDetails || resJson.superAdminBank || resJson.bankDetails || {};
+        showPriceModal(price, bank);
+      } catch (err){ showToast(err.message || 'Could not calculate price'); }
     });
 
     function buildOrderPayload(){
       const pickup = $('pickup').value.trim();
       const delivery = $('delivery').value.trim();
       if (!pickup || !delivery){ showToast('Please enter pickup and delivery addresses'); return null; }
-      const itemType = $('itemType').value;
+      const itemType = $('itemType').value || 'Other';
       const qty = Number($('quantity').value || 1);
       const desc = $('description').value.trim();
       const paymentMethod = $('paymentMethod').value;
       const serviceType = $('serviceType').value;
       const items = [{ itemType, quantity: qty, description: desc }];
-      const payload = { items, pickupAddress: pickup, deliveryAddress: delivery, paymentMethod, serviceType };
-      return payload;
+      return { items, pickupAddress: pickup, deliveryAddress: delivery, paymentMethod, serviceType };
     }
 
-    // Price modal controls
-    function openPriceModal(price, bank, payload){
-      $('priceBody').innerHTML = `<div><strong>Amount:</strong> ₦${Number(price || 0).toLocaleString()}</div>
-        <div style="margin-top:8px;"><strong>Pay to:</strong></div>
-        <div style="margin-top:6px;">
-          <div>Bank: ${escapeHtml(bank.bankName || bank.bank || 'SkyUltimate Bank')}</div>
-          <div>Account: ${escapeHtml(bank.accountNumber || bank.account || '0000000000')}</div>
-          <div>Account Holder: ${escapeHtml(bank.accountHolderName || bank.accountHolder || 'SkyUltimate')}</div>
-        </div>
-        <div style="margin-top:8px;" class="muted small">After payment, SuperAdmin will confirm and the order will be dispatched.</div>`;
-      $('priceBackdrop').classList.add('show');
-      // wire confirm pay (simulated)
-      const cbtn = $('confirmPayBtn');
-      cbtn.onclick = async () => {
+    // price modal uses payment overlay flow: here we will not show small modal but use payment overlay
+    function showPriceModal(price, bank){
+      // prefill payment overlay with bank list (we'll include the bank details provided, but allow override by server details)
+      openFullPaymentOverlay(price, bank);
+    }
+
+    // full page payment overlay
+    function openFullPaymentOverlay(price, bankFromServer){
+      disableBodyScroll();
+      const overlay = $('paymentOverlay'); overlay.classList.add('show');
+      const banksDiv = $('banksList'); banksDiv.innerHTML = '';
+      // prefer server-supplied bank if present (prepend)
+      const allBanks = (bankFromServer && Array.isArray(bankFromServer) && bankFromServer.length) ? bankFromServer.concat(banks) : banks;
+      allBanks.forEach((b, idx) => {
+        const div = document.createElement('div');
+        div.style.border = '1px solid #eee';
+        div.style.padding = '10px';
+        div.style.borderRadius = '10px';
+        div.style.marginBottom = '8px';
+        div.innerHTML = `<div style="font-weight:700">${escapeHtml(b.bankName||b.bank||'Bank')}</div>
+          <div class="muted small">${escapeHtml(b.accountNumber||b.account||'')}</div>
+          <div class="muted small">${escapeHtml(b.accountHolderName||b.accountHolder||'')}</div>
+          <div style="margin-top:8px"><button class="btn secondary" data-idx="${idx}">Select</button></div>`;
+        banksDiv.appendChild(div);
+      });
+      // wire select buttons
+      banksDiv.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', (ev)=>{
+          const idx = Number(btn.dataset.idx);
+          selectBankForPayment(allBanks[idx]);
+        });
+      });
+
+      $('paidConfirmBtn').onclick = async ()=>{
+        // when clicked: create order (if not created), then mark local awaiting confirmation
+        const payload = buildOrderPayload();
+        if (!payload) { showToast('Please complete order'); return; }
         try {
-          // create order with payload and mark "paid" simulation: just call create order then call confirm payment if possible
-          const res = await fetch(API_BASE + '/api/orders', { method: 'POST', headers: authHeaders(), body: JSON.stringify(payload) });
+          const res = await fetch(API_BASE + '/api/orders', { method:'POST', headers: authHeaders(), body: JSON.stringify(payload) });
           const json = await res.json();
           if (!res.ok) throw new Error(json.message || 'Order creation failed');
           const order = json.order || json;
           activeOrder = order;
           localStorage.setItem('su_active_order', JSON.stringify(order));
-          showToast('Order created. Simulating payment...');
-
-          // try to call confirm endpoint if current user is admin (will likely 403) — skip in general
-          // After order created we just close modal and load tracking; actual payment confirmation is done by admin
-          $('priceBackdrop').classList.remove('show');
+          // optionally try to call confirm-payment endpoint (admin-only) but handle gracefully
+          try {
+            await fetch(API_BASE + '/api/orders/' + encodeURIComponent(order._id || order.id) + '/confirm-payment', { method:'PUT', headers: authHeaders() });
+            // if success, fine; if 403 or 404 we ignore and keep the order pending
+          } catch(e){}
+          showToast('Marked as paid — awaiting SuperAdmin confirmation');
+          closeFullPayment();
           showTrackingForOrder(order);
-          await loadHistory();
-        } catch (err) {
-          showToast(err.message || 'Payment/Order failed');
-        }
+        } catch (err){ showToast(err.message || 'Payment/Order failed'); }
       };
-      $('closePriceBtn').onclick = ()=> $('priceBackdrop').classList.remove('show');
+
+      $('closePaymentBtn').onclick = closeFullPayment;
+    }
+    function closeFullPayment(){ enableBodyScroll(); $('paymentOverlay').classList.remove('show'); }
+
+    let selectedBank = null;
+    function selectBankForPayment(b){
+      selectedBank = b;
+      // copy bank details to clipboard for convenience
+      try { navigator.clipboard.writeText(`${b.bankName} - ${b.accountNumber} (${b.accountHolderName})`); showToast('Account copied to clipboard'); }
+      catch(e){ showToast('Selected bank details (copy failed)'); }
     }
 
-    // --- Tracking logic (polling + socket) ---
+    // payBtn opens payment overlay (requires building order payload but allows user to select bank first)
+    $('payBtn').addEventListener('click', async ()=>{
+      const payload = buildOrderPayload();
+      if (!payload) return;
+      // attempt to fetch server bank list first
+      let bankFromServer = null;
+      try {
+        const r = await fetch(API_BASE + '/api/settings', { headers: authHeaders() });
+        if (r.ok) { const j = await r.json(); bankFromServer = j.bankDetails ? [j.bankDetails] : null; }
+      } catch(e){}
+      openFullPaymentOverlay(0, bankFromServer);
+    });
+
+    // tracking / create order etc.
     function showTrackingForOrder(order){
       const id = order._id || order.id || order.orderId;
       activeOrder = order;
@@ -669,11 +596,11 @@
       $('placementCard').style.display = 'none';
       $('activeOrderId').textContent = id || '—';
       pollOrder(id);
-      // connect socket if not connected
       ensureSocketConnected();
     }
 
-    let pollInterval = null;
+    // polling
+    let pollTimer = null;
     async function pollOrder(orderId){
       if (!orderId) return;
       try {
@@ -683,28 +610,22 @@
         const status = json.status || json.order?.status || '—';
         $('trackingStatus').textContent = 'Status: ' + status;
         renderTimeline(status, json);
-        // show rate/report if completed or delivered
-        document.getElementById('openRateBtn').style.display = (status === 'Completed' || status === 'Delivered') ? 'inline-block' : 'none';
+        document.getElementById('openRateBtn').style.display = (status==='Completed' || status==='Delivered') ? 'inline-block' : 'none';
         document.getElementById('openReportBtn').style.display = 'inline-block';
-        // map marker for agent location if present
         const agentLoc = json.agentLocation || json.order?.agentLocation || json.agentLocation;
-        if (agentLoc && map){
+        if (agentLoc && window.google && map){
           const pos = { lat: Number(agentLoc.lat), lng: Number(agentLoc.lng) };
-          if (!chosenAgentLocationMarker){
-            chosenAgentLocationMarker = new google.maps.Marker({ position: pos, map });
-          } else {
-            chosenAgentLocationMarker.setPosition(pos);
-          }
+          if (!agentMarker) agentMarker = new google.maps.Marker({ position: pos, map });
+          else agentMarker.setPosition(pos);
           map.panTo(pos);
         }
-      } catch (err){
-        console.info('Polling order failed', err.message);
+      } catch (err) {
+        console.info('Poll order err', err.message);
       } finally {
-        if (pollInterval) clearTimeout(pollInterval);
-        pollInterval = setTimeout(()=> pollOrder(orderId), 5000);
+        clearTimeout(pollTimer);
+        pollTimer = setTimeout(()=> pollOrder(orderId), 5000);
       }
     }
-
     function renderTimeline(status, order){
       const steps = [
         { key:'PendingPayment', label:'Pending Payment' },
@@ -712,221 +633,173 @@
         { key:'EnRouteToPickup', label:'Agent En Route to Pickup' },
         { key:'EnRouteToDelivery', label:'Agent En Route to Delivery' },
         { key:'Completed', label:'Delivered' },
-        { key:'Delivered', label:'Delivered' }
+        { key:'Delivered', label:'Delivered' },
       ];
-      const out = steps.map(s => {
-        const active = (status === s.key || (s.key==='Completed' && status==='Delivered') || (status === 'Delivered' && s.key === 'Completed'));
-        return `<div style="padding:8px 0;"><span style="${active? 'font-weight:700;color:var(--brand);' : 'color:var(--muted);'}">${s.label}</span></div>`;
+      $('timeline').innerHTML = steps.map(s=>{
+        const active = (status === s.key || (status==='Delivered' && s.key==='Completed'));
+        return `<div style="padding:8px 0;"><span style="${active ? 'font-weight:700;color:var(--brand);' : 'color:var(--muted);'}">${s.label}</span></div>`;
       }).join('');
-      $('timeline').innerHTML = out;
     }
 
-    // socket
+    // socket.io
     function ensureSocketConnected(){
       if (socket && socket.connected) return;
       try {
         socket = io(API_BASE, { auth: { token: localStorage.getItem('su_token') } });
         socket.on('connect', ()=> console.log('socket connected'));
         socket.on('orderUpdate', data => {
-          // if update is for our active order, reflect
           const id = activeOrder && (activeOrder._id || activeOrder.id);
-          if (data && id && (data.orderId === id || data._id === id || data.orderId === id.toString())){
-            // refresh
+          if (data && id && (data.orderId === id || data._id === id || String(data.orderId) === String(id))) {
             pollOrder(id);
             showToast('Order update: ' + (data.status || 'updated'));
           }
         });
-        socket.on('disconnect', ()=> console.log('socket disconnected'));
-      } catch (e){
-        console.warn('Socket connection failed', e.message);
-      }
+      } catch(e) { console.warn('socket failed', e.message); }
     }
 
-    // --- Order history brief on main page ---
-    async function loadHistory(){
+    // order history brief -> only in menu (we removed from main)
+    async function loadHistoryBrief(){
       try {
-        const custId = user && (user._id||user.id);
-        let url = API_BASE + '/api/orders?customerId=' + encodeURIComponent(custId || '');
-        let res = await fetch(url, { headers: authHeaders() });
+        const custId = user && (user._id || user.id);
+        let res = await fetch(API_BASE + '/api/orders?customerId=' + encodeURIComponent(custId||''), { headers: authHeaders() });
         if (!res.ok) res = await fetch(API_BASE + '/api/orders/history', { headers: authHeaders() });
         const json = await res.json();
-        const arr = Array.isArray(json) ? json : (json.orders || []);
-        const recent = arr.slice(0,3);
-        $('recentOrders').innerHTML = recent.length ? recent.map(o => {
-          const id = o._id || o.id || '—';
-          const status = o.status || o.order?.status || '—';
-          return `<div style="padding:8px;border-radius:8px;border:1px solid #f3f4f6;margin-bottom:8px;">
-            <div style="display:flex; justify-content:space-between;"><div><strong>${escapeHtml(id)}</strong></div><div class="muted small">${escapeHtml(status)}</div></div>
-            <div style="margin-top:6px;">
-              <button class="btn secondary" onclick="openOrderFromMain('${escapeJs(id)}')">Open</button>
-            </div>
-          </div>`;
-        }).join('') : '<div class="muted">No recent orders</div>';
-      } catch (e){
-        $('recentOrders').innerHTML = `<div class="muted">Failed to load</div>`;
-      }
+        // doesn't render on main now (menu only)
+      } catch(e){}
     }
-    window.openOrderFromMain = id => { sideMenu.classList.remove('open'); openPanelFor('history'); setTimeout(()=> openOrderDetail(id), 400); };
 
-    // --- rate / report flows ---
+    // rate / report UI
     function openRateModal(){
-      $('rateBackdrop').classList.add('show');
-      // build star row
+      $('rateBackdrop').classList.add('show'); disableBodyScroll();
       const starRow = $('starRow'); starRow.innerHTML = '';
       for (let i=1;i<=5;i++){
-        const s = document.createElement('button');
-        s.className = 'btn secondary';
-        s.textContent = '☆';
-        s.dataset.value = i;
-        s.style.width = '44px';
-        s.onclick = ()=> {
-          // highlight
-          Array.from(starRow.children).forEach(c => c.textContent = '☆');
-          for (let j=0;j<i;j++) starRow.children[j].textContent = '★';
-          starRow.dataset.rating = i;
-        };
-        starRow.appendChild(s);
+        const btn = document.createElement('button'); btn.className='btn secondary'; btn.textContent='☆'; btn.dataset.value=i; btn.style.width='44px';
+        btn.onclick = ()=>{ Array.from(starRow.children).forEach(c=>c.textContent='☆'); for (let j=0;j<i;j++) starRow.children[j].textContent='★'; starRow.dataset.rating = i; };
+        starRow.appendChild(btn);
       }
     }
-    $('closeRateBtn').addEventListener('click', ()=> $('rateBackdrop').classList.remove('show'));
+    $('closeRateBtn').addEventListener('click', ()=> { $('rateBackdrop').classList.remove('show'); enableBodyScroll();});
     $('submitRateBtn').addEventListener('click', async ()=>{
-      const rating = Number($('starRow').dataset.rating || 5);
-      const comment = $('rateComment').value.trim();
-      // need an order id (active order)
-      const orderId = (activeOrder && (activeOrder._id || activeOrder.id));
-      if (!orderId) { showToast('No active order to rate'); return; }
+      const rating = Number($('starRow').dataset.rating || 5); const comment = $('rateComment').value.trim();
+      const orderId = activeOrder && (activeOrder._id || activeOrder.id);
+      if (!orderId) { showToast('No active order'); return; }
       try {
         const res = await fetch(API_BASE + '/api/orders/' + encodeURIComponent(orderId) + '/rate', { method:'POST', headers: authHeaders(), body: JSON.stringify({ rating, comment })});
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.message || 'Rate failed');
+        const json = await res.json(); if (!res.ok) throw new Error(json.message||'Rate failed');
         showToast('Thanks for rating!');
-        $('rateBackdrop').classList.remove('show');
-      } catch (err) { showToast(err.message || 'Rate failed'); }
+        $('rateBackdrop').classList.remove('show'); enableBodyScroll();
+      } catch(e){ showToast(e.message || 'Rate failed'); }
     });
 
-    // Report
-    function openReportModal(){
-      $('reportBackdrop').classList.add('show');
-      $('reportOrderId').value = activeOrder && (activeOrder._id||activeOrder.id) || '';
-      $('reportDesc').value = '';
-    }
-    $('closeReportBtn').addEventListener('click', ()=> $('reportBackdrop').classList.remove('show'));
+    // report
+    $('openReportBtn').addEventListener('click', ()=> { $('reportBackdrop').classList.add('show'); disableBodyScroll(); $('reportOrderId').value = activeOrder && (activeOrder._id||activeOrder.id) || ''; });
+    $('closeReportBtn').addEventListener('click', ()=> { $('reportBackdrop').classList.remove('show'); enableBodyScroll(); });
     $('submitReportBtn').addEventListener('click', async ()=>{
-      const orderId = $('reportOrderId').value.trim();
-      const desc = $('reportDesc').value.trim();
-      if (!desc) { showToast('Describe the issue'); return; }
+      const orderId = $('reportOrderId').value.trim(); const desc = $('reportDesc').value.trim();
+      if (!desc) { showToast('Please describe the issue'); return; }
       try {
-        const res = await fetch(API_BASE + '/api/reports', { method:'POST', headers: authHeaders(), body: JSON.stringify({ orderId, description: desc }) });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.message || 'Report failed');
-        showToast('Report submitted — admins will review');
-        $('reportBackdrop').classList.remove('show');
-      } catch (err) { showToast(err.message || 'Report failed'); }
+        const res = await fetch(API_BASE + '/api/reports', { method:'POST', headers: authHeaders(), body: JSON.stringify({ orderId, description: desc })});
+        const json = await res.json(); if (!res.ok) throw new Error(json.message||'Report failed');
+        showToast('Report sent — admins will review');
+        $('reportBackdrop').classList.remove('show'); enableBodyScroll();
+      } catch(e){ showToast(e.message || 'Report failed'); }
     });
 
-    // --- Referrals (buttons on main) ---
-    $('copyRef').addEventListener('click', async ()=>{
-      const link = location.origin + '/signup?ref=' + encodeURIComponent(user.referralCode || ('REF'+String(user._id||'').slice(-6)));
-      try { await navigator.clipboard.writeText(link); showToast('Referral link copied'); } catch (e) { alert(link); }
-    });
-    $('shareRef').addEventListener('click', async ()=>{
-      const link = location.origin + '/signup?ref=' + encodeURIComponent(user.referralCode || ('REF'+String(user._id||'').slice(-6)));
-      try { if (navigator.share) await navigator.share({title:'Join SkyUltimate', text:'Use my referral', url:link}); else { await navigator.clipboard.writeText(link); showToast('Link copied'); } } catch (e) { showToast('Share failed'); }
-    });
-
-    // announcement load
-    async function loadAnnouncement(){
+    // announcements load for banner (and panel)
+    async function loadAnnouncements(){
       try {
         const res = await fetch(API_BASE + '/api/announcements/latest');
         if (!res.ok) return;
-        const a = await res.json();
-        if (!a || !a.isActive) return;
+        const a = await res.json(); if (!a || !a.isActive) return;
         $('announceTitle').textContent = a.title || 'Announcement';
         $('announceMsg').textContent = a.message || '';
-        $('announceBanner').style.display = 'block';
-      } catch (e) { console.info('Announcements fail', e.message); }
+        // show small banner in a non-intrusive way (we removed main banner per request - we will not show on main)
+      } catch(e){ console.info('Announcements fail', e.message); }
     }
 
-    // --- Google Maps Autocomplete + init ---
-    function initMap(){
-      try {
-        map = new google.maps.Map(document.getElementById('map'), { center: { lat:6.5244, lng:3.3792 }, zoom: 12, disableDefaultUI: false });
-        pickupAC = new google.maps.places.Autocomplete($('pickup'));
-        deliveryAC = new google.maps.places.Autocomplete($('delivery'));
-        // bias to Lagos if possible
-        const circle = new google.maps.Circle({ center:{lat:6.5244,lng:3.3792}, radius:50000 });
-        pickupAC.setBounds(circle.getBounds());
-        deliveryAC.setBounds(circle.getBounds());
-      } catch (e) { console.warn('Maps init failed', e.message); }
+    // init Google Maps & Places gracefully
+    let mapsInitAttempted = false;
+    function initMapIfReady(){
+      if (mapsInitAttempted) return;
+      mapsInitAttempted = true;
+      if (window.google && google.maps && google.maps.places){
+        try {
+          map = new google.maps.Map(document.getElementById('map'), { center:{ lat:6.5244, lng:3.3792 }, zoom:12 });
+          pickupAC = new google.maps.places.Autocomplete($('pickup'));
+          deliveryAC = new google.maps.places.Autocomplete($('delivery'));
+          // small bias
+          try { const circle = new google.maps.Circle({ center:{lat:6.5244,lng:3.3792}, radius:50000 }); pickupAC.setBounds(circle.getBounds()); deliveryAC.setBounds(circle.getBounds()); } catch(e){}
+          document.getElementById('mapError').style.display='none';
+        } catch(e){
+          console.warn('Map init exception', e.message);
+          document.getElementById('map').style.display = 'none';
+          document.getElementById('mapError').style.display = 'block';
+          document.getElementById('mapError').textContent = 'Google Maps could not initialize. Please check API key & billing/domain restrictions.';
+        }
+      } else {
+        // wait a bit
+        setTimeout(initMapIfReady, 300);
+      }
     }
-    // wait for google script to attach
-    function waitForGoogle(){
-      if (window.google && google.maps && google.maps.places) return initMap();
-      setTimeout(waitForGoogle, 250);
-    }
-    waitForGoogle();
+    // Google auth failure hook (if Google triggers auth failure)
+    window.gm_authFailure = function() {
+      document.getElementById('map').style.display = 'none';
+      document.getElementById('mapError').style.display = 'block';
+      document.getElementById('mapError').textContent = 'Google Maps is blocked or the API key is restricted. Please enable Maps & Places for this key.';
+    };
 
-    // --- Utility / misc ---
-    function escapeHtml(s){ if (!s) return ''; return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]); }
-    function escapeJs(s){ return escapeHtml(s).replace(/'/g,"\\'").replace(/"/g,'\\"'); }
-
-    // --- Theme toggle ---
+    // theme toggle
     function toggleTheme(){
       const current = document.body.getAttribute('data-theme') || 'light';
       const next = current === 'light' ? 'dark' : 'light';
       document.body.setAttribute('data-theme', next);
       localStorage.setItem('su_theme', next);
     }
-    // load persisted theme
-    const savedTheme = localStorage.getItem('su_theme') || 'light';
-    document.body.setAttribute('data-theme', savedTheme);
+    (function loadTheme(){ const t = localStorage.getItem('su_theme') || 'light'; document.body.setAttribute('data-theme', t); })();
+
+    // utility
+    function escapeHtml(s){ if (!s) return ''; return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]); }
+    function escapeJs(s){ return escapeHtml(s).replace(/'/g,"\\'").replace(/"/g,'\\"'); }
+    function disableBodyScroll(){ document.body.style.overflow = 'hidden'; }
+    function enableBodyScroll(){ document.body.style.overflow = ''; }
 
     // logout
-    function doLogout(){
-      localStorage.removeItem('su_token');
-      localStorage.removeItem('su_user');
-      localStorage.removeItem('su_active_order');
-      location.href = 'index.html';
-    }
+    function doLogout(){ localStorage.removeItem('su_token'); localStorage.removeItem('su_user'); localStorage.removeItem('su_active_order'); location.href='index.html'; }
 
-    // hook menu actions
-    document.getElementById('viewHistoryBtn').addEventListener('click', ()=> openPanelFor('history'));
-    document.getElementById('openRateBtn').addEventListener('click', openRateModal);
-    document.getElementById('openReportBtn').addEventListener('click', openReportModal);
+    // Small helpers for opening order detail from panel
+    window.openOrderDetail = async function(orderId){
+      panel.innerHTML = `<h2>Order ${escapeHtml(orderId)}</h2><div>Loading...</div>`;
+      try {
+        const res = await fetch(API_BASE + '/api/orders/' + encodeURIComponent(orderId), { headers: authHeaders() });
+        if (!res.ok) throw new Error('Fetch failed');
+        const json = await res.json();
+        panel.innerHTML = `<h2>Order ${escapeHtml(orderId)}</h2><pre style="white-space:pre-wrap;">${escapeHtml(JSON.stringify(json, null,2))}</pre>`;
+      } catch(e) { panel.innerHTML = `<div class="muted">Failed to fetch order</div>`; }
+    };
 
-    // --- On load ---
+    // init on load
     (async function init(){
-      // ensure token present
-      const t = localStorage.getItem('su_token');
-      if (!t) { location.href = 'index.html'; return; }
+      if (!localStorage.getItem('su_token')) { location.href = 'index.html'; return; }
       await ensureProfile();
-      await loadHistory();
-      await loadAnnouncement();
+      await loadAnnouncements();
+      await loadHistoryBrief();
+      initMapIfReady();
 
-      // connect socket
-      ensureSocketConnected();
+      // resume active order if stored
+      try {
+        const saved = localStorage.getItem('su_active_order');
+        if (saved){ const o = JSON.parse(saved); if (o && (o._id||o.id)) showTrackingForOrder(o); }
+      } catch(e){}
 
-      // if an active order exists in storage, resume tracking
-      const saved = localStorage.getItem('su_active_order');
-      if (saved){
-        try {
-          const o = JSON.parse(saved);
-          if (o && (o._id || o.id)) {
-            activeOrder = o;
-            showTrackingForOrder(o);
-          }
-        } catch(e){}
-      }
+      // menu items: close overlay / menu functionality
+      // ensure rate/report buttons
+      $('openRateBtn').addEventListener('click', openRateModal);
+      $('openReportBtn').addEventListener('click', ()=> { $('reportBackdrop').classList.add('show'); disableBodyScroll(); });
 
     })();
 
-    // close overlay via outside click handled earlier
-
-    // small UI bindings
-    // Panel close by Escape handled
-    // Expose some functions for in-panel usage
-    window.toggleTheme = toggleTheme;
-    window.doLogout = doLogout;
+    // small safety: hide map container if Google never initializes after 4s
+    setTimeout(()=>{ if (!map && !document.getElementById('mapError').innerText) { initMapIfReady(); } }, 4000);
 
   })();
   </script>
