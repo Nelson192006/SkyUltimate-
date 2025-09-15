@@ -8,117 +8,119 @@
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Google Maps / Places -->
+  <!-- Google Maps / Places (will show google dialog if key/billing/referrer not set) -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDu1dptqgTwWWD6568jhf_tal7uYfdyMlQ&libraries=places" async defer></script>
 
   <style>
     :root{
-      --brand-red: #C00000;
-      --brand-red-dark: #900000;
-      --glass: rgba(255,255,255,0.92);
-      --soft: #f7fafc;
+      --brand-red:#C00000;
+      --brand-red-dark:#900000;
+      --card-bg: rgba(255,255,255,0.92);
+      --glass-shadow: 0 10px 40px rgba(2,6,23,0.06);
+      --radius-lg: 20px;
     }
-    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
-    body{background:linear-gradient(180deg,#fff7f7 0%, #fff 100%); color:#0f172a; -webkit-font-smoothing:antialiased;}
-    /* Header */
-    .topbar{backdrop-filter: blur(6px); background: linear-gradient(90deg, rgba(255,255,255,0.6), rgba(255,255,255,0.3)); box-shadow: 0 6px 26px rgba(0,0,0,0.08);}
-    .logo-round{width:64px;height:64px;border-radius:999px;object-fit:cover;box-shadow:0 8px 28px rgba(0,0,0,0.12);}
-    /* Cards */
-    .card{background:var(--glass); border-radius:18px; padding:20px; box-shadow: 0 10px 40px rgba(2,6,23,0.06);}
-    .chip{display:inline-block;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid #eee;font-weight:600}
-    /* Buttons */
-    .btn-primary{background:linear-gradient(180deg,var(--brand-red),var(--brand-red-dark));color:#fff;padding:12px 16px;border-radius:14px;font-weight:700;box-shadow:0 8px 30px rgba(192,0,0,0.18)}
-    .btn-ghost{background:#fff;border:1px solid #eee;padding:10px 14px;border-radius:12px}
-    /* Map */
-    .map{height:300px;border-radius:14px;overflow:hidden;border:1px solid #e6eef6}
-    /* Overlay */
-    .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:80}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:#0f172a}
+    body{background:linear-gradient(180deg,var(--brand-red) 0%, #fef5f5 60%); -webkit-font-smoothing:antialiased;}
+    main{max-width:1000px;margin:0 auto;padding:28px}
+    header{max-width:1000px;margin:0 auto;padding:18px 28px;display:flex;align-items:center;justify-content:space-between}
+    /* logo */
+    .logo-large{width:78px;height:78px;border-radius:999px;object-fit:cover;box-shadow:0 12px 40px rgba(0,0,0,0.22);border:4px solid rgba(255,255,255,0.06)}
+    /* card */
+    .card{background:var(--card-bg); border-radius:var(--radius-lg); padding:20px; box-shadow:var(--glass-shadow)}
+    /* chip */
+    .chip{display:inline-block;padding:8px 14px;border-radius:999px;background:#fff;border:1px solid #ffecec;font-weight:700}
+    /* primary btn */
+    .btn-primary{background:linear-gradient(180deg,var(--brand-red),var(--brand-red-dark));color:#fff;padding:12px 16px;border-radius:16px;font-weight:800;box-shadow:0 10px 30px rgba(192,0,0,0.18);border:none}
+    .btn-ghost{background:#fff;border:1px solid #eee;padding:10px 14px;border-radius:14px}
+    .btn-muted{background:transparent;border:1px solid rgba(0,0,0,0.05);padding:8px 12px;border-radius:12px}
+    .map{height:320px;border-radius:14px;overflow:hidden;border:1px solid rgba(0,0,0,0.06)}
+    /* overlay panel */
+    .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:90}
     .overlay.show{display:flex}
-    .overlay-backdrop{position:absolute;inset:0;background:rgba(6,6,10,0.65)}
-    .overlay-panel{position:relative;z-index:82;width:100%;max-width:1020px;margin:16px;}
-    /* Toast */
-    .toast{position:fixed;right:18px;bottom:18px;background:#111827;color:#fff;padding:10px 14px;border-radius:10px;display:none;z-index:100}
-    .toast.show{display:block}
-    /* dark theme */
-    .dark body{background:#071026;color:#e6eef8}
-    .dark .card{background: rgba(8,12,20,0.6); box-shadow:none}
-    .dark .chip{background: rgba(255,255,255,0.04); color:#e6eef8; border-color: rgba(255,255,255,0.04)}
-    .dark .btn-ghost{background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.04)}
+    .overlay-backdrop{position:absolute;inset:0;background:rgba(3,6,10,0.6)}
+    .overlay-card{position:relative;z-index:92;background:var(--card-bg);max-width:980px;width:calc(100% - 40px);border-radius:18px;padding:20px;box-shadow:var(--glass-shadow)}
     .no-scroll{overflow:hidden;height:100%}
-    /* responsive */
-    @media (max-width:640px){
-      .logo-round{width:52px;height:52px}
+    /* small screens */
+    @media (max-width:720px){
+      header{padding:12px}
+      .logo-large{width:62px;height:62px}
       .map{height:220px}
     }
+    /* toast */
+    .toast{position:fixed;right:18px;bottom:18px;background:#0f172a;color:#fff;padding:10px 14px;border-radius:10px;display:none;z-index:110}
+    .toast.show{display:block}
+    /* debug panel */
+    .debug{background:#fff6f6;border:1px solid #ffd6d6;padding:12px;border-radius:12px;color:#600}
+    /* disabled btn look */
+    button[disabled]{opacity:0.6;cursor:not-allowed}
+    /* dark mode readability */
+    .dark body{background:#071026;color:#e6eef8}
+    .dark .card{background:rgba(8,12,20,0.6);color:#e6eef8}
+    .dark .overlay-card{background:rgba(8,12,20,0.72)}
   </style>
 </head>
 <body>
-  <!-- Top bar -->
-  <header class="topbar sticky top-0 z-40">
-    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <button id="hamburger" class="p-2 rounded-md hover:bg-white/30" title="Menu" aria-label="Menu">
-          <svg width="22" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="#111827" stroke-width="1.6" stroke-linecap="round"/></svg>
-        </button>
-        <img id="siteLogo" class="logo-round" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="SkyUltimate"/>
-      </div>
 
-      <!-- only welcome (no text beside logo) -->
-      <div class="flex items-center gap-3">
-        <div id="welcomeFirst" class="font-semibold text-lg">Welcome!</div>
-        <button id="settingsBtn" class="p-2 rounded-md hover:bg-white/30" title="Settings">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM19.4 12.7l1.1-2.1-2.3-4-2.4.6a8.4 8.4 0 00-1.6-.9l-.4-2.4h-4.4l-.4 2.4c-.5.2-1 .5-1.5.9l-2.4-.6-2.3 4 1.1 2.1c-.1.6-.1 1.3 0 1.9l-1.1 2.1 2.3 4 2.4-.6c.5.4 1 .7 1.5.9l.4 2.4h4.4l.4-2.4c.6-.2 1.1-.5 1.6-.9l2.4.6 2.3-4-1.1-2.1c.1-.6.1-1.3 0-1.9z" stroke="#111827" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>
+  <!-- Header -->
+  <header>
+    <div style="display:flex;align-items:center;gap:14px">
+      <button id="hamburger" aria-label="Menu" style="background:transparent;border:none;padding:8px;border-radius:10px">
+        <!-- lightweight white hamburger icon to match premium style -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+
+      <img id="siteLogo" class="logo-large" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="SkyUltimate" />
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px">
+      <div id="welcomeFirst" style="font-weight:800;color:#fff;font-size:18px">Welcome!</div>
+      <button id="settingsBtn" class="btn-muted">Settings</button>
     </div>
   </header>
 
-  <main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
-    <!-- Announcement -->
-    <div id="announceBanner" class="card hidden">
-      <div id="announceTitle" class="text-xl font-semibold text-red-700"></div>
-      <div id="announceMsg" class="text-sm mt-1 text-gray-700"></div>
+  <main>
+    <!-- announcement -->
+    <div id="announceBanner" class="card" style="display:none;margin-bottom:18px">
+      <div id="announceTitle" style="font-weight:800;color:var(--brand-red)"></div>
+      <div id="announceMsg" style="margin-top:6px;color:#374151"></div>
     </div>
 
-    <!-- Hero + placement -->
+    <!-- placement card -->
     <section class="card">
-      <div class="flex items-start justify-between gap-4">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
         <div>
-          <h1 id="greetingLarge" class="text-2xl font-bold">Hello!</h1>
-          <p class="text-sm text-gray-600 mt-1">Place a new delivery order — quick, secure and tracked.</p>
+          <h1 id="greetingLarge" style="font-size:22px;margin:0;font-weight:900">Hello!</h1>
+          <p style="margin:6px 0 0;color:#374151">Place a new delivery order. Fill pickup & drop details then calculate final price.</p>
         </div>
-        <div class="text-right">
-          <div class="text-xs text-gray-500">Role</div>
-          <div id="roleBadge" class="chip mt-2">Customer</div>
+        <div style="text-align:right">
+          <div style="font-size:12px;color:#fff;background:rgba(0,0,0,0.12);padding:8px 12px;border-radius:999px">Customer</div>
         </div>
       </div>
 
-      <hr class="my-4" />
+      <hr style="margin:16px 0;border:none;border-top:1px solid rgba(0,0,0,0.04)">
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
         <div>
-          <label class="text-xs text-gray-600">Pickup — full recipient address</label>
-          <input id="pickupInput" class="w-full mt-1 p-3 rounded-lg border border-gray-100" placeholder="e.g., 12B Allen Ave, Ikeja" />
+          <label class="text-sm">Pickup — full recipient address</label>
+          <input id="pickupInput" class="w-full mt-2 p-3 rounded-lg border" placeholder="e.g., 12B Allen Ave, Ikeja" />
+        </div>
+        <div>
+          <label class="text-sm">Drop-off — full delivery address</label>
+          <input id="dropInput" class="w-full mt-2 p-3 rounded-lg border" placeholder="Recipient address" />
         </div>
 
         <div>
-          <label class="text-xs text-gray-600">Drop-off — full delivery address</label>
-          <input id="dropInput" class="w-full mt-1 p-3 rounded-lg border border-gray-100" placeholder="Recipient address" />
+          <label class="text-sm">Recipient name</label>
+          <input id="recipientName" class="w-full mt-2 p-3 rounded-lg border" placeholder="Recipient full name" />
+        </div>
+        <div>
+          <label class="text-sm">Recipient phone</label>
+          <input id="recipientPhone" class="w-full mt-2 p-3 rounded-lg border" placeholder="+234 9xxxxxxxxx" />
         </div>
 
         <div>
-          <label class="text-xs text-gray-600">Recipient name</label>
-          <input id="recipientName" class="w-full mt-1 p-3 rounded-lg border border-gray-100" placeholder="Recipient full name" />
-        </div>
-
-        <div>
-          <label class="text-xs text-gray-600">Recipient phone</label>
-          <input id="recipientPhone" class="w-full mt-1 p-3 rounded-lg border border-gray-100" placeholder="+234 9xxxxxxxxx" />
-        </div>
-
-        <div>
-          <label class="text-xs text-gray-600">Item category</label>
-          <select id="itemCategory" class="w-full mt-1 p-3 rounded-lg border border-gray-100">
+          <label class="text-sm">Item category</label>
+          <select id="itemCategory" class="w-full mt-2 p-3 rounded-lg border">
             <option value="documents">Documents</option>
             <option value="food">Food</option>
             <option value="groceries">Groceries</option>
@@ -128,617 +130,566 @@
         </div>
 
         <div>
-          <label class="text-xs text-gray-600">Weight (kg)</label>
-          <input id="weightInput" type="number" min="0" class="w-full mt-1 p-3 rounded-lg border border-gray-100" placeholder="e.g., 2" />
+          <label class="text-sm">Weight (kg)</label>
+          <input id="weightInput" type="number" min="0" class="w-full mt-2 p-3 rounded-lg border" placeholder="e.g., 2" />
         </div>
 
         <div>
-          <label class="text-xs text-gray-600">Service</label>
-          <select id="serviceSelect" class="w-full mt-1 p-3 rounded-lg border border-gray-100">
+          <label class="text-sm">Service</label>
+          <select id="serviceSelect" class="w-full mt-2 p-3 rounded-lg border">
             <option value="standard">Standard</option>
             <option value="express">Express</option>
             <option value="same-day">Same-day</option>
           </select>
         </div>
 
-        <div class="md:col-span-2 flex gap-3 mt-2">
-          <button id="calcBtn" class="btn-primary flex-1" aria-live="polite">Calculate Final Price</button>
-          <button id="submitBtn" class="btn-ghost flex-1">Proceed with Payment</button>
+        <div style="grid-column:1 / -1;display:flex;gap:12px;margin-top:8px">
+          <button id="calcBtn" class="btn-primary" style="flex:1">Calculate Final Price</button>
+          <button id="submitBtn" class="btn-ghost" style="flex:1">Proceed with Payment</button>
         </div>
 
-        <div id="calcNotice" class="md:col-span-2 text-sm text-red-600 mt-1"></div>
+        <div id="calcNotice" style="grid-column:1 / -1;margin-top:6px"></div>
       </div>
     </section>
 
-    <!-- Map / tracking -->
-    <section id="trackingCard" class="card hidden">
-      <div class="flex items-center justify-between">
+    <!-- map + tracking (hidden until order active) -->
+    <section id="trackingCard" class="card" style="display:none;margin-top:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
-          <h3 class="font-semibold">Order Tracking</h3>
-          <div class="text-xs text-gray-500 mt-1">Order ID: <span id="trackId">—</span></div>
+          <h3 style="margin:0">Order Tracking</h3>
+          <div style="font-size:12px;color:#6b7280">Order ID: <span id="trackId">—</span></div>
         </div>
-        <div>
-          <span id="trackStatus" class="chip">Pending</span>
-        </div>
+        <div><span id="trackStatus" class="chip">Pending</span></div>
       </div>
 
-      <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div style="display:grid;grid-template-columns:1fr 360px;gap:12px;margin-top:12px">
         <div>
           <div id="map" class="map"></div>
-          <div class="text-xs text-gray-500 mt-2">Agent: <span id="agentName">—</span> • <a id="agentPhone" class="underline" href="#">—</a></div>
+          <div style="margin-top:8px;font-size:13px;color:#374151">Agent: <span id="agentName">—</span> • <a id="agentPhone" class="underline" href="#">—</a></div>
         </div>
 
         <div>
-          <h4 class="font-semibold">Journey</h4>
-          <div id="timeline" class="mt-3 text-sm text-gray-700"></div>
+          <h4 style="margin-top:0">Journey</h4>
+          <div id="timeline" style="margin-top:8px;color:#374151;font-size:14px"></div>
 
-          <div class="mt-6 flex gap-3">
-            <button id="btnContactAgent" class="btn-ghost">Contact Agent</button>
-            <button id="btnReportAgent" class="btn-primary">Report Agent</button>
+          <div style="margin-top:14px;display:flex;gap:10px">
+            <button id="btnContactAgent" class="btn-ghost" style="flex:1">Contact Agent</button>
+            <button id="btnReportAgent" class="btn-primary" style="flex:1">Report Agent</button>
           </div>
         </div>
       </div>
     </section>
 
-    <footer class="text-center text-sm text-gray-500">
-      Contact: <a id="phoneLink" href="tel:+2349128884830" class="underline">+234 912 888 4830</a> ·
-      <a id="whatsappLink" href="https://wa.me/2349128884830" target="_blank" class="underline">WhatsApp</a> ·
-      <a id="emailLink" href="mailto:nelsongodspower24@gmail.com" class="underline">Email</a>
+    <footer style="text-align:center;margin-top:18px;color:#fff">
+      Contact: <a id="phoneLink" href="tel:+2349128884830" style="color:#fff;text-decoration:underline">+234 912 888 4830</a> ·
+      <a id="whatsappLink" href="https://wa.me/2349128884830" target="_blank" style="color:#fff;text-decoration:underline">WhatsApp</a> ·
+      <a id="emailLink" href="mailto:nelsongodspower24@gmail.com" style="color:#fff;text-decoration:underline">Email</a>
     </footer>
   </main>
 
-  <!-- OVERLAY (full-screen) -->
-  <div id="overlay" class="overlay">
-    <div class="overlay-backdrop" id="overlayBackdrop"></div>
-    <div class="overlay-panel card" id="overlayPanel"></div>
+  <!-- full-screen overlay -->
+  <div id="overlay" class="overlay" aria-hidden="true">
+    <div id="overlayBackdrop" class="overlay-backdrop"></div>
+    <div id="overlayPanel" class="overlay-card"></div>
   </div>
 
   <div id="toast" class="toast"></div>
 
-<script>
-/* ====== Config ====== */
-const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
-const token = localStorage.getItem('su_token');
-const suUser = JSON.parse(localStorage.getItem('su_user') || 'null');
-if (!token || !suUser) { location.href = 'index.html'; }
+  <script>
+  /**************************************************************************
+   * Customer Dashboard - Premium + diagnostic version
+   * - Updated visuals to match login/home (red background, rounded buttons)
+   * - Improved error diagnostics on price calculation (shows attempted paths & server replies)
+   * - keep Places autocomplete; show guidance for Google key problems
+   *
+   * IMPORTANT: If you still get "Not found", open DevTools Network and paste
+   * the failing request's Response and Request URL into the chat so I can patch exact path.
+   **************************************************************************/
 
-const googleKey = "AIzaSyDu1dptqgTwWWD6568jhf_tal7uYfdyMlQ";
+  const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
+  const token = localStorage.getItem('su_token');
+  const suUser = JSON.parse(localStorage.getItem('su_user') || 'null');
 
-/* ====== DOM refs ====== */
-const welcomeFirst = document.getElementById('welcomeFirst');
-const greetingLarge = document.getElementById('greetingLarge');
-const roleBadge = document.getElementById('roleBadge');
+  if (!token || !suUser) { location.href = 'index.html'; }
 
-const pickupInput = document.getElementById('pickupInput');
-const dropInput = document.getElementById('dropInput');
-const recipientName = document.getElementById('recipientName');
-const recipientPhone = document.getElementById('recipientPhone');
-const itemCategory = document.getElementById('itemCategory');
-const weightInput = document.getElementById('weightInput');
-const serviceSelect = document.getElementById('serviceSelect');
+  // --- DOM refs
+  const welcomeFirst = document.getElementById('welcomeFirst');
+  const greetingLarge = document.getElementById('greetingLarge');
+  const calcBtn = document.getElementById('calcBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  const calcNotice = document.getElementById('calcNotice');
+  const overlay = document.getElementById('overlay');
+  const overlayBackdrop = document.getElementById('overlayBackdrop');
+  const overlayPanel = document.getElementById('overlayPanel');
+  const toastEl = document.getElementById('toast');
+  const announceBanner = document.getElementById('announceBanner');
+  const announceTitle = document.getElementById('announceTitle');
+  const announceMsg = document.getElementById('announceMsg');
 
-const calcBtn = document.getElementById('calcBtn');
-const submitBtn = document.getElementById('submitBtn');
-const calcNotice = document.getElementById('calcNotice');
+  const pickupInput = document.getElementById('pickupInput');
+  const dropInput = document.getElementById('dropInput');
+  const recipientName = document.getElementById('recipientName');
+  const recipientPhone = document.getElementById('recipientPhone');
+  const itemCategory = document.getElementById('itemCategory');
+  const weightInput = document.getElementById('weightInput');
+  const serviceSelect = document.getElementById('serviceSelect');
 
-const announceBanner = document.getElementById('announceBanner');
-const announceTitle = document.getElementById('announceTitle');
-const announceMsg = document.getElementById('announceMsg');
+  const trackingCard = document.getElementById('trackingCard');
+  const trackId = document.getElementById('trackId');
+  const trackStatus = document.getElementById('trackStatus');
+  const timeline = document.getElementById('timeline');
+  const agentName = document.getElementById('agentName');
+  const agentPhone = document.getElementById('agentPhone');
+  const btnContactAgent = document.getElementById('btnContactAgent');
+  const btnReportAgent = document.getElementById('btnReportAgent');
 
-const overlay = document.getElementById('overlay');
-const overlayBackdrop = document.getElementById('overlayBackdrop');
-const overlayPanel = document.getElementById('overlayPanel');
-const toastEl = document.getElementById('toast');
+  // local state
+  let lastCalc = null;
+  let currentOrder = null;
+  let pollInterval = null;
+  let map, agentMarker;
 
-const hamburger = document.getElementById('hamburger');
-const settingsBtn = document.getElementById('settingsBtn');
+  // init
+  (function init(){
+    const first = (suUser.name || '').split(' ')[0] || 'there';
+    welcomeFirst.innerText = `Hello, ${first}!`;
+    greetingLarge.innerText = `Welcome back, ${first}!`;
 
-const trackingCard = document.getElementById('trackingCard');
-const trackId = document.getElementById('trackId');
-const trackStatus = document.getElementById('trackStatus');
-const timelineEl = document.getElementById('timeline');
-const agentNameEl = document.getElementById('agentName');
-const agentPhoneEl = document.getElementById('agentPhone');
-const btnContactAgent = document.getElementById('btnContactAgent');
-const btnReportAgent = document.getElementById('btnReportAgent');
+    document.getElementById('hamburger').addEventListener('click', openMenu);
+    document.getElementById('settingsBtn').addEventListener('click', openSettings);
+    overlayBackdrop.addEventListener('click', closeOverlay);
 
-const mapContainer = document.getElementById('map');
+    calcBtn.addEventListener('click', onCalculate);
+    submitBtn.addEventListener('click', onProceedPayment);
+    btnContactAgent.addEventListener('click', ()=> { if (agentPhone.href) location.href = agentPhone.href; });
+    btnReportAgent.addEventListener('click', openReport);
 
-/* ====== Local state ====== */
-let lastCalc = null;
-let currentOrder = null;
-let pollInterval = null;
-let map, agentMarker;
+    initPlaces();
+    loadAnnouncement();
+  })();
 
-/* ====== Init UI ====== */
-(function init(){
-  const first = (suUser.name || '').split(' ')[0] || 'there';
-  welcomeFirst.innerText = `Hello, ${first}!`;
-  greetingLarge.innerText = `Welcome back, ${first}!`;
-  roleBadge.innerText = suUser.role || 'Customer';
+  // toast helper
+  function showToast(msg, time=3500){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastEl._t);
+    toastEl._t = setTimeout(()=> toastEl.classList.remove('show'), time);
+  }
 
-  hamburger.addEventListener('click', openMenu);
-  settingsBtn.addEventListener('click', openSettings);
-  overlayBackdrop.addEventListener('click', closeOverlay);
+  // overlay helpers
+  function openOverlay(nodeOrHtml){
+    if (typeof nodeOrHtml === 'string') overlayPanel.innerHTML = nodeOrHtml;
+    else { overlayPanel.innerHTML = ''; overlayPanel.appendChild(nodeOrHtml); }
+    overlay.classList.add('show');
+    document.documentElement.classList.add('no-scroll');
+  }
+  function closeOverlay(){ overlay.classList.remove('show'); overlayPanel.innerHTML = ''; document.documentElement.classList.remove('no-scroll'); }
 
-  calcBtn.addEventListener('click', onCalculate);
-  submitBtn.addEventListener('click', onProceedPayment);
+  function setLoading(btn, yes=true){
+    if (yes){ btn.dataset.prev = btn.innerHTML; btn.disabled = true; btn.innerHTML = 'Please wait...' }
+    else { btn.disabled = false; if (btn.dataset.prev) btn.innerHTML = btn.dataset.prev; }
+  }
 
-  btnContactAgent.addEventListener('click', () => {
-    if (agentPhoneEl && agentPhoneEl.textContent && agentPhoneEl.href) location.href = agentPhoneEl.href;
-  });
-  btnReportAgent.addEventListener('click', openReport);
+  // robust tryPaths -- records attempts for diagnostics
+  async function tryPaths(paths, opts={}){
+    const attempts = [];
+    let lastErr = null;
+    for (const p of paths){
+      const url = (p.startsWith('http') ? p : API_BASE + p);
+      try {
+        const headers = {'Content-Type':'application/json', ...(opts.headers||{})};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(url, { method: opts.method || 'POST', headers, body: opts.body });
+        const txt = await res.text().catch(()=>null);
+        let data = null;
+        try { data = txt ? JSON.parse(txt) : null; } catch(e){ data = txt; }
+        attempts.push({ url, status:res.status, ok:res.ok, body: data });
+        if (res.ok) { return { data: data ?? {}, attempts }; }
+        lastErr = { url, status: res.status, body: data };
+      } catch (err) {
+        attempts.push({ url, error: err.message || String(err) });
+        lastErr = { url, error: err.message || String(err) };
+      }
+    }
+    // nothing succeeded; throw a structured error with all attempts
+    const err = new Error('All candidate endpoints failed');
+    err.attempts = attempts;
+    throw err;
+  }
 
-  initPlaces();
-  loadAnnouncement();
-  applyTheme(!!localStorage.getItem('su_theme_dark'));
-})();
+  async function getJSON(path){
+    const headers = { 'Content-Type':'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(API_BASE + path, { headers });
+    const txt = await res.text().catch(()=>null);
+    let data = null;
+    try { data = txt ? JSON.parse(txt) : null; } catch(e) { data = txt; }
+    if (!res.ok) throw new Error((data && data.message) || `HTTP ${res.status}`);
+    return data;
+  }
 
-/* ====== Utilities ====== */
-function showToast(msg, timeout=3500){
-  toastEl.textContent = msg;
-  toastEl.classList.add('show');
-  clearTimeout(toastEl._t);
-  toastEl._t = setTimeout(()=> toastEl.classList.remove('show'), timeout);
-}
-function openOverlay(htmlOrNode){
-  if (typeof htmlOrNode === 'string') overlayPanel.innerHTML = htmlOrNode;
-  else { overlayPanel.innerHTML = ''; overlayPanel.appendChild(htmlOrNode); }
-  overlay.classList.add('show');
-  document.documentElement.classList.add('no-scroll');
-}
-function closeOverlay(){ overlay.classList.remove('show'); overlayPanel.innerHTML = ''; document.documentElement.classList.remove('no-scroll'); }
-function setLoading(btn, yes=true){ if (yes) { btn.dataset.prev = btn.innerHTML; btn.disabled=true; btn.innerHTML = 'Please wait...'; } else { btn.disabled=false; if (btn.dataset.prev) btn.innerHTML = btn.dataset.prev; } }
-
-/* Robust POST helper with a list of candidate paths (tries each until success).
-   Accepts array of path strings (leading slash), options: method, body.
-   Returns the JSON for the first 2xx response, otherwise throws last error.
-*/
-async function tryPaths(paths, opts={}) {
-  let lastErr = null;
-  for (const p of paths) {
+  // announcement
+  async function loadAnnouncement(){
     try {
-      const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-      const res = await fetch(API_BASE + p, { method: opts.method || 'POST', headers, body: opts.body });
-      const text = await res.text();
-      let data = null;
-      try { data = text ? JSON.parse(text) : null; } catch(e){ data = text; }
-      if (res.ok) return data ?? {};
-      // if 404 try next path; gather message
-      lastErr = new Error((data && data.message) || `HTTP ${res.status} (${p})`);
-      // continue trying other paths
+      const res = await fetch(API_BASE + '/api/announcements/latest');
+      if (!res.ok) return;
+      const a = await res.json();
+      if (a && a.isActive){
+        announceTitle.textContent = a.title || 'Announcement';
+        announceMsg.textContent = a.message || '';
+        announceBanner.style.display = 'block';
+      }
+    } catch(e){ console.info('announcement load failed', e.message) }
+  }
+
+  // Google Places initialization (autocomplete)
+  function initPlaces(){
+    if (!window.google || !google.maps || !google.maps.places){
+      setTimeout(initPlaces, 700);
+      return;
+    }
+    try {
+      const options = { types:['address'] };
+      new google.maps.places.Autocomplete(pickupInput, options);
+      new google.maps.places.Autocomplete(dropInput, options);
+    } catch(e){ console.warn('places init err', e.message) }
+  }
+
+  // build items from UI
+  function buildItems(){ return [{ itemType: itemCategory.value || 'parcel', weight: Number(weightInput.value||0), quantity: 1 }]; }
+
+  // candidate paths for price calc & create (keeps trying likely variants)
+  const calcPaths = ['/api/orders/calc-price','/api/orders/calculate-price','/api/orders/estimate','/api/orders/calcprice'];
+  const createPaths = ['/api/orders','/api/orders/submit','/api/orders/create','/api/orders/new'];
+
+  // Calculate final price
+  async function onCalculate(){
+    calcNotice.innerHTML = ''; lastCalc = null;
+    setLoading(calcBtn,true);
+    try {
+      const payload = { items: buildItems(), serviceType: serviceSelect.value, pickup: pickupInput.value, dropoff: dropInput.value };
+      const resObj = await tryPaths(calcPaths, { method:'POST', body: JSON.stringify(payload) });
+      lastCalc = resObj.data;
+      // success - show price overlay
+      showPriceOverlay(lastCalc);
     } catch (err) {
-      lastErr = err;
-    }
+      console.error('calc error', err);
+      displayCalcDiagnostics(err);
+      showToast('Price calculation failed — see details');
+    } finally { setLoading(calcBtn,false); }
   }
-  // none succeeded
-  throw lastErr || new Error('No paths succeeded');
-}
 
-/* GET helper with auth, throws on non-2xx */
-async function getJSON(path) {
-  const headers = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(API_BASE + path, { headers });
-  const txt = await res.text();
-  let data = null;
-  try { data = txt ? JSON.parse(txt) : null; } catch(e){ data = txt; }
-  if (!res.ok) throw new Error((data && data.message) || `HTTP ${res.status}`);
-  return data;
-}
-
-/* ====== Announcement ====== */
-async function loadAnnouncement(){
-  try {
-    const res = await fetch(API_BASE + '/api/announcements/latest');
-    if (!res.ok) return;
-    const a = await res.json();
-    if (a && a.isActive) {
-      announceTitle.textContent = a.title || 'Announcement';
-      announceMsg.textContent = a.message || '';
-      announceBanner.classList.remove('hidden');
-    }
-  } catch(e){ console.info('announcement load failed:', e.message); }
-}
-
-/* ====== Google Places Autocomplete ====== */
-function initPlaces(){
-  // wait for google
-  if (!window.google || !google.maps || !google.maps.places) {
-    // retry a few times then show guidance
-    setTimeout(initPlaces, 700);
-    return;
+  // show diagnostics for failed calc
+  function displayCalcDiagnostics(err){
+    // err.attempts contains array of attempts from tryPaths
+    const attempts = err.attempts || [];
+    const node = document.createElement('div');
+    node.className = 'debug';
+    node.innerHTML = `<div style="font-weight:800;margin-bottom:6px">Calculation failed — attempted endpoints</div>
+      <div style="max-height:260px;overflow:auto">` + attempts.map(a => {
+        if (a.error) return `<div style="padding:8px;border-bottom:1px solid #fee">URL: <b>${escapeHtml(a.url)}</b><br/><span style="color:#900">Error: ${escapeHtml(a.error)}</span></div>`;
+        return `<div style="padding:8px;border-bottom:1px solid #fee">URL: <b>${escapeHtml(a.url)}</b><br/>Status: ${a.status}<br/>Response: <pre style="white-space:pre-wrap">${escapeHtml(JSON.stringify(a.body, null, 2))}</pre></div>`;
+      }).join('') + `</div>
+      <div style="margin-top:8px;font-size:13px">If this persists: check backend routes, CORS, or paste failing request response here so I can adapt the frontend.</div>`;
+    calcNotice.innerHTML = '';
+    calcNotice.appendChild(node);
+    console.table(attempts);
   }
-  try {
-    const p = new google.maps.places.Autocomplete(pickupInput, { types:['address'] });
-    const d = new google.maps.places.Autocomplete(dropInput, { types:['address'] });
-    // optionally bias to Nigeria
-    // p.setComponentRestrictions({ country: 'ng' });
-    // d.setComponentRestrictions({ country: 'ng' });
-  } catch(e){
-    console.warn('places init failed', e.message);
-  }
-}
 
-/* ====== Pricing & Payment flows ====== */
+  function escapeHtml(s){ return String(s || '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
 
-// candidate paths to try for price calculation
-const calcPaths = ['/api/orders/calc-price', '/api/orders/calculate-price', '/api/orders/estimate'];
-// candidate paths to try for create order
-const createPaths = ['/api/orders', '/api/orders/submit', '/api/orders/create'];
-
-function buildItems(){
-  return [{ itemType: itemCategory.value || 'parcel', weight: Number(weightInput.value || 0), quantity: 1 }];
-}
-
-async function onCalculate(){
-  calcNotice.textContent = '';
-  lastCalc = null;
-  setLoading(calcBtn,true);
-  try {
-    const payload = { items: buildItems(), serviceType: serviceSelect.value, pickup: pickupInput.value, dropoff: dropInput.value };
-    const res = await tryPaths(calcPaths, { method:'POST', body: JSON.stringify(payload) });
-    lastCalc = res;
-    showPriceOverlay(res);
-  } catch (err) {
-    console.error('Price calc failed:', err);
-    calcNotice.textContent = err.message || 'Failed to calculate price';
-    showToast(err.message || 'Calculation error');
-  } finally {
-    setLoading(calcBtn,false);
-  }
-}
-
-function showPriceOverlay(res){
-  const final = res.finalPrice ?? res.finalprice ?? 0;
-  const bankInfo = res.superAdminBankDetails || {}; // backend may return this; we still show your provided accounts
-  const html = document.createElement('div');
-  html.innerHTML = `
-    <h3 class="text-xl font-semibold mb-2">Final Price</h3>
-    <div class="text-3xl font-bold mb-2">₦${Number(final).toLocaleString()}</div>
-    <div class="text-sm text-gray-600 mb-4">Choose any of the accounts below to pay. After payment click <strong>I have paid</strong>.</div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-      <div class="p-3 rounded border"> <div class="font-semibold">Moniepoint</div><div class="text-sm">Acct: 9128884830 • Nelson Emmanuel Godspower</div></div>
-      <div class="p-3 rounded border"> <div class="font-semibold">Opay</div><div class="text-sm">Acct: 9128884830 • Nelson Emmanuel Godspower</div></div>
-      <div class="p-3 rounded border"> <div class="font-semibold">Palmpay</div><div class="text-sm">Acct: 9128884830 • Nelson Emmanuel Godspower</div></div>
-      <div class="p-3 rounded border"> <div class="font-semibold">UBA</div><div class="text-sm">Acct: 234 2 835 397 • Nelson Emmanuel Godspower</div></div>
-      <div class="p-3 rounded border"> <div class="font-semibold">GTB</div><div class="text-sm">Acct: 0734090626 • Nelson Emmanuel Godspower</div></div>
-    </div>
-    <div class="flex gap-3">
-      <button id="iPaidBtn" class="btn-primary flex-1">I have paid</button>
-      <button id="closePrice" class="btn-ghost flex-1">Close</button>
-    </div>
-  `;
-  openOverlay(html);
-  document.getElementById('closePrice').addEventListener('click', closeOverlay);
-  document.getElementById('iPaidBtn').addEventListener('click', onConfirmPaidCreateOrder);
-}
-
-// proceed with payment - if no calc yet, do calc then show overlay (calc code will show overlay)
-async function onProceedPayment(){
-  if (!lastCalc) {
-    await onCalculate();
-    return;
-  }
-  showPriceOverlay(lastCalc);
-}
-
-// Create order after user confirms payment
-async function onConfirmPaidCreateOrder(){
-  const btn = document.getElementById('iPaidBtn');
-  setLoading(btn,true);
-  try {
-    if (!pickupInput.value || !dropInput.value) { showToast('Please fill pickup & dropoff addresses'); return; }
-    const payload = {
-      items: buildItems(),
-      pickupAddress: pickupInput.value,
-      deliveryAddress: dropInput.value,
-      paymentMethod: 'Bank Transfer',
-      recipientName: recipientName.value || '',
-      recipientPhone: recipientPhone.value || ''
-    };
-    const res = await tryPaths(createPaths, { method:'POST', body: JSON.stringify(payload) });
-    // server returns order (try different shapes)
-    const order = res.order || res;
-    currentOrder = order;
-    localStorage.setItem('su_active_order', JSON.stringify(order));
-        showToast('Order created. Awaiting admin confirmation.');
-    closeOverlay();
-    openTracking(order._id || order.id || order._doc?._id || '');
-    await refreshHistory(); // best-effort refresh
-  } catch (err) {
-    console.error('Order create failed', err);
-    showToast(err.message || 'Order creation failed');
-    document.getElementById('calcNotice').textContent = err.message || 'Order creation failed';
-  } finally {
-    setLoading(btn,false);
-  }
-}
-
-/* ====== Tracking polling ====== */
-function openTracking(orderId){
-  if (!orderId) return;
-  trackingCard.classList.remove('hidden');
-  trackId.textContent = orderId;
-  startPolling(orderId);
-  initMap();
-}
-
-function startPolling(orderId){
-  if (pollInterval) clearInterval(pollInterval);
-  pollInterval = setInterval(()=> pollOrder(orderId), 5000);
-  pollOrder(orderId); // immediate
-}
-
-async function pollOrder(orderId){
-  try {
-    const data = await getJSON(`/api/orders/${orderId}`);
-    const order = data.order || data;
-    currentOrder = order;
-    const status = order.status || 'Pending';
-    trackStatus.textContent = status;
-    renderTimeline(status, order);
-    // agent info
-    const agent = order.agentDetails || order.agentProfile || order.agent;
-    if (agent && typeof agent === 'object') {
-      agentNameEl.textContent = agent.name || 'Agent';
-      agentPhoneEl.textContent = agent.phone || agent.contact || '';
-      agentPhoneEl.href = `tel:${agent.phone || agent.contact || ''}`;
-    } else {
-      agentNameEl.textContent = order.agent || '—';
-    }
-    // update map if agent location included
-    if (order.agentLocation && order.agentLocation.lat && order.agentLocation.lng) {
-      updateAgentMarker(Number(order.agentLocation.lat), Number(order.agentLocation.lng));
-    }
-    if (status === 'Completed' || status === 'Delivered') {
-      showToast('Order delivered');
-      clearInterval(pollInterval); pollInterval = null;
-    }
-  } catch (err) {
-    console.info('poll error', err.message);
-  }
-}
-
-function renderTimeline(status, order){
-  const steps = [
-    { key:'PendingPayment', label:'Pending Payment' },
-    { key:'PaymentConfirmed', label:'Payment Confirmed' },
-    { key:'EnRouteToPickup', label:'Agent en route to pickup' },
-    { key:'EnRouteToDelivery', label:'Agent en route to delivery' },
-    { key:'Completed', label:'Delivered / Completed' },
-    { key:'Delivered', label:'Delivered' },
-  ];
-  timelineEl.innerHTML = steps.map(s=>{
-    const active = (s.key === status || (s.key==='Completed' && status==='Delivered'));
-    return `<div class="py-1"><span class="${active ? 'font-bold text-green-600' : 'text-gray-600'}">${s.label}</span></div>`;
-  }).join('');
-}
-
-/* ====== Map helpers ====== */
-function initMap(){
-  if (map) return;
-  if (!window.google || !google.maps) {
-    console.warn('Google maps not ready');
-    return;
-  }
-  map = new google.maps.Map(mapContainer, { center:{lat:6.5244,lng:3.3792}, zoom:12, disableDefaultUI:true });
-}
-function updateAgentMarker(lat, lng){
-  if (!map) initMap();
-  const pos = { lat, lng };
-  if (!agentMarker) {
-    agentMarker = new google.maps.Marker({ position: pos, map, title:'Agent' });
-    map.setCenter(pos);
-  } else agentMarker.setPosition(pos);
-}
-
-/* ====== Menu / overlays ====== */
-function openMenu(){
-  const html = document.createElement('div');
-  html.innerHTML = `
-    <div class="flex items-center justify-between mb-4">
-      <div class="flex items-center gap-3">
-        <img src="${document.getElementById('siteLogo').src}" class="w-14 h-14 rounded-full" />
-        <div>
-          <div class="font-semibold">${suUser.name || 'User'}</div>
-          <div class="text-sm text-gray-500">${suUser.email || ''}</div>
-        </div>
+  // show price overlay
+  function showPriceOverlay(res){
+    const final = res.finalPrice ?? res.finalprice ?? res.final ?? 0;
+    const node = document.createElement('div');
+    node.innerHTML = `
+      <h3 style="font-weight:900;margin:0 0 8px">Final Price</h3>
+      <div style="font-size:28px;font-weight:900;margin-bottom:8px">₦${Number(final).toLocaleString()}</div>
+      <div style="color:#374151;margin-bottom:12px">Pay to any of these accounts and click "I have paid".</div>
+      <div style="display:grid;grid-template-columns:repeat(1,1fr);gap:8px;margin-bottom:12px">
+        <div style="padding:12px;border-radius:10px;border:1px solid #f3e6e6"><b>Moniepoint</b><div>Acct: 9128884830</div><div>Acct name: Nelson Emmanuel Godspower</div></div>
+        <div style="padding:12px;border-radius:10px;border:1px solid #f3e6e6"><b>Opay</b><div>Acct: 9128884830</div><div>Acct name: Nelson Emmanuel Godspower</div></div>
+        <div style="padding:12px;border-radius:10px;border:1px solid #f3e6e6"><b>Palmpay</b><div>Acct: 9128884830</div><div>Acct name: Nelson Emmanuel Godspower</div></div>
+        <div style="padding:12px;border-radius:10px;border:1px solid #f3e6e6"><b>UBA</b><div>Acct: 234 2 835 397</div><div>Acct name: Nelson Emmanuel Godspower</div></div>
+        <div style="padding:12px;border-radius:10px;border:1px solid #f3e6e6"><b>GTB</b><div>Acct: 0734090626</div><div>Acct name: Nelson Emmanuel Godspower</div></div>
       </div>
-      <div><button id="closeMenuBtn" class="btn-ghost">Close</button></div>
-    </div>
-    <div class="grid gap-2">
-      <button id="menuOrders" class="btn-ghost w-full text-left">Order History</button>
-      <button id="menuReferral" class="btn-ghost w-full text-left">Refer & Earn</button>
-      <button id="menuProfile" class="btn-ghost w-full text-left">My Profile</button>
-      <button id="menuAnnouncements" class="btn-ghost w-full text-left">Announcements</button>
-      <button id="menuRate" class="btn-ghost w-full text-left">Rate Delivered Order</button>
-      <button id="menuReport" class="btn-ghost w-full text-left">Report an Issue</button>
-      <button id="menuSettings" class="btn-ghost w-full text-left">Settings</button>
-      <button id="menuLogout" class="btn-ghost w-full text-left text-red-600">Logout</button>
-    </div>
-  `;
-  openOverlay(html);
-  document.getElementById('closeMenuBtn').onclick = closeOverlay;
-  document.getElementById('menuOrders').onclick = openHistory;
-  document.getElementById('menuReferral').onclick = openReferral;
-  document.getElementById('menuProfile').onclick = openProfile;
-  document.getElementById('menuAnnouncements').onclick = openAnnouncements;
-  document.getElementById('menuRate').onclick = openRate;
-  document.getElementById('menuReport').onclick = openReport;
-  document.getElementById('menuSettings').onclick = openSettings;
-  document.getElementById('menuLogout').onclick = ()=> { localStorage.removeItem('su_token'); localStorage.removeItem('su_user'); location.href='index.html' };
-}
+      <div style="display:flex;gap:8px">
+        <button id="iPaidBtn" class="btn-primary" style="flex:1">I have paid</button>
+        <button id="closePrice" class="btn-ghost" style="flex:1">Close</button>
+      </div>
+    `;
+    openOverlay(node);
+    document.getElementById('closePrice').addEventListener('click', closeOverlay);
+    document.getElementById('iPaidBtn').addEventListener('click', onConfirmPaidCreateOrder);
+  }
 
-/* Order history overlay */
-async function openHistory(){
-  openOverlay('<div>Loading order history...</div>');
-  try {
-    const res = await getJSON(`/api/orders?customerId=${suUser.id || suUser._id || suUser._id}`);
-    const list = Array.isArray(res) ? res : (res.orders || res.data || []);
-    const container = document.createElement('div');
-    container.innerHTML = `<h3 class="text-xl font-semibold mb-2">Order History</h3>`;
-    if (!list || list.length === 0) {
-      container.innerHTML += `<div class="text-sm">No orders yet.</div>`;
-    } else {
-      container.innerHTML += list.map(o=>{
+  // proceed (if calculate not done, do calculate first)
+  async function onProceedPayment(){
+    if (!lastCalc) { await onCalculate(); return; }
+    showPriceOverlay(lastCalc);
+  }
+
+  // create order after "I have paid" (frontend simulates payment then backend confirms later)
+  async function onConfirmPaidCreateOrder(){
+    const btn = document.getElementById('iPaidBtn');
+    setLoading(btn,true);
+    try {
+      if (!pickupInput.value || !dropInput.value) { showToast('Please fill pickup & drop addresses'); return; }
+      const payload = {
+        items: buildItems(),
+        pickupAddress: pickupInput.value,
+        deliveryAddress: dropInput.value,
+        paymentMethod: 'Bank Transfer',
+        recipientName: recipientName.value || '',
+        recipientPhone: recipientPhone.value || ''
+      };
+      const resObj = await tryPaths(createPaths, { method:'POST', body: JSON.stringify(payload) });
+      const order = resObj.data.order || resObj.data || {};
+      currentOrder = order;
+      localStorage.setItem('su_active_order', JSON.stringify(order));
+      showToast('Order created. Awaiting admin confirmation.');
+      closeOverlay();
+      openTracking(order._id || order.id || (order._doc && order._doc._id) || '');
+      await refreshHistory(); // attempt refresh
+    } catch (err) {
+      console.error('create order failed', err);
+      if (err.attempts) {
+        // show nice debug overlay
+        const debug = document.createElement('div');
+        debug.innerHTML = `<h3 style="font-weight:800">Order creation failed</h3><div style="max-height:260px;overflow:auto;margin-top:8px">${err.attempts.map(a => a.error ? `<div style="padding:8px;border-bottom:1px solid #fee"><b>${escapeHtml(a.url || '')}</b><div style="color:#900">Error: ${escapeHtml(a.error)}</div></div>` : `<div style="padding:8px;border-bottom:1px solid #fee"><b>${escapeHtml(a.url)}</b><div>Status: ${a.status}</div><pre style="white-space:pre-wrap">${escapeHtml(JSON.stringify(a.body, null, 2))}</pre></div>`).join('')}</div><div style="margin-top:8px">If this is unexpected, paste one failing response here so I can adapt the frontend exactly.</div>`;
+        openOverlay(debug);
+      } else {
+        showToast(err.message || 'Order creation failed');
+      }
+    } finally { setLoading(btn,false); }
+  }
+
+  // TRACKING / POLLING
+  function openTracking(orderId){
+    if (!orderId) return;
+    trackingCard.style.display = 'block';
+    trackId.textContent = orderId;
+    startPolling(orderId);
+    initMap();
+  }
+
+  let pollTimer = null;
+  function startPolling(orderId){
+    if (pollTimer) clearInterval(pollTimer);
+    pollOrder(orderId); // immediate
+    pollTimer = setInterval(()=> pollOrder(orderId), 5000);
+  }
+
+  async function pollOrder(orderId){
+    try {
+      const data = await getJSON(`/api/orders/${orderId}`);
+      const order = data.order || data;
+      currentOrder = order;
+      const status = order.status || 'Pending';
+      trackStatus.textContent = status;
+      renderTimeline(status, order);
+      // agent info
+      const agent = order.agentDetails || order.agentProfile || order.agent;
+      if (agent && typeof agent === 'object') {
+        agentName.textContent = agent.name || 'Agent';
+        agentPhone.textContent = agent.phone || agent.contact || '';
+        agentPhone.href = `tel:${agent.phone || agent.contact || ''}`;
+      } else {
+        agentName.textContent = order.agent || '—';
+      }
+      // if agentLocation present, update marker
+      if (order.agentLocation && order.agentLocation.lat && order.agentLocation.lng) {
+        updateAgentMarker(Number(order.agentLocation.lat), Number(order.agentLocation.lng));
+      }
+      if (status === 'Completed' || status === 'Delivered') {
+        showToast('Order delivered');
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+      }
+    } catch(e){ console.info('poll err', e.message) }
+  }
+
+  function renderTimeline(status, order){
+    const steps = [
+      {k:'PendingPayment', l:'Pending Payment'},
+      {k:'PaymentConfirmed', l:'Payment Confirmed'},
+      {k:'EnRouteToPickup', l:'Agent en route to pickup'},
+      {k:'EnRouteToDelivery', l:'Agent en route to delivery'},
+      {k:'Completed', l:'Delivered / Completed'},
+      {k:'Delivered', l:'Delivered'}
+    ];
+    timeline.innerHTML = steps.map(s => {
+      const active = (s.k === status || (s.k==='Completed' && status==='Delivered'));
+      return `<div style="padding:6px 0"><span style="${active ? 'font-weight:800;color:#059669' : 'color:#6b7280'}">${s.l}</span></div>`;
+    }).join('');
+  }
+
+  // Map helpers
+  function initMap(){
+    if (map) return;
+    if (!window.google || !google.maps) {
+      console.warn('Google maps not loaded yet (check API key/billing/referrer settings)');
+      return;
+    }
+    map = new google.maps.Map(document.getElementById('map'), { center:{lat:6.5244,lng:3.3792}, zoom:12, disableDefaultUI:true });
+  }
+  function updateAgentMarker(lat,lng){
+    if (!map) initMap();
+    const pos = {lat, lng};
+    if (!agentMarker) { agentMarker = new google.maps.Marker({ position: pos, map, title: 'Agent' }); map.setCenter(pos); }
+    else agentMarker.setPosition(pos);
+  }
+
+  // MENU overlays (Order history, Referral, Profile, Announcements, Rate, Report, Settings)
+  function openMenu(){
+    const node = document.createElement('div');
+    node.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div><img src="${document.getElementById('siteLogo').src}" style="width:64px;height:64px;border-radius:999px;margin-right:12px" /><strong>${escapeHtml(suUser.name||'User')}</strong><div style="font-size:12px;color:#6b7280">${escapeHtml(suUser.email||'')}</div></div><div><button id="closeMenu" class="btn-ghost">Close</button></div></div>
+      <div style="margin-top:12px;display:grid;gap:8px">
+        <button id="menuOrders" class="btn-ghost">Order History</button>
+        <button id="menuReferral" class="btn-ghost">Refer & Earn</button>
+        <button id="menuProfile" class="btn-ghost">My Profile</button>
+        <button id="menuAnnouncements" class="btn-ghost">Announcements</button>
+        <button id="menuRate" class="btn-ghost">Rate Delivered</button>
+        <button id="menuReport" class="btn-ghost">Report an Issue</button>
+        <button id="menuSettings" class="btn-ghost">Settings</button>
+        <button id="menuLogout" class="btn-ghost" style="color:#b91c1c">Logout</button>
+      </div>`;
+    openOverlay(node);
+    document.getElementById('closeMenu').onclick = closeOverlay;
+    document.getElementById('menuOrders').onclick = openHistory;
+    document.getElementById('menuReferral').onclick = openReferral;
+    document.getElementById('menuProfile').onclick = openProfile;
+    document.getElementById('menuAnnouncements').onclick = ()=> openAnnouncements(true);
+    document.getElementById('menuRate').onclick = openRate;
+    document.getElementById('menuReport').onclick = openReport;
+    document.getElementById('menuSettings').onclick = openSettings;
+    document.getElementById('menuLogout').onclick = ()=> { localStorage.removeItem('su_token'); localStorage.removeItem('su_user'); location.href='index.html'; };
+  }
+  document.getElementById('hamburger').addEventListener('click', openMenu);
+
+  // Order History overlay (full-screen replacement)
+  async function openHistory(){
+    openOverlay('<div>Loading history...</div>');
+    try {
+      const res = await getJSON(`/api/orders?customerId=${suUser.id || suUser._id || suUser._id}`);
+      const list = Array.isArray(res) ? res : (res.orders || res.data || []);
+      const container = document.createElement('div');
+      container.innerHTML = `<h3 style="font-weight:900">Order History</h3>`;
+      if (!list || list.length === 0) container.innerHTML += `<div class="text-sm" style="margin-top:6px">No orders yet.</div>`;
+      else container.innerHTML += list.map(o => {
         const id = o._id || o.id;
         const status = o.status || 'Unknown';
         const created = new Date(o.createdAt || Date.now()).toLocaleString();
-        return `<div class="p-3 border rounded mb-2">
-          <div class="font-medium">Order ${id}</div>
-          <div class="text-sm text-gray-500">Status: ${status} • ${created}</div>
-          <div class="text-sm mt-2">Pickup: ${o.pickupAddress || ''}</div>
-          <div class="text-sm">Drop: ${o.deliveryAddress || ''}</div>
-          <div class="mt-2"><button data-id="${id}" class="btn-primary viewOrder">View</button></div>
-        </div>`;
+        return `<div style="padding:12px;border-radius:10px;border:1px solid #f3e6e6;margin-top:8px">
+            <div style="font-weight:800">Order ${id}</div>
+            <div style="font-size:13px;color:#6b7280">Status: ${status} • ${created}</div>
+            <div style="margin-top:8px">${escapeHtml(o.pickupAddress || '')} → ${escapeHtml(o.deliveryAddress || '')}</div>
+            <div style="margin-top:8px"><button data-id="${id}" class="btn-primary viewOrder">View</button></div></div>`;
       }).join('');
-    }
-    overlayPanel.innerHTML = ''; overlayPanel.appendChild(container);
-    overlay.querySelectorAll('.viewOrder').forEach(b=>{
-      b.addEventListener('click', e => {
-        const id = e.currentTarget.dataset.id;
-        closeOverlay();
-        openTracking(id);
-      });
-    });
-  } catch(e){
-    overlayPanel.innerHTML = `<div class="text-sm text-red-600">Failed to load history: ${e.message}</div>`;
+      overlayPanel.innerHTML = ''; overlayPanel.appendChild(container);
+      overlay.querySelectorAll('.viewOrder').forEach(b => b.addEventListener('click', e => { openOverlay('<div>Opening order...</div>'); const id = e.currentTarget.dataset.id; closeOverlay(); openTracking(id); }));
+    } catch(e){ overlayPanel.innerHTML = `<div style="color:#b91c1c">Failed to load: ${e.message}</div>`; }
   }
-}
 
-/* Referral */
-function openReferral(){
-  const code = suUser.referralCode || (suUser._id ? 'REF'+String(suUser._id).slice(-6) : 'REF-UNKNOWN');
-  const node = document.createElement('div');
-  node.innerHTML = `<h3 class="text-xl font-semibold mb-2">Refer & Earn</h3>
-    <div class="p-3 border rounded mb-3"><div class="font-medium">Your referral code</div><div class="font-mono mt-2 text-lg">${code}</div>
-    <div class="text-sm mt-2">Share: <a href="${location.origin}/signup?ref=${code}">${location.origin}/signup?ref=${code}</a></div>
-    <div class="mt-3 flex gap-2"><button id="copyRef" class="btn-primary">Copy</button><button id="shareRef" class="btn-ghost">Share</button></div></div>`;
-  openOverlay(node);
-  document.getElementById('copyRef').onclick = async ()=> {
-    try { await navigator.clipboard.writeText(`${location.origin}/signup?ref=${code}`); showToast('Copied referral link'); } catch(e){ showToast('Copy failed'); }
-  };
-  document.getElementById('shareRef').onclick = async ()=> {
-    try { if (navigator.share) await navigator.share({ title:'Join SkyUltimate', text:'Use my referral link', url:`${location.origin}/signup?ref=${code}` }); else { await navigator.clipboard.writeText(`${location.origin}/signup?ref=${code}`); showToast('Link copied'); } } catch(e){ showToast('Share failed'); }
-  };
-}
-
-/* Profile */
-function openProfile(){
-  const node = document.createElement('div');
-  node.innerHTML = `<h3 class="text-xl font-semibold mb-2">My Profile</h3>
-    <label class="text-xs">Full name</label><input id="pf_name" class="w-full p-3 rounded mt-1" value="${escapeHtml(suUser.name||'')}" />
-    <label class="text-xs mt-2">Email</label><input class="w-full p-3 rounded mt-1" value="${escapeHtml(suUser.email||'')}" readonly />
-    <label class="text-xs mt-2">Phone</label><input id="pf_phone" class="w-full p-3 rounded mt-1" value="${escapeHtml(suUser.phone||'')}" />
-    <div class="flex gap-2 mt-3"><button id="saveProfile" class="btn-primary flex-1">Save</button><button id="closeProfile" class="btn-ghost flex-1">Close</button></div>
-    <div id="profileMsg" class="text-sm text-green-600 mt-2"></div>`;
-  openOverlay(node);
-  document.getElementById('closeProfile').onclick = closeOverlay;
-  document.getElementById('saveProfile').onclick = async ()=>{
-    const phone = document.getElementById('pf_phone').value.trim();
-    try {
-      await fetch(API_BASE + '/api/users/me/bank', { method:'PUT', headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ phone }) });
-      suUser.phone = phone; localStorage.setItem('su_user', JSON.stringify(suUser));
-      document.getElementById('profileMsg').textContent = 'Saved';
-      setTimeout(closeOverlay,800);
-    } catch(e){ document.getElementById('profileMsg').textContent = e.message || 'Save failed'; }
-  };
-}
-
-/* Announcements overlay */
-function openAnnouncements(){ openOverlay('<div>Loading announcement...</div>'); loadAnnouncement(); setTimeout(()=> { overlayPanel.innerHTML = `<h3 class="text-xl font-semibold">Announcements</h3><div class="text-sm">${announceTitle.textContent || 'No announcements'}</div><div class="text-sm mt-2">${announceMsg.textContent || ''}</div>`; }, 300); }
-
-/* Rate delivered order */
-function openRate(){ openOverlay('<div>Loading delivered orders...</div>'); openHistoryForRating(); }
-async function openHistoryForRating(){
-  try {
-    const res = await getJSON(`/api/orders?customerId=${suUser.id||suUser._id}`);
-    const list = Array.isArray(res) ? res : (res.orders || []);
-    const delivered = list.filter(o => (o.status === 'Completed' || o.status === 'Delivered'));
+  // Referral overlay
+  function openReferral(){
+    const code = suUser.referralCode || (suUser._id ? 'REF'+String(suUser._id).slice(-6) : 'REF-UNKNOWN');
     const node = document.createElement('div');
-    node.innerHTML = `<h3 class="text-xl font-semibold mb-2">Rate Delivered Order</h3>`;
-    if (!delivered.length) node.innerHTML += `<div class="text-sm">No delivered orders available to rate.</div>`;
-    else node.innerHTML += delivered.map(o => `<div class="p-3 border rounded mb-2"><div class="font-medium">Order ${o._id || o.id}</div><div class="text-sm">${o.pickupAddress || ''} → ${o.deliveryAddress || ''}</div><div class="mt-2"><button data-id="${o._id||o.id}" class="btn-primary doRate">Rate</button></div></div>`).join('');
-    overlayPanel.innerHTML = ''; overlayPanel.appendChild(node);
-    overlay.querySelectorAll('.doRate').forEach(b => b.addEventListener('click', e=> openRatingModal(e.currentTarget.dataset.id)));
-  } catch(e){ overlayPanel.innerHTML = `<div class="text-sm text-red-600">Failed: ${e.message}</div>`; }
-}
-function openRatingModal(orderId){
-  const node = document.createElement('div');
-  node.innerHTML = `<h3 class="text-xl font-semibold mb-2">Rate Order ${orderId}</h3><div id="starRow" class="text-2xl mb-3">★★★★★</div><textarea id="ratingComment" class="w-full p-3 rounded" placeholder="Comment (optional)"></textarea><div class="flex gap-2 mt-3"><button id="submitRating" class="btn-primary">Submit</button><button id="closeRating" class="btn-ghost">Close</button></div>`;
-  openOverlay(node);
-  let rating = 5;
-  document.getElementById('starRow').addEventListener('click', (ev) => {
-    const idx = Math.ceil((ev.offsetX / ev.currentTarget.clientWidth) * 5);
-    rating = Math.max(1, Math.min(5, idx));
-    ev.currentTarget.textContent = '★★★★★'.slice(0, rating) + '☆☆☆☆☆'.slice(rating);
-  });
-  document.getElementById('submitRating').addEventListener('click', async ()=>{
-    const comment = document.getElementById('ratingComment').value;
-    try {
-      await fetch(API_BASE + `/api/orders/${orderId}/rate`, { method:'POST', headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` }, body: JSON.stringify({ rating, comment })});
-      showToast('Thanks for rating!');
-      closeOverlay();
-    } catch(e){ showToast(e.message || 'Rating failed'); }
-  });
-  document.getElementById('closeRating').addEventListener('click', closeOverlay);
-}
+    node.innerHTML = `<h3 style="font-weight:900">Refer & Earn</h3><div style="margin-top:8px;padding:12px;border-radius:8px;border:1px solid #f3e6e6"><div style="font-weight:800">${code}</div><div style="font-size:13px;margin-top:6px">${location.origin}/signup?ref=${code}</div><div style="margin-top:8px;display:flex;gap:8px"><button id="copyRef" class="btn-primary">Copy</button><button id="shareRef" class="btn-ghost">Share</button></div></div>`;
+    openOverlay(node);
+    document.getElementById('copyRef').onclick = async ()=> { await navigator.clipboard.writeText(`${location.origin}/signup?ref=${code}`); showToast('Copied'); };
+    document.getElementById('shareRef').onclick = async ()=> { try { if (navigator.share) await navigator.share({ title:'Join SkyUltimate', text:'Use my referral link', url:`${location.origin}/signup?ref=${code}` }); else { await navigator.clipboard.writeText(`${location.origin}/signup?ref=${code}`); showToast('Copied'); } } catch(e){ showToast('Share failed') } };
+  }
 
-/* Report */
-function openReport(){
-  const node = document.createElement('div');
-  node.innerHTML = `<h3 class="text-xl font-semibold mb-2">Report an Issue</h3><label class="text-xs">Order ID (optional)</label><input id="rOrder" class="w-full p-3 rounded mt-1" /><label class="text-xs mt-2">Message</label><textarea id="rMsg" class="w-full p-3 rounded mt-1"></textarea><div class="flex gap-2 mt-3"><button id="sendReport" class="btn-primary">Send Report</button><button id="closeReport" class="btn-ghost">Close</button></div>`;
-  openOverlay(node);
-  document.getElementById('closeReport').onclick = closeOverlay;
-  document.getElementById('sendReport').onclick = async ()=>{
-    const orderId = document.getElementById('rOrder').value.trim();
-    const message = document.getElementById('rMsg').value.trim();
-    if (!message) { showToast('Please write a message'); return; }
-    try {
-      await fetch(API_BASE + '/api/admin-requests', { method:'POST', headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` }, body: JSON.stringify({ orderId: orderId || null, message })});
-      showToast('Report sent to admin.');
-      closeOverlay();
-    } catch(e){ showToast(e.message || 'Failed to send report'); }
-  };
-}
+  // Profile overlay (edits phone via /api/users/me/bank as before)
+  function openProfile(){
+    const node = document.createElement('div');
+    node.innerHTML = `<h3 style="font-weight:900">My Profile</h3><label style="display:block;margin-top:8px">Full name</label><input id="pf_name" value="${escapeHtml(suUser.name||'')}" class="w-full p-3 rounded" />
+      <label style="display:block;margin-top:8px">Email</label><input value="${escapeHtml(suUser.email||'')}" readonly class="w-full p-3 rounded bg-gray-50" />
+      <label style="display:block;margin-top:8px">Phone</label><input id="pf_phone" value="${escapeHtml(suUser.phone||'')}" class="w-full p-3 rounded" />
+      <div style="display:flex;gap:8px;margin-top:12px"><button id="saveProfile" class="btn-primary">Save</button><button id="closeProfile" class="btn-ghost">Close</button></div>
+      <div id="profileMsg" style="margin-top:8px;color:green"></div>`;
+    openOverlay(node);
+    document.getElementById('closeProfile').onclick = closeOverlay;
+    document.getElementById('saveProfile').onclick = async ()=>{
+      const phone = document.getElementById('pf_phone').value.trim();
+      try {
+        await fetch(API_BASE + '/api/users/me/bank', { method:'PUT', headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` }, body: JSON.stringify({ phone }) });
+        suUser.phone = phone; localStorage.setItem('su_user', JSON.stringify(suUser));
+        document.getElementById('profileMsg').textContent = 'Saved';
+        setTimeout(closeOverlay,800);
+      } catch(e){ document.getElementById('profileMsg').textContent = e.message || 'Save failed'; }
+    };
+  }
 
-/* Settings */
-function openSettings(){
-  const node = document.createElement('div');
-  node.innerHTML = `<h3 class="text-xl font-semibold mb-2">Settings</h3><div class="flex items-center justify-between"><div><div class="font-medium">Theme</div><div class="text-sm text-gray-500">Toggle dark mode</div></div><label class="inline-flex items-center"><input id="themeToggle" type="checkbox" class="mr-2" />Dark</label></div><div class="flex gap-2 mt-4"><button id="closeSet" class="btn-ghost">Close</button><button id="logoutBtn" class="btn-ghost text-red-600">Logout</button></div>`;
-  openOverlay(node);
-  const t = document.getElementById('themeToggle');
-  t.checked = !!localStorage.getItem('su_theme_dark');
-  t.addEventListener('change', (e)=> { applyTheme(e.target.checked); if (e.target.checked) localStorage.setItem('su_theme_dark','1'); else localStorage.removeItem('su_theme_dark'); });
-  document.getElementById('closeSet').onclick = closeOverlay;
-  document.getElementById('logoutBtn').onclick = ()=> { localStorage.removeItem('su_token'); localStorage.removeItem('su_user'); location.href='index.html' };
-}
+  // Announcements overlay
+  function openAnnouncements(showOverlay=false){
+    if (showOverlay) openOverlay(`<div><h3 style="font-weight:900">Announcements</h3><div style="margin-top:8px">${escapeHtml(announceTitle.textContent||'No announcements')}</div><div style="margin-top:8px">${escapeHtml(announceMsg.textContent||'')}</div></div>`);
+  }
 
-/* ====== misc helpers ====== */
-function escapeHtml(s){ return String(s || '').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
-async function refreshHistory(){ try { await getJSON(`/api/orders?customerId=${suUser.id||suUser._id}`); } catch(e){} }
+  // Rate delivered orders
+  async function openRate(){ openOverlay('<div>Finding delivered orders...</div>'); try { const res = await getJSON(`/api/orders?customerId=${suUser.id||suUser._id}`); const list = Array.isArray(res) ? res : (res.orders || []); const delivered = list.filter(o => o.status === 'Completed' || o.status === 'Delivered'); const node = document.createElement('div'); node.innerHTML = `<h3 style="font-weight:900">Rate Delivered Order</h3>`; if (!delivered.length) node.innerHTML += `<div style="margin-top:8px">No delivered orders found.</div>`; else node.innerHTML += delivered.map(o => `<div style="padding:10px;border-radius:10px;border:1px solid #f3e6e6;margin-top:8px"><div style="font-weight:800">Order ${o._id||o.id}</div><div style="margin-top:8px">${escapeHtml(o.pickupAddress||'')} → ${escapeHtml(o.deliveryAddress||'')}</div><div style="margin-top:8px"><button data-id="${o._id||o.id}" class="btn-primary doRate">Rate</button></div></div>`).join(''); overlayPanel.innerHTML=''; overlayPanel.appendChild(node); overlay.classList.add('show'); document.querySelectorAll('.doRate').forEach(b => b.addEventListener('click', e=> openRatingModal(e.currentTarget.dataset.id))); } catch(e){ overlayPanel.innerHTML = `<div style="color:#b91c1c">Failed: ${e.message}</div>`; } }
 
-/* theme */
-function applyTheme(dark){ if (dark) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); }
+  function openRatingModal(orderId){
+    const node = document.createElement('div');
+    node.innerHTML = `<h3 style="font-weight:900">Rate Order ${orderId}</h3><div style="margin-top:8px" id="starsRow">★★★★★</div><textarea id="ratingComment" class="w-full p-3 rounded" placeholder="Comment (optional)"></textarea><div style="display:flex;gap:8px;margin-top:10px"><button id="submitRating" class="btn-primary">Submit</button><button id="closeRating" class="btn-ghost">Close</button></div>`;
+    openOverlay(node);
+    let rating = 5;
+    document.getElementById('starsRow').addEventListener('click', (ev)=> {
+      const idx = Math.ceil(ev.offsetX / ev.currentTarget.clientWidth * 5);
+      rating = Math.max(1, Math.min(5, idx));
+      ev.currentTarget.textContent = '★★★★★'.slice(0,rating) + '☆☆☆☆☆'.slice(rating);
+    });
+    document.getElementById('submitRating').onclick = async ()=> {
+      const comment = document.getElementById('ratingComment').value;
+      try {
+        await fetch(API_BASE + `/api/orders/${orderId}/rate`, { method:'POST', headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` }, body: JSON.stringify({ rating, comment })});
+        showToast('Thanks for rating!');
+        closeOverlay();
+      } catch(e){ showToast(e.message || 'Rating failed'); }
+    };
+    document.getElementById('closeRating').onclick = closeOverlay;
+  }
 
-/* ====== Guidance for Google Maps message ======
- If you see "This page can't load Google Maps correctly. Do you own this website?" in the map, that typically means:
-  - the API key is restricted to certain domains and your current host isn't allowed, OR
-  - Google billing isn't enabled for the key, OR
-  - the key is invalid.
- Steps:
- 1) In Google Cloud Console, enable Maps JavaScript API and Places API for the project
- 2) Ensure billing is enabled.
- 3) If you restricted the key by HTTP referrers, add your host (or remove restriction during dev).
- I can't change your Google key or billing — please check those if you see that dialog.
-*/
+  // Report overlay
+  function openReport(){
+    const node = document.createElement('div');
+    node.innerHTML = `<h3 style="font-weight:900">Report an Issue</h3><label style="display:block;margin-top:8px">Order ID (optional)</label><input id="rOrder" class="w-full p-3 rounded" /><label style="display:block;margin-top:8px">Message</label><textarea id="rMsg" class="w-full p-3 rounded"></textarea><div style="display:flex;gap:8px;margin-top:10px"><button id="sendReport" class="btn-primary">Send</button><button id="closeReport" class="btn-ghost">Close</button></div>`;
+    openOverlay(node);
+    document.getElementById('closeReport').onclick = closeOverlay;
+    document.getElementById('sendReport').onclick = async ()=>{
+      const orderId = document.getElementById('rOrder').value.trim();
+      const message = document.getElementById('rMsg').value.trim();
+      if (!message) { showToast('Write a message'); return; }
+      try {
+        await fetch(API_BASE + '/api/admin-requests', { method:'POST', headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` }, body: JSON.stringify({ orderId: orderId || null, message })});
+        showToast('Report sent to admin');
+        closeOverlay();
+      } catch(e){ showToast(e.message || 'Send failed'); }
+    };
+  }
 
-/* ====== Log network falling back behavior to console (for debugging) ====== */
-/* The tryPaths helper logs to console when a path fails (so you'll see which exact endpoints are 404).
-   If after deploying you still see "Not found" errors, open DevTools > Network and copy a sample response here
-   so I can wire the exact expected fields (order id property names etc). */
-</script>
+  // Settings overlay
+  function openSettings(){
+    const node = document.createElement('div');
+    node.innerHTML = `<h3 style="font-weight:900">Settings</h3><div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><div><div style="font-weight:700">Dark Mode</div><div style="font-size:13px;color:#6b7280">Toggle dark theme</div></div><label style="display:inline-flex;align-items:center"><input id="themeToggle" type="checkbox" style="margin-right:8px" />Dark</label></div><div style="display:flex;gap:8px;margin-top:12px"><button id="closeSet" class="btn-ghost">Close</button><button id="logoutBtn" class="btn-ghost" style="color:#b91c1c">Logout</button></div>`;
+    openOverlay(node);
+    document.getElementById('themeToggle').checked = !!localStorage.getItem('su_theme_dark');
+    document.getElementById('themeToggle').addEventListener('change', (e)=> { if (e.target.checked) { document.documentElement.classList.add('dark'); localStorage.setItem('su_theme_dark','1'); } else { document.documentElement.classList.remove('dark'); localStorage.removeItem('su_theme_dark'); } });
+    document.getElementById('closeSet').onclick = closeOverlay;
+    document.getElementById('logoutBtn').onclick = ()=> { localStorage.removeItem('su_token'); localStorage.removeItem('su_user'); location.href='index.html'; };
+  }
+
+  // misc
+  async function openAnnouncements(withOverlay=false){ if (withOverlay) openOverlay(`<div><h3 style="font-weight:900">Announcements</h3><div style="margin-top:8px">${escapeHtml(announceTitle.textContent||'No announcements')}</div><div style="margin-top:8px">${escapeHtml(announceMsg.textContent||'')}</div></div>`); }
+
+  async function refreshHistory(){ try { await getJSON(`/api/orders?customerId=${suUser.id||suUser._id}`); } catch(e){ } }
+
+  // Guidance for Google key dialog:
+  // "This page can't load Google Maps correctly" indicates the key needs billing or referrer update - enable billing, enable Maps JS + Places APIs, and add referrer or remove restriction for dev.
+
+  // expose for debugging in console
+  window._SU = { tryPaths };
+
+  </script>
 </body>
 </html>
