@@ -5,116 +5,174 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SkyUltimate — Customer Dashboard</title>
 
-  <!-- Tailwind utilities -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Google Maps/Places: keep your key (adjust if you want the alternative) -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDu1dptqgTwWWD6568jhf_tal7uYfdyMlQ&libraries=places" async defer></script>
-
+  <!-- Single-file: inline CSS + JS as requested -->
   <style>
     :root{
-      --brand-red:#C00000;
-      --brand-red-dark:#a00000;
-      --glass: rgba(255,255,255,0.95);
-      --card-radius:16px;
-      --maxw:1150px;
+      --brand-red:#B00000; /* from your login */
+      --brand-red-dark:#900000;
+      --card-bg: rgba(255,255,255,0.96);
+      --shadow: 0 10px 30px rgba(0,0,0,0.25);
+      --radius-lg: 22px;
+      --radius-md: 14px;
+      --maxw:1100px;
+      --text-muted:#6b7280;
     }
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;}
-    body{background:linear-gradient(180deg,#fff8f8 0%,#fff 60%);color:#0f172a;-webkit-font-smoothing:antialiased}
-    /* Splash */
-    #splash{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:linear-gradient(135deg,var(--brand-red),#ffdede);z-index:9999}
-    #splashLogo{width:120px;height:120px;border-radius:999px;box-shadow:0 18px 50px rgba(0,0,0,0.16);border:4px solid rgba(255,255,255,0.18);object-fit:cover}
-    /* Topbar */
-    header.topbar{position:sticky;top:12px;margin:12px auto;max-width:var(--maxw);padding:10px 14px;border-radius:14px;background:var(--glass);display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 10px 40px rgba(0,0,0,0.06)}
-    .logo-round{width:60px;height:60px;border-radius:999px;object-fit:cover;border:3px solid var(--brand-red);box-shadow:0 10px 30px rgba(0,0,0,0.12)}
-    .brand-title{font-weight:800;color:var(--brand-red);letter-spacing:0.2px}
-    .chip{display:inline-block;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid rgba(192,0,0,0.08);font-weight:800;color:var(--brand-red)}
-    /* Layout */
-    main.container{max-width:var(--maxw);margin:18px auto;display:grid;grid-template-columns:2fr 1fr;gap:18px;padding:0 14px}
-    .card{background:var(--glass);border-radius:var(--card-radius);padding:18px;box-shadow:0 10px 40px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.02)}
-    .btn-primary{background:linear-gradient(180deg,var(--brand-red),var(--brand-red-dark));color:white;padding:10px 14px;border-radius:12px;font-weight:800;border:0;cursor:pointer}
-    .btn-ghost{background:white;border:1px solid #eee;padding:9px 12px;border-radius:12px;cursor:pointer}
-    .map{height:360px;border-radius:12px;overflow:hidden;border:1px solid #f2eaea}
-    .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:90}
-    .overlay.show{display:flex}
-    .overlay-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.48)}
-    .overlay-panel{position:relative;z-index:92;width:100%;max-width:980px;margin:18px;padding:18px;border-radius:12px;background:var(--glass);box-shadow:0 20px 60px rgba(0,0,0,0.12)}
-    .toast{position:fixed;right:18px;bottom:18px;background:#111827;color:#fff;padding:10px 14px;border-radius:12px;display:none;z-index:999}
-    .toast.show{display:block}
-    .hidden{display:none}
-    .disabled{opacity:0.5;cursor:not-allowed}
-    @media(max-width:980px){ main.container{grid-template-columns:1fr;padding:12px} .map{height:240px} header.topbar{margin:8px;border-radius:12px} }
-    /* dark overrides */
-    :root.dark body{background:#071026;color:#e6eef8}
-    :root.dark header.topbar{background:rgba(6,10,20,0.72)}
-    :root.dark .card{background:rgba(6,10,20,0.7);box-shadow:none}
-  </style>
-</head>
-<body>
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial}
+    body{
+      background:linear-gradient(180deg,var(--brand-red) 0%, #fff7f7 30%);
+      -webkit-font-smoothing:antialiased;
+      color:#07203a;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
 
-  <!-- Splash -->
+    /* SPLASH (matches login behavior) */
+    #splash{
+      position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+      background:var(--brand-red); z-index:9999;
+      animation:fadeOut 700ms ease 1 forwards; /* we will trigger removal via JS after animationend */
+    }
+    #splashInner{display:flex;flex-direction:column;align-items:center;gap:12px}
+    #splashLogo{width:220px;height:220px;border-radius:9999px;object-fit:cover;box-shadow:0 8px 24px rgba(0,0,0,0.25);}
+    @keyframes fadeIn { from {opacity:0; transform:scale(.98)} to {opacity:1; transform:scale(1)} }
+    @keyframes fadeOut { from {opacity:1} to {opacity:0; visibility:hidden} }
+
+    /* topbar — floating card style, matches login card style */
+    header.topbar{
+      margin-top:18px; width:min(96vw,var(--maxw)); border-radius:var(--radius-md);
+      background:var(--card-bg); padding:10px 14px; display:flex; align-items:center; justify-content:space-between;
+      box-shadow:var(--shadow);
+    }
+    .logo-round{width:64px;height:64px;border-radius:9999px;object-fit:cover;box-shadow:0 8px 30px rgba(0,0,0,0.18);border:3px solid var(--brand-red)}
+    .brand-title{font-weight:900;color:var(--brand-red);font-size:18px}
+    .chip{display:inline-block;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid rgba(192,0,0,0.08);font-weight:800;color:var(--brand-red)}
+
+    /* layout */
+    main.container{ width:min(96vw,var(--maxw)); margin:18px auto; display:grid; grid-template-columns: 2fr 1fr; gap:18px; align-items:start; }
+    .card{ background:var(--card-bg); border-radius:var(--radius-lg); padding:18px; box-shadow:var(--shadow); border:1px solid rgba(0,0,0,0.03)}
+    h1,h2,h3{margin:0}
+    .muted{color:var(--text-muted); font-size:13px}
+
+    /* form elements */
+    label{display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px}
+    input[type="text"], input[type="number"], input[type="email"], select, textarea{
+      width:100%; padding:12px 14px; border-radius:14px; border:1px solid #e6e6e6; outline:none; font-size:14px;
+      background:white;
+    }
+    input:focus, select:focus, textarea:focus{box-shadow:0 6px 18px rgba(0,0,0,0.06); border-color:#d0d0d0}
+
+    .btn-primary{background:linear-gradient(180deg,var(--brand-red),var(--brand-red-dark)); color:white; padding:12px 14px; border-radius:14px; border:0; font-weight:800; cursor:pointer}
+    .btn-ghost{background:white; border:1px solid #eee; padding:10px 12px; border-radius:12px; cursor:pointer}
+    .btn-ghost:disabled, .btn-primary:disabled{opacity:0.6; cursor:not-allowed}
+
+    .map{height:300px;border-radius:12px;overflow:hidden;border:1px solid #f2eaea}
+
+    /* overlays, modals */
+    .overlay{position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:999}
+    .overlay.show{display:flex}
+    .overlay-backdrop{position:absolute; inset:0; background:rgba(0,0,0,0.5)}
+    .overlay-panel{position:relative; z-index:20; width:95%; max-width:980px; max-height:90vh; overflow:auto; border-radius:14px; padding:18px; background:var(--card-bg); box-shadow:var(--shadow)}
+
+    /* toast */
+    .toast{position:fixed; right:18px; bottom:18px; background:#0b1220; color:white; padding:10px 14px; border-radius:10px; display:none; z-index:1000}
+    .toast.show{display:block}
+
+    /* small screens */
+    @media (max-width:980px){
+      main.container{ grid-template-columns: 1fr; padding:10px }
+      .map{height:220px}
+      header.topbar{margin:10px; padding:10px}
+      .logo-round{width:56px;height:56px}
+    }
+
+    /* dark mode (persisted by class .dark on html) */
+    html.dark body{ background: linear-gradient(180deg,#071026 0%, #04101a 50%); color:#e6eef8; }
+    html.dark header.topbar, html.dark .card, html.dark .overlay-panel{ background: rgba(6,10,20,0.8) }
+    html.dark input, html.dark select, html.dark textarea{ background: rgba(255,255,255,0.02); color:#e6eef8; border:1px solid rgba(255,255,255,0.06) }
+    html.dark .muted{ color:#9fb0c6 }
+    html.dark .chip{ background: rgba(255,255,255,0.03); color:#ffd6d6; border-color: rgba(255,255,255,0.04) }
+
+    /* small utility */
+    .flex{display:flex}
+    .gap-2{gap:8px}
+    .stack{display:flex;flex-direction:column;gap:10px}
+  </style>
+
+  <!-- Google Maps Places (user provided key) -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAXZf0hfz_eiyAD5rnVEzmTgWmxIYmODiE&libraries=places" async defer></script>
+</head>
+
+<body>
+  <!-- SPLASH (will be removed after animation/JS) -->
   <div id="splash" aria-hidden="false">
-    <img id="splashLogo" src="https://github.com/Nelson192006/SkyUltimate-/blob/4e77ffc850e3621ae15902180075ad00958f4491/logo.png?raw=true" alt="logo">
-    <h1 style="color:white;margin:8px 0;font-weight:900">SkyUltimate</h1>
-    <div style="color:white;opacity:0.95">Fast • Secure • Trackable</div>
+    <div id="splashInner">
+      <img id="splashLogo" src="https://github.com/Nelson192006/SkyUltimate-/blob/4e77ffc850e3621ae15902180075ad00958f4491/logo.png?raw=true" alt="SkyUltimate">
+      <div style="color:white;font-weight:800;font-size:20px">SkyUltimate</div>
+    </div>
   </div>
 
-  <!-- Topbar -->
+  <!-- topbar -->
   <header class="topbar" role="banner">
     <div style="display:flex;align-items:center;gap:12px">
-      <button id="hamburger" class="btn-ghost" title="Menu" aria-label="Menu">☰</button>
+      <button id="hamburgerBtn" class="btn-ghost" aria-label="Menu">☰</button>
       <img id="logoImg" class="logo-round" src="https://github.com/Nelson192006/SkyUltimate-/blob/4e77ffc850e3621ae15902180075ad00958f4491/logo.png?raw=true" alt="logo">
-      <div style="margin-left:8px">
+      <div>
         <div class="brand-title">SkyUltimate</div>
-        <div style="font-size:12px;color:#6b7280">Customer Dashboard</div>
+        <div class="muted">Customer Dashboard</div>
       </div>
     </div>
 
-    <div style="display:flex;align-items:center;gap:10px">
-      <button id="dashboardPill" class="chip">Dashboard</button>
-      <div id="welcomeFirst" style="font-weight:700">Welcome!</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div id="welcomeFirst" style="font-weight:800">Welcome!</div>
+      <div id="roleBadge" class="chip">Customer</div>
       <button id="settingsBtn" class="btn-ghost" title="Settings">⚙</button>
     </div>
   </header>
 
+  <!-- main -->
   <main class="container" role="main">
-    <!-- Left: Place Order -->
-    <section class="card">
+    <!-- left: placement -->
+    <section class="card" aria-labelledby="placeTitle">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div>
-          <h2 style="margin:0;font-weight:900;color:var(--brand-red)">Place a New Order</h2>
-          <div style="color:#6b7280;font-size:13px">Fill pickup & drop-off, calculate price and follow manual payment flow.</div>
+          <h2 id="placeTitle" style="font-weight:900;color:var(--brand-red)">Place a New Order</h2>
+          <div class="muted" style="margin-top:6px">Fill pickup & drop-off with auto-suggest (map updates as you type).</div>
         </div>
         <div style="text-align:right">
-          <div style="font-size:12px;color:#6b7280">Role</div>
-          <div id="roleBadge" class="chip" style="margin-top:8px">Customer</div>
+          <div class="muted">Role</div>
+          <div class="chip" id="roleDisplay" style="margin-top:8px">Customer</div>
         </div>
       </div>
 
-      <hr style="margin:12px 0;border:none;border-top:1px solid #f5eaea" />
+      <hr style="margin:14px 0;border:none;border-top:1px solid rgba(0,0,0,0.03)">
 
-      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div>
-          <label class="text-xs text-gray-600">Pickup address</label>
-          <input id="pickup" class="w-full mt-1 p-3 rounded-lg border border-gray-100" placeholder="e.g. 12B Allen Ave, Ikeja" />
-        </div>
-        <div>
-          <label class="text-xs text-gray-600">Drop-off address</label>
-          <input id="dropoff" class="w-full mt-1 p-3 rounded-lg border border-gray-100" placeholder="Recipient address" />
+          <label for="pickupInput">Pickup address</label>
+          <input id="pickupInput" type="text" placeholder="e.g. 12B Allen Ave, Ikeja" autocomplete="street-address" />
         </div>
 
         <div>
-          <label class="text-xs text-gray-600">Recipient full name</label>
-          <input id="recipientName" class="w-full mt-1 p-3 rounded-lg border border-gray-100" placeholder="Recipient name" />
-        </div>
-        <div>
-          <label class="text-xs text-gray-600">Recipient phone</label>
-          <input id="recipientPhone" class="w-full mt-1 p-3 rounded-lg border border-gray-100" placeholder="+234 9xxxxxxxxx" />
+          <label for="dropoffInput">Drop-off address</label>
+          <input id="dropoffInput" type="text" placeholder="Recipient address" autocomplete="street-address" />
         </div>
 
         <div>
-          <label class="text-xs text-gray-600">Item category</label>
-          <select id="itemType" class="w-full mt-1 p-3 rounded-lg border border-gray-100">
+          <label for="recipientName">Recipient full name</label>
+          <input id="recipientName" type="text" placeholder="Recipient name" />
+        </div>
+
+        <div>
+          <label for="recipientPhone">Recipient phone</label>
+          <input id="recipientPhone" type="text" placeholder="+234 9xxxxxxxxx" />
+        </div>
+
+        <div>
+          <label for="itemType">Item category</label>
+          <select id="itemType">
             <option value="documents">Documents</option>
             <option value="food">Food</option>
             <option value="groceries">Groceries</option>
@@ -124,95 +182,94 @@
         </div>
 
         <div>
-          <label class="text-xs text-gray-600">Weight (kg)</label>
-          <input id="weight" type="number" min="0" class="w-full mt-1 p-3 rounded-lg border border-gray-100" placeholder="e.g. 2" />
+          <label for="weight">Weight (kg)</label>
+          <input id="weight" type="number" min="0" placeholder="e.g. 2" />
         </div>
 
         <div>
-          <label class="text-xs text-gray-600">Service type</label>
-          <select id="service" class="w-full mt-1 p-3 rounded-lg border border-gray-100">
+          <label for="service">Service type</label>
+          <select id="service">
             <option value="standard">Standard</option>
             <option value="express">Express</option>
             <option value="same-day">Same-day</option>
           </select>
         </div>
 
-        <div style="grid-column:1 / -1;display:flex;gap:12px;margin-top:8px">
-          <button id="calcPriceBtn" class="btn-primary flex-1">Calculate Final Price</button>
-          <button id="proceedPaymentBtn" class="btn-ghost flex-1">Proceed with Payment</button>
+        <div style="grid-column:1/-1;display:flex;gap:12px;margin-top:6px">
+          <button id="calcPriceBtn" class="btn-primary" style="flex:1">Calculate Final Price</button>
+          <button id="proceedPaymentBtn" class="btn-ghost" style="flex:1">Proceed with Payment</button>
         </div>
 
-        <div id="calcError" style="grid-column:1 / -1;color:#b91c1c;font-size:13px;margin-top:6px"></div>
+        <div id="calcError" style="grid-column:1/-1;color:#b00020;font-size:13px"></div>
       </div>
 
       <div style="margin-top:14px">
-        <div id="map" class="map"></div>
+        <div id="mapSmall" class="map" role="application" aria-label="Map showing pickup/dropoff"></div>
       </div>
     </section>
 
-    <!-- Right: Profile & Orders -->
-    <aside class="card">
-      <h3 style="margin:0;font-weight:900;color:var(--brand-red)">My Profile</h3>
-      <div style="margin-top:10px">
-        <div style="font-size:13px;color:#6b7280">Name</div>
-        <input id="pf_name" class="w-full mt-2 p-3 rounded-lg border border-gray-100" />
-        <div style="font-size:13px;color:#6b7280;margin-top:8px">Email</div>
-        <input id="pf_email" class="w-full mt-2 p-3 rounded-lg border border-gray-100" readonly />
-        <div style="font-size:13px;color:#6b7280;margin-top:8px">Phone</div>
-        <input id="pf_phone" class="w-full mt-2 p-3 rounded-lg border border-gray-100" />
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <button id="saveProfile" class="btn-primary flex-1">Save Profile</button>
-          <button id="refreshProfile" class="btn-ghost flex-1">Refresh</button>
+    <!-- right: sidebar -->
+    <aside class="card" aria-labelledby="profileTitle">
+      <h3 id="profileTitle" style="font-weight:900;color:var(--brand-red)">My Profile</h3>
+      <div style="margin-top:10px" class="stack">
+        <div class="muted">Name</div>
+        <input id="pf_name" type="text" />
+        <div class="muted">Email</div>
+        <input id="pf_email" type="email" readonly />
+        <div class="muted">Phone</div>
+        <input id="pf_phone" type="text" />
+        <div style="display:flex;gap:8px">
+          <button id="saveProfileBtn" class="btn-primary" style="flex:1">Save</button>
+          <button id="refreshProfileBtn" class="btn-ghost" style="flex:1">Refresh</button>
         </div>
       </div>
 
-      <hr style="margin:12px 0;border:none;border-top:1px solid #f5eaea" />
+      <hr style="margin:12px 0;border:none;border-top:1px solid rgba(0,0,0,0.03)">
 
       <h4 style="margin:0;font-weight:800">My Orders</h4>
-      <div id="ordersList" style="margin-top:10px;display:flex;flex-direction:column;gap:10px;max-height:380px;overflow:auto"></div>
+      <div id="ordersList" style="margin-top:10px; display:flex; flex-direction:column; gap:10px; max-height:300px; overflow:auto"></div>
       <div style="margin-top:10px">
-        <button id="refreshOrders" class="btn-ghost w-full">Refresh Orders</button>
+        <button id="refreshOrdersBtn" class="btn-ghost w-full">Refresh Orders</button>
       </div>
     </aside>
   </main>
 
-  <!-- Tracking card (displayed after order exists) -->
-  <section id="trackingCard" class="card" style="max-width:var(--maxw);margin:16px auto;display:none">
+  <!-- tracking card (hidden until active) -->
+  <section id="trackingCard" class="card" style="width:min(96vw, var(--maxw)); margin:12px auto; display:none">
     <div style="display:flex;justify-content:space-between;align-items:center">
-      <div>
-        <h3 style="margin:0;font-weight:900;color:var(--brand-red)">Order Tracking</h3>
-        <div style="font-size:13px;color:#6b7280;margin-top:6px">Order ID: <span id="orderIdDisplay">—</span></div>
+      <div><h3 style="font-weight:900;color:var(--brand-red)">Order Tracking</h3>
+        <div class="muted" style="margin-top:6px">Order ID: <span id="orderIdDisplay">—</span></div>
       </div>
       <div><span id="orderStatusBadge" class="chip">Pending</span></div>
     </div>
 
-    <div style="margin-top:12px;display:grid;grid-template-columns:1fr 360px;gap:12px">
+    <div style="margin-top:12px; display:grid; grid-template-columns:1fr 320px; gap:12px">
       <div>
         <div id="mapLarge" class="map"></div>
-        <div style="font-size:13px;color:#6b7280;margin-top:8px">Agent: <strong id="agentName">—</strong> • <a id="agentPhone" href="#" class="underline">—</a></div>
+        <div style="margin-top:8px" class="muted">Agent: <strong id="agentName">—</strong> • <a id="agentPhone" href="#" class="muted">—</a></div>
       </div>
 
       <div>
-        <h4 style="font-weight:800;margin:0">Journey</h4>
+        <h4 style="margin:0;font-weight:800">Journey</h4>
         <div id="timeline" style="margin-top:8px;color:#374151"></div>
 
         <div style="margin-top:12px">
-          <button id="contactAgent" class="btn-ghost w-full mb-2">Contact Agent</button>
-          <button id="reportAgent" class="btn-primary w-full">Report Agent</button>
+          <button id="contactAgentBtn" class="btn-ghost w-full" style="margin-bottom:8px">Contact Agent</button>
+          <button id="reportAgentBtn" class="btn-primary w-full">Report Agent</button>
         </div>
 
         <div style="margin-top:12px">
-          <div style="font-size:13px;color:#6b7280">Confirm actions (enabled within 50m)</div>
+          <div class="muted">Confirm actions (enabled within 50m)</div>
           <div style="display:flex;gap:8px;margin-top:8px">
-            <button id="confirmPickup" class="btn-ghost flex-1" disabled>Confirm Item Picked Up</button>
-            <button id="confirmDelivered" class="btn-ghost flex-1" disabled>Confirm Order Delivered</button>
+            <button id="confirmPickupBtn" class="btn-ghost" disabled style="flex:1">Confirm Item Picked Up</button>
+            <button id="confirmDeliveredBtn" class="btn-ghost" disabled style="flex:1">Confirm Order Delivered</button>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Overlay and toast -->
+  <!-- overlay & toast -->
   <div id="overlay" class="overlay" aria-hidden="true">
     <div class="overlay-backdrop"></div>
     <div id="overlayPanel" class="overlay-panel" role="dialog" aria-modal="true"></div>
@@ -220,580 +277,626 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-<script>
-/* ================== App logic ================== */
+  <script>
+  (function(){
+    /* ========== CONFIG ========== */
+    const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
+    const token = localStorage.getItem('su_token');
+    let su_user = JSON.parse(localStorage.getItem('su_user') || 'null');
 
-/* Config */
-const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
-const WS_PATH = "/ws";
-const token = localStorage.getItem('su_token');
-const su_user = JSON.parse(localStorage.getItem('su_user') || 'null');
+    /* DOM refs */
+    const splash = document.getElementById('splash');
+    const welcomeFirst = document.getElementById('welcomeFirst');
+    const pf_name = document.getElementById('pf_name');
+    const pf_email = document.getElementById('pf_email');
+    const pf_phone = document.getElementById('pf_phone');
+    const saveProfileBtn = document.getElementById('saveProfileBtn');
+    const refreshProfileBtn = document.getElementById('refreshProfileBtn');
 
-/* quick auth guard */
-if (!token || !su_user) {
-  // if you prefer not to force-redirect, remove this line
-  window.location.href = 'index.html';
-}
+    const pickupInput = document.getElementById('pickupInput');
+    const dropoffInput = document.getElementById('dropoffInput');
+    const calcPriceBtn = document.getElementById('calcPriceBtn');
+    const proceedPaymentBtn = document.getElementById('proceedPaymentBtn');
+    const calcError = document.getElementById('calcError');
 
-/* DOM refs */
-const splash = document.getElementById('splash');
-const hamburger = document.getElementById('hamburger');
-const dashboardPill = document.getElementById('dashboardPill');
-const settingsBtn = document.getElementById('settingsBtn');
-const welcomeFirst = document.getElementById('welcomeFirst');
+    const mapSmallEl = document.getElementById('mapSmall');
+    const mapLargeEl = document.getElementById('mapLarge');
 
-const pickupInput = document.getElementById('pickup');
-const dropoffInput = document.getElementById('dropoff');
-const calcBtn = document.getElementById('calcPriceBtn');
-const proceedBtn = document.getElementById('proceedPaymentBtn');
-const calcError = document.getElementById('calcError');
+    const ordersList = document.getElementById('ordersList');
+    const refreshOrdersBtn = document.getElementById('refreshOrdersBtn');
 
-const mapEl = document.getElementById('map');
-const mapLargeEl = document.getElementById('mapLarge');
+    const trackingCard = document.getElementById('trackingCard');
+    const orderIdDisplay = document.getElementById('orderIdDisplay');
+    const orderStatusBadge = document.getElementById('orderStatusBadge');
+    const agentName = document.getElementById('agentName');
+    const agentPhone = document.getElementById('agentPhone');
+    const timeline = document.getElementById('timeline');
+    const contactAgentBtn = document.getElementById('contactAgentBtn');
+    const reportAgentBtn = document.getElementById('reportAgentBtn');
 
-const pf_name = document.getElementById('pf_name');
-const pf_email = document.getElementById('pf_email');
-const pf_phone = document.getElementById('pf_phone');
-const saveProfile = document.getElementById('saveProfile');
-const refreshProfile = document.getElementById('refreshProfile');
+    const confirmPickupBtn = document.getElementById('confirmPickupBtn');
+    const confirmDeliveredBtn = document.getElementById('confirmDeliveredBtn');
 
-const ordersList = document.getElementById('ordersList');
-const refreshOrdersBtn = document.getElementById('refreshOrders');
+    const overlay = document.getElementById('overlay');
+    const overlayPanel = document.getElementById('overlayPanel');
+    const overlayBackdrop = document.querySelector('.overlay-backdrop');
 
-const trackingCard = document.getElementById('trackingCard');
-const orderIdDisplay = document.getElementById('orderIdDisplay');
-const orderStatusBadge = document.getElementById('orderStatusBadge');
-const timeline = document.getElementById('timeline');
-const mapLarge = mapLargeEl;
-const agentNameEl = document.getElementById('agentName');
-const agentPhoneEl = document.getElementById('agentPhone');
-const contactAgent = document.getElementById('contactAgent');
-const reportAgent = document.getElementById('reportAgent');
-const confirmPickupBtn = document.getElementById('confirmPickup');
-const confirmDeliveredBtn = document.getElementById('confirmDelivered');
+    const toast = document.getElementById('toast');
 
-const overlay = document.getElementById('overlay');
-const overlayPanel = document.getElementById('overlayPanel');
-const toastEl = document.getElementById('toast');
+    /* State */
+    let mapSmall=null, mapLarge=null, pickupMarker=null, dropoffMarker=null, agentMarker=null;
+    let autocompleteSvc = null, placesSvc = null;
+    let lastCalc = null, currentOrder = null, pollTimer = null, ws = null;
 
-/* state */
-let lastCalc = null;
-let currentOrder = null;
-let ws = null;
-let pollTimer = null;
-let map, mapLargeObj, pickupMarker, dropoffMarker, agentMarker;
+    /* Helpers */
+    function showToast(msg, t=3000){ toast.textContent = msg; toast.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(()=> toast.classList.remove('show'), t); }
+    function openOverlay(content){ overlayPanel.innerHTML=''; if (typeof content === 'string') overlayPanel.innerHTML = content; else overlayPanel.appendChild(content); overlay.classList.add('show'); document.documentElement.classList.add('no-scroll'); }
+    function closeOverlay(){ overlay.classList.remove('show'); overlayPanel.innerHTML=''; document.documentElement.classList.remove('no-scroll'); }
+    overlayBackdrop.addEventListener('click', closeOverlay);
+    function setLoading(btn,on=true){ if(!btn) return; if(on){ btn.dataset.txt = btn.innerHTML; btn.disabled = true; btn.innerHTML='Please wait...'; } else { btn.disabled=false; if(btn.dataset.txt) btn.innerHTML = btn.dataset.txt; } }
 
-/* helpers */
-function showToast(msg, t=3000){ toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastEl._t); toastEl._t = setTimeout(()=> toastEl.classList.remove('show'), t); }
-function openOverlay(nodeOrHtml){ if(typeof nodeOrHtml === 'string') overlayPanel.innerHTML = nodeOrHtml; else { overlayPanel.innerHTML=''; overlayPanel.appendChild(nodeOrHtml); } overlay.classList.add('show'); document.documentElement.classList.add('no-scroll'); }
-function closeOverlay(){ overlay.classList.remove('show'); overlayPanel.innerHTML=''; document.documentElement.classList.remove('no-scroll'); }
-overlay.querySelector('.overlay-backdrop')?.addEventListener('click', closeOverlay);
-function setLoading(btn, on=true){ if(!btn) return; if(on){ btn.disabled = true; btn.dataset.txt = btn.innerHTML; btn.innerHTML='Please wait...'; } else { btn.disabled=false; if(btn.dataset.txt) btn.innerHTML = btn.dataset.txt; } }
+    function escapeHtml(s){ return String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
 
-/* API helpers: robust tryPaths for endpoints that sometimes change names */
-async function tryPaths(paths, opts = {}) {
-  let lastErr = null;
-  for (const p of paths) {
-    try {
-      const headers = Object.assign({ 'Content-Type':'application/json' }, opts.headers || {});
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-      const res = await fetch(API_BASE + p, { method: opts.method || 'POST', headers, body: opts.body });
-      const txt = await res.text();
-      let data;
-      try { data = txt ? JSON.parse(txt) : null; } catch(e){ data = txt; }
-      if (res.ok) return data ?? {};
-      // 404 — capture and continue trying fallbacks
-      lastErr = new Error((data && data.message) || `HTTP ${res.status} (${p})`);
-      console.warn('tryPaths failed', p, res.status, data);
-    } catch (err) {
-      lastErr = err;
-      console.warn('tryPaths error', err);
-    }
-  }
-  throw lastErr || new Error('No paths succeeded');
-}
-
-async function getJSON(path) {
-  const headers = { 'Content-Type':'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(API_BASE + path, { headers });
-  const txt = await res.text();
-  let data;
-  try { data = txt ? JSON.parse(txt) : null; } catch(e){ data = txt; }
-  if (!res.ok) throw new Error((data && data.message) || `HTTP ${res.status}`);
-  return data;
-}
-
-/* Init UI + map + autocomplete */
-function init() {
-  // theme
-  if (localStorage.getItem('su_theme_dark')) document.documentElement.classList.add('dark');
-
-  // welcome
-  const first = (su_user?.name || '').split(' ')[0] || 'there';
-  welcomeFirst.textContent = `Hello, ${first}!`;
-
-  // profile sidebar
-  pf_name.value = su_user?.name || '';
-  pf_email.value = su_user?.email || '';
-  pf_phone.value = su_user?.phone || '';
-
-  // bind UI
-  hamburger.addEventListener('click', openMenu);
-  settingsBtn.addEventListener('click', openSettings);
-  dashboardPill.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
-  calcBtn.addEventListener('click', onCalculatePrice);
-  proceedBtn.addEventListener('click', onProceedPayment);
-  saveProfile.addEventListener('click', onSaveProfile);
-  refreshProfile.addEventListener('click', ()=> { pf_name.value = su_user.name || ''; pf_email.value = su_user.email || ''; pf_phone.value = su_user.phone || ''; showToast('Profile refreshed'); });
-
-  refreshOrdersBtn.addEventListener('click', ()=> { loadOrders(); showToast('Orders refreshed'); });
-  contactAgent.addEventListener('click', ()=> { if (agentPhoneEl && agentPhoneEl.href) location.href = agentPhoneEl.href; });
-  reportAgent.addEventListener('click', openReportDialog);
-
-  confirmPickupBtn.addEventListener('click', confirmPickup);
-  confirmDeliveredBtn.addEventListener('click', confirmDelivered);
-
-  // maps & autocomplete
-  initPlaces();
-  initMapSmall();
-
-  // load orders & announcements
-  loadOrders();
-  loadAnnouncement();
-
-  // connect WS attempt
-  connectWS();
-}
-
-/* Google Places: autocomplete + auto-marker on selection */
-function initPlaces(){
-  if (!window.google || !google.maps || !google.maps.places) {
-    setTimeout(initPlaces, 600);
-    return;
-  }
-  try {
-    const pickupAC = new google.maps.places.Autocomplete(pickupInput, { types:['address'] });
-    const dropoffAC = new google.maps.places.Autocomplete(dropoffInput, { types:['address'] });
-    // only request necessary fields to reduce payload
-    pickupAC.setFields(['formatted_address','geometry','address_components']);
-    dropoffAC.setFields(['formatted_address','geometry','address_components']);
-
-    pickupAC.addListener('place_changed', () => {
-      const place = pickupAC.getPlace();
-      if (!place || !place.geometry) return showToast('Could not resolve pickup location');
-      const lat = place.geometry.location.lat(), lng = place.geometry.location.lng();
-      // store lat/lng on input dataset for later
-      pickupInput.dataset.lat = lat; pickupInput.dataset.lng = lng; pickupInput.dataset.formatted = place.formatted_address || pickupInput.value;
-      setPickupMarker(lat, lng);
-      if (map) map.panTo({lat, lng});
-    });
-
-    dropoffAC.addListener('place_changed', () => {
-      const place = dropoffAC.getPlace();
-      if (!place || !place.geometry) return showToast('Could not resolve dropoff location');
-      const lat = place.geometry.location.lat(), lng = place.geometry.location.lng();
-      dropoffInput.dataset.lat = lat; dropoffInput.dataset.lng = lng; dropoffInput.dataset.formatted = place.formatted_address || dropoffInput.value;
-      setDropoffMarker(lat, lng);
-      if (map) map.panTo({lat, lng});
-    });
-
-    // When user is typing, we can optionally show 'using autocomplete' indicator (not required)
-  } catch(e) { console.warn('Places init failed', e); }
-}
-
-/* small map for placement view */
-function initMapSmall(){
-  if (map) return;
-  if (!window.google || !google.maps) return;
-  map = new google.maps.Map(mapEl, { center:{lat:6.5244,lng:3.3792}, zoom:12, disableDefaultUI:true });
-}
-  /* large map for tracking */
-function initMapLarge(){
-  if (mapLargeObj) return;
-  if (!window.google || !google.maps) return;
-  mapLargeObj = new google.maps.Map(mapLarge, { center:{lat:6.5244,lng:3.3792}, zoom:12, disableDefaultUI:true });
-}
-
-/* markers */
-function setPickupMarker(lat,lng){
-  if (!map) initMapSmall();
-  const pos = { lat: Number(lat), lng: Number(lng) };
-  if (!pickupMarker) pickupMarker = new google.maps.Marker({ position: pos, map, label: 'P' });
-  else pickupMarker.setPosition(pos);
-}
-function setDropoffMarker(lat,lng){
-  if (!map) initMapSmall();
-  const pos = { lat: Number(lat), lng: Number(lng) };
-  if (!dropoffMarker) dropoffMarker = new google.maps.Marker({ position: pos, map, label: 'D' });
-  else dropoffMarker.setPosition(pos);
-}
-function updateAgentMarker(lat,lng){
-  if (!mapLargeObj) initMapLarge();
-  const pos = { lat: Number(lat), lng: Number(lng) };
-  if (!agentMarker) agentMarker = new google.maps.Marker({ position: pos, map: mapLargeObj, title:'Agent' });
-  else agentMarker.setPosition(pos);
-  mapLargeObj.panTo(pos);
-}
-
-/* ===== Price calc & create order ===== */
-const pricePaths = ['/api/orders/calc-price','/api/orders/calcprice','/api/orders/calculate-price','/api/orders/estimate','/api/orders/calc'];
-const createOrderPaths = ['/api/orders','/api/orders/submit','/api/orders/create'];
-
-function buildItems(){
-  return [{ name: itemType.value || 'parcel', quantity:1, weight: Number(document.getElementById('weight').value || 0) }];
-}
-
-async function onCalculatePrice(){
-  calcError.textContent = ''; lastCalc = null;
-  setLoading(calcBtn, true);
-  try {
-    // build payload including coordinates (if user picked via autocomplete)
-    const payload = {
-      items: buildItems(),
-      service: document.getElementById('service').value,
-      pickupAddress: {
-        line: pickupInput.value,
-        lat: pickupInput.dataset.lat || null,
-        lng: pickupInput.dataset.lng || null
-      },
-      deliveryAddress: {
-        line: dropoffInput.value,
-        lat: dropoffInput.dataset.lat || null,
-        lng: dropoffInput.dataset.lng || null
+    /* API helpers (robust tryPaths) */
+    async function tryPaths(paths, opts={}) {
+      let lastErr = null;
+      for (const p of paths) {
+        try {
+          const headers = Object.assign({'Content-Type':'application/json'}, opts.headers || {});
+          if (token) headers['Authorization'] = `Bearer ${token}`;
+          const res = await fetch(API_BASE + p, { method: opts.method || 'POST', headers, body: opts.body });
+          const txt = await res.text();
+          let data = null;
+          try { data = txt ? JSON.parse(txt) : null; } catch(e){ data = txt; }
+          if (res.ok) return data ?? {};
+          lastErr = new Error((data && data.message) || `HTTP ${res.status} (${p})`);
+        } catch (err) { lastErr = err; }
       }
-    };
-    const res = await tryPaths(pricePaths, { method:'POST', body: JSON.stringify(payload) });
-    lastCalc = res;
-    const final = res.finalPrice ?? res.finalprice ?? res.finalAmount ?? res.price ?? 0;
-    // show price overlay
-    showPricePanel(final, res.superAdminBankDetails || res.bankDetails || null);
-  } catch (err) {
-    console.error('calc price error', err);
-    calcError.textContent = err.message || 'Failed to calculate price';
-    showToast(err.message || 'Calculation failed');
-  } finally {
-    setLoading(calcBtn, false);
-  }
-}
-
-function showPricePanel(final, bankDetails){
-  const accounts = bankDetails ? [bankDetails] : [
-    { bank:'Moniepoint', acct:'9128884830', name:'Nelson Emmanuel Godspower' },
-    { bank:'Opay', acct:'9128884830', name:'Nelson Emmanuel Godspower' },
-    { bank:'Palmpay', acct:'9128884830', name:'Nelson Emmanuel Godspower' },
-    { bank:'UBA', acct:'2342835397', name:'Nelson Emmanuel Godspower' },
-    { bank:'GTB', acct:'0734090626', name:'Nelson Emmanuel Godspower' }
-  ];
-  const node = document.createElement('div');
-  node.innerHTML = `
-    <h3 class="text-xl font-bold">Final Price</h3>
-    <div style="font-size:28px;font-weight:900;margin-top:6px">₦${Number(final||0).toLocaleString()}</div>
-    <p style="color:#6b7280;margin-top:8px">Choose an account and make transfer. When done, click <strong>I have paid</strong>.</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
-      ${accounts.map(a=>`<div style="padding:10px;border-radius:10px;border:1px solid #f2eaea">
-        <div style="font-weight:700">${a.bank}</div>
-        <div style="font-size:13px;margin-top:6px">Acct: ${a.acct}</div>
-        <div style="font-size:13px">${a.name||''}</div>
-      </div>`).join('')}
-    </div>
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button id="iPaidBtn" class="btn-primary" style="flex:1">I have paid</button>
-      <button id="closePrice" class="btn-ghost" style="flex:1">Close</button>
-    </div>
-  `;
-  openOverlay(node);
-  document.getElementById('closePrice').onclick = closeOverlay;
-  document.getElementById('iPaidBtn').onclick = onIHavePaid;
-}
-
-async function onProceedPayment(){
-  if (!lastCalc) {
-    await onCalculatePrice();
-    return;
-  }
-  showPricePanel(lastCalc.finalPrice ?? lastCalc.finalprice ?? 0, lastCalc.superAdminBankDetails ?? lastCalc.bankDetails ?? null);
-}
-
-/* Create order and notify server that customer has paid (frontend notifies admin) */
-async function onIHavePaid(){
-  const btn = document.getElementById('iPaidBtn');
-  setLoading(btn, true);
-  try {
-    if (!pickupInput.value || !dropoffInput.value) { showToast('Enter pickup & dropoff'); return; }
-    const payload = {
-      items: buildItems(),
-      pickupAddress: {
-        line: pickupInput.value,
-        lat: pickupInput.dataset.lat || null,
-        lng: pickupInput.dataset.lng || null
-      },
-      deliveryAddress: {
-        line: dropoffInput.value,
-        lat: dropoffInput.dataset.lat || null,
-        lng: dropoffInput.dataset.lng || null
-      },
-      paymentMethod: 'Bank Transfer',
-      recipientName: document.getElementById('recipientName').value || '',
-      recipientPhone: document.getElementById('recipientPhone').value || ''
-    };
-    const res = await tryPaths(createOrderPaths, { method:'POST', body: JSON.stringify(payload) });
-    const order = res.order || res;
-    currentOrder = order;
-    localStorage.setItem('su_active_order', JSON.stringify(order));
-    showToast('Order created — awaiting payment confirmation from Super Admin.');
-    closeOverlay();
-    // attempt to notify admin/superadmin endpoint (fallbacks)
-    (async ()=>{
-      const id = order._id || order.id;
-      if (!id) return;
-      try {
-        await tryPaths([`/api/orders/${id}/submit-for-confirmation`,`/api/orders/${id}/submit-payment`,`/api/orders/${id}/payment`], { method:'POST', body: JSON.stringify({ note:'Customer clicked I have paid' }) });
-      } catch(e){ console.warn('notify endpoints missing / failed', e); }
-    })();
-    // open tracking/polling
-    openTracking(order._id || order.id || '');
-    await loadOrders();
-  } catch (err) {
-    console.error('create order error', err);
-    showToast(err.message || 'Order creation failed');
-  } finally { setLoading(btn, false); }
-}
-
-/* ===== Orders list, history, tracking polling ===== */
-async function loadOrders(){
-  try {
-    const res = await getJSON(`/api/orders?customerId=${su_user.id || su_user._id}`);
-    const list = Array.isArray(res) ? res : (res.orders || res.data || []);
-    ordersList.innerHTML = '';
-    if (!list || list.length === 0) { ordersList.innerHTML = '<div style="color:#6b7280">No orders yet</div>'; return; }
-    list.forEach(o=>{
-      const id = o._id || o.id || '';
-      const node = document.createElement('div');
-      node.className = 'flex items-center justify-between';
-      node.style.padding = '8px'; node.style.border = '1px solid #f2eaea'; node.style.borderRadius = '10px';
-      node.innerHTML = `<div><div style="font-weight:800">Order ${escapeHtml(id)}</div><div style="font-size:13px;color:#6b7280">${escapeHtml(o.status||'')}</div></div><div><button class="btn-ghost trackBtn" data-id="${escapeHtml(id)}">Track</button></div>`;
-      ordersList.appendChild(node);
-    });
-    document.querySelectorAll('.trackBtn').forEach(b=> b.addEventListener('click', e => openTracking(e.currentTarget.dataset.id)));
-  } catch(e){ console.warn('loadOrders failed', e); }
-}
-
-function openTracking(orderId){
-  if(!orderId) return;
-  trackingCard.style.display = 'block';
-  orderIdDisplay.textContent = orderId;
-  // try to fetch order immediately and setup polling
-  startPolling(orderId);
-  initMapLarge();
-  connectWS();
-}
-
-let pollInterval = null;
-function startPolling(orderId){
-  if (pollInterval) clearInterval(pollInterval);
-  pollInterval = setInterval(()=> pollOrder(orderId), 6000);
-  pollOrder(orderId);
-}
-
-async function pollOrder(orderId){
-  try {
-    const data = await getJSON(`/api/orders/${orderId}`);
-    const o = data.order || data;
-    currentOrder = o;
-    orderStatusBadge.textContent = o.status || orderStatusBadge.textContent;
-    renderTimeline(o.status, o);
-    // fill agent info if present
-    const agent = o.agentDetails || o.agentProfile || o.agent;
-    if (agent && typeof agent === 'object') {
-      agentNameEl.textContent = agent.name || 'Agent';
-      agentPhoneEl.textContent = agent.phone || agent.contact || '';
-      agentPhoneEl.href = `tel:${agent.phone || agent.contact || ''}`;
-    } else {
-      agentNameEl.textContent = o.agent || '—';
+      throw lastErr || new Error('No path succeeded');
     }
-    if (o.agentLocation && o.agentLocation.lat && o.agentLocation.lng) updateAgentMarker(Number(o.agentLocation.lat), Number(o.agentLocation.lng));
-    if (o.pickupAddress && o.pickupAddress.lat && o.pickupAddress.lng) setPickupMarker(Number(o.pickupAddress.lat), Number(o.pickupAddress.lng));
-    if (o.deliveryAddress && o.deliveryAddress.lat && o.deliveryAddress.lng) setDropoffMarker(Number(o.deliveryAddress.lat), Number(o.deliveryAddress.lng));
-    evaluateProximity();
-    if (o.status === 'Completed' || o.status === 'Delivered') { showToast('Order delivered'); clearInterval(pollInterval); pollInterval = null; }
-  } catch (e) {
-    console.warn('pollOrder error', e);
-  }
-}
+    async function getJSON(path){
+      const headers = { 'Content-Type':'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res = await fetch(API_BASE + path, { headers });
+      const txt = await res.text();
+      let data = null;
+      try { data = txt ? JSON.parse(txt) : null; } catch(e){ data = txt; }
+      if (!res.ok) throw new Error((data && data.message) || `HTTP ${res.status}`);
+      return data;
+    }
 
-function renderTimeline(status, order){
-  const steps = [
-    { key:'PendingPayment', label:'Pending Payment' },
-    { key:'PaymentConfirmed', label:'Payment Confirmed' },
-    { key:'EnRouteToPickup', label:'Agent en route to pickup' },
-    { key:'EnRouteToDelivery', label:'Agent en route to delivery' },
-    { key:'Completed', label:'Delivered / Completed' },
-  ];
-  timeline.innerHTML = steps.map(s => {
-    const active = (s.key === status || (s.key === 'Completed' && status === 'Delivered'));
-    return `<div style="padding:6px 0"><span style="${active ? 'color:#16a34a;font-weight:800':'color:#6b7280'}">${s.label}</span></div>`;
-  }).join('');
-}
+    /* Initialize UI and Maps after Google loads (or when ready) */
+    function init(){
+      // theme persistence
+      if (localStorage.getItem('su_theme_dark')) document.documentElement.classList.add('dark');
 
-/* proximity & confirm gating (50m) */
-function toRad(d){ return d * Math.PI / 180; }
-function haversine(lat1,lon1,lat2,lon2){
-  if ([lat1,lon1,lat2,lon2].some(v=>v==null)) return Infinity;
-  const R=6371000; const dLat=toRad(lat2-lat1); const dLon=toRad(lon2-lon1);
-  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-function evaluateProximity(){
-  confirmPickupBtn.disabled = true; confirmDeliveredBtn.disabled = true;
-  if (!currentOrder) return;
-  let aLat = null, aLng = null;
-  if (currentOrder.agentLocation && currentOrder.agentLocation.lat) { aLat = Number(currentOrder.agentLocation.lat); aLng = Number(currentOrder.agentLocation.lng); }
-  if (currentOrder.agent && currentOrder.agent.lat) { aLat = Number(currentOrder.agent.lat); aLng = Number(currentOrder.agent.lng); }
-  if (!aLat) return;
-  const pLat = currentOrder.pickupAddress?.lat ? Number(currentOrder.pickupAddress.lat) : (pickupInput.dataset.lat ? Number(pickupInput.dataset.lat) : null);
-  const pLng = currentOrder.pickupAddress?.lng ? Number(currentOrder.pickupAddress.lng) : (pickupInput.dataset.lng ? Number(pickupInput.dataset.lng) : null);
-  const dLat = currentOrder.deliveryAddress?.lat ? Number(currentOrder.deliveryAddress.lat) : (dropoffInput.dataset.lat ? Number(dropoffInput.dataset.lat) : null);
-  const dLng = currentOrder.deliveryAddress?.lng ? Number(currentOrder.deliveryAddress.lng) : (dropoffInput.dataset.lng ? Number(dropoffInput.dataset.lng) : null);
-  if (pLat && pLng) {
-    const dist = haversine(aLat,aLng,pLat,pLng);
-    if (dist <= 50) { confirmPickupBtn.disabled = false; showToast('Agent is within 50m of pickup — you may confirm pickup', 2200); }
-  }
-  if (dLat && dLng) {
-    const dist2 = haversine(aLat,aLng,dLat,dLng);
-    if (dist2 <= 50) { confirmDeliveredBtn.disabled = false; showToast('Agent is within 50m of dropoff — you may confirm delivery', 2200); }
-  }
-}
+      // greet
+      const first = (su_user && su_user.name) ? (su_user.name.split(' ')[0]) : 'there';
+      welcomeFirst.textContent = `Hello, ${first}!`;
+      if (su_user){ pf_name.value = su_user.name || ''; pf_email.value = su_user.email || ''; pf_phone.value = su_user.phone || ''; document.getElementById('roleDisplay').textContent = su_user.role || 'Customer'; }
 
-/* Confirm endpoints (agent endpoints require agent auth on server; customer calls will fail if backend enforces agent-only) */
-async function confirmPickup(){
-  if (!currentOrder) return showToast('No active order');
-  const id = currentOrder._id || currentOrder.id;
-  setLoading(confirmPickupBtn, true);
-  try {
-    const res = await fetch(API_BASE + `/api/orders/${id}/pickup`, { method:'PUT', headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({}) });
-    if (!res.ok){ const txt = await res.text(); showToast('Pickup confirm failed: ' + (txt || res.status)); return; }
-    showToast('Pickup confirmed');
-    await pollOrder(id);
-  } catch (e) { console.error(e); showToast('Pickup confirm error'); }
-  finally { setLoading(confirmPickupBtn, false); confirmPickupBtn.disabled = true; }
-}
-async function confirmDelivered(){
-  if (!currentOrder) return showToast('No active order');
-  const id = currentOrder._id || currentOrder.id;
-  setLoading(confirmDeliveredBtn, true);
-  try {
-    const res = await fetch(API_BASE + `/api/orders/${id}/deliver`, { method:'PUT', headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({}) });
-    if (!res.ok){ const txt = await res.text(); showToast('Delivery confirm failed: ' + (txt || res.status)); return; }
-    showToast('Delivery confirmed');
-    await pollOrder(id);
-  } catch (e) { console.error(e); showToast('Delivery confirm error'); }
-  finally { setLoading(confirmDeliveredBtn, false); confirmDeliveredBtn.disabled = true; }
-}
+      // wire UI
+      document.getElementById('hamburgerBtn').addEventListener('click', openMenu);
+      document.getElementById('settingsBtn').addEventListener('click', openSettings);
+      calcPriceBtn.addEventListener('click', onCalculatePrice);
+      proceedPaymentBtn.addEventListener('click', onProceedPayment);
+      saveProfileBtn.addEventListener('click', onSaveProfile);
+      refreshProfileBtn.addEventListener('click', ()=> { if(su_user){ pf_name.value = su_user.name||''; pf_email.value = su_user.email||''; pf_phone.value = su_user.phone||''; showToast('Profile refreshed'); } });
+      refreshOrdersBtn.addEventListener('click', ()=> loadOrders().then(()=>showToast('Orders refreshed')).catch(()=>{}));
+      contactAgentBtn.addEventListener('click', ()=> { if(agentPhone && agentPhone.href) location.href = agentPhone.href; });
+      reportAgentBtn.addEventListener('click', openReport);
+      confirmPickupBtn.addEventListener('click', onConfirmPickup);
+      confirmDeliveredBtn.addEventListener('click', onConfirmDelivered);
 
-/* WS real-time (attempt) */
-function connectWS(){
-  if (ws) return;
-  try {
-    const scheme = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const url = scheme + '//' + (new URL(API_BASE)).host + WS_PATH;
-    ws = new WebSocket(url);
-    ws.onopen = ()=> { console.log('WS open', url); showToast('Real-time connected'); };
-    ws.onmessage = ev => {
+      initPlaces();
+      initMapSmall();
+      loadOrders(); // best-effort
+      connectWS(); // attempt real-time
+    }
+
+    /* Google Places: autocomplete service + predictive updates while typing */
+    function initPlaces(){
+      if (!window.google || !google.maps || !google.maps.places){
+        setTimeout(initPlaces, 400);
+        return;
+      }
+      autocompleteSvc = new google.maps.places.AutocompleteService();
+      placesSvc = new google.maps.places.PlacesService(document.createElement('div'));
+
+      // update map as user types (predictions -> details for first prediction)
+      let typingTimer;
+      pickupInput.addEventListener('input', (ev) => {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(()=> tryPredictAndCenter(pickupInput.value, 'pickup'), 250);
+      });
+      dropoffInput.addEventListener('input', (ev) => {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(()=> tryPredictAndCenter(dropoffInput.value, 'dropoff'), 250);
+      });
+
+      // also attach real Autocomplete widgets so user can select a place (place_changed triggers)
       try {
-        const msg = JSON.parse(ev.data);
-        if (msg.type === 'order_update' && msg.order) {
-          const u = msg.order;
-          if (currentOrder && (currentOrder._id === u._id || currentOrder.id === u.id)) {
-            currentOrder = u;
-            orderStatusBadge.textContent = u.status || orderStatusBadge.textContent;
-            renderTimeline(u.status, u);
-            if (u.agentLocation) updateAgentMarker(u.agentLocation.lat, u.agentLocation.lng);
-            if (u.pickupAddress) setPickupMarker(u.pickupAddress.lat, u.pickupAddress.lng);
-            if (u.deliveryAddress) setDropoffMarker(u.deliveryAddress.lat, u.deliveryAddress.lng);
-            evaluateProximity();
+        const a1 = new google.maps.places.Autocomplete(pickupInput, { types:['address'] });
+        a1.setFields(['formatted_address','geometry']);
+        a1.addListener('place_changed', ()=> {
+          const place = a1.getPlace();
+          if (place && place.geometry) {
+            pickupInput.dataset.lat = place.geometry.location.lat();
+            pickupInput.dataset.lng = place.geometry.location.lng();
+            setPickupMarker(place.geometry.location.lat(), place.geometry.location.lng());
+            if (mapSmall) mapSmall.panTo({lat: place.geometry.location.lat(), lng: place.geometry.location.lng()});
           }
-        }
-        if (msg.type === 'agent_location' && msg.agent) {
-          const a = msg.agent;
-          if (a.lat && a.lng) updateAgentMarker(Number(a.lat), Number(a.lng));
-          if (currentOrder && (msg.orderId === currentOrder._id || msg.orderId === currentOrder.id)) {
-            currentOrder.agentLocation = { lat: a.lat, lng: a.lng };
-            if (a.name) agentNameEl.textContent = a.name;
-            if (a.phone) { agentPhoneEl.href = `tel:${a.phone}`; agentPhoneEl.textContent = a.phone; }
-            evaluateProximity();
+        });
+        const a2 = new google.maps.places.Autocomplete(dropoffInput, { types:['address'] });
+        a2.setFields(['formatted_address','geometry']);
+        a2.addListener('place_changed', ()=> {
+          const place = a2.getPlace();
+          if (place && place.geometry) {
+            dropoffInput.dataset.lat = place.geometry.location.lat();
+            dropoffInput.dataset.lng = place.geometry.location.lng();
+            setDropoffMarker(place.geometry.location.lat(), place.geometry.location.lng());
+            if (mapSmall) mapSmall.panTo({lat: place.geometry.location.lat(), lng: place.geometry.location.lng()});
           }
-        }
-      } catch(e){ console.warn('ws parse', e); }
-    };
-    ws.onclose = ()=> { console.log('ws closed retry'); ws = null; setTimeout(connectWS,8000); };
-    ws.onerror = e => { console.error('ws err', e); ws && ws.close(); ws = null; };
-  } catch(e){ console.warn('ws connect error', e); }
-}
+        });
+      } catch(e){ console.warn('Places Autocomplete widgets failed', e); }
+    }
 
-/* Profile save */
-async function onSaveProfile(){
-  const phone = pf_phone.value.trim();
-  setLoading(saveProfile,true);
-  try {
-    const res = await fetch(API_BASE + '/api/users/me/bank', { method:'PUT', headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ phone }) });
-    if (!res.ok) { const txt = await res.text(); showToast('Save failed: ' + (txt || res.status)); return; }
-    su_user.phone = phone; localStorage.setItem('su_user', JSON.stringify(su_user));
-    showToast('Profile saved');
-  } catch(e){ console.warn('save profile', e); showToast('Save failed'); }
-  finally { setLoading(saveProfile,false); }
-}
+    /* Predict first suggestion and center map (gives "map updates as user types" feel) */
+    function tryPredictAndCenter(text, which){
+      if (!autocompleteSvc || !placesSvc) return;
+      if (!text || text.length < 3) return;
+      autocompleteSvc.getPlacePredictions({ input: text, componentRestrictions: {} }, (preds, status) => {
+        if (status !== google.maps.places.PlacesServiceStatus.OK || !preds || preds.length === 0) return;
+        const first = preds[0];
+        placesSvc.getDetails({ placeId: first.place_id, fields: ['geometry'] }, (details, st2) => {
+          if (st2 !== google.maps.places.PlacesServiceStatus.OK || !details || !details.geometry) return;
+          const lat = details.geometry.location.lat();
+          const lng = details.geometry.location.lng();
+          if (which === 'pickup'){
+            pickupInput.dataset.lat = lat; pickupInput.dataset.lng = lng;
+            setPickupMarker(lat,lng);
+            if (mapSmall) mapSmall.panTo({lat, lng});
+          } else {
+            dropoffInput.dataset.lat = lat; dropoffInput.dataset.lng = lng;
+            setDropoffMarker(lat,lng);
+            if (mapSmall) mapSmall.panTo({lat, lng});
+          }
+        });
+      });
+    }
 
-/* Menu & overlays (history, referral, rate, report, settings) - essential parts implemented */
-function openMenu(){
-  const node = document.createElement('div');
-  node.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div style="display:flex;gap:10px;align-items:center">
-        <img src="${document.getElementById('logoImg').src}" style="width:56px;height:56px;border-radius:999px;object-fit:cover" />
-        <div>
-          <div style="font-weight:800">${escapeHtml(su_user.name||'User')}</div>
-          <div style="font-size:13px;color:#6b7280">${escapeHtml(su_user.email||'')}</div>
+    /* small map (placement) */
+    function initMapSmall(){
+      if (mapSmall) return;
+      if (!window.google || !google.maps) { setTimeout(initMapSmall, 400); return; }
+      mapSmall = new google.maps.Map(mapSmallEl, { center: {lat:6.5244, lng:3.3792}, zoom:12, disableDefaultUI:true });
+    }
+
+    /* large map (tracking) */
+    function initMapLarge(){
+      if (mapLarge) return;
+      if (!window.google || !google.maps) { setTimeout(initMapLarge, 400); return; }
+      mapLarge = new google.maps.Map(mapLargeEl, { center: {lat:6.5244, lng:3.3792}, zoom:12, disableDefaultUI:true });
+    }
+
+    function setPickupMarker(lat,lng){
+      if (!mapSmall) initMapSmall();
+      const pos = { lat: Number(lat), lng: Number(lng) };
+      if (!pickupMarker) pickupMarker = new google.maps.Marker({ position: pos, map: mapSmall, label: 'P' });
+      else pickupMarker.setPosition(pos);
+    }
+    function setDropoffMarker(lat,lng){
+      if (!mapSmall) initMapSmall();
+      const pos = { lat: Number(lat), lng: Number(lng) };
+      if (!dropoffMarker) dropoffMarker = new google.maps.Marker({ position: pos, map: mapSmall, label: 'D' });
+      else dropoffMarker.setPosition(pos);
+    }
+    function updateAgentMarker(lat,lng){
+      if (!mapLarge) initMapLarge();
+      const pos = { lat: Number(lat), lng: Number(lng) };
+      if (!agentMarker) agentMarker = new google.maps.Marker({ position: pos, map: mapLarge, title:'Agent' });
+      else agentMarker.setPosition(pos);
+      if (mapLarge) mapLarge.panTo(pos);
+    }
+
+    /* Price calc & create order paths (robust) */
+    const pricePaths = ['/api/orders/calc-price','/api/orders/calculate-price','/api/orders/estimate','/api/orders/calc-price-v2','/api/orders/calc'];
+    const createOrderPaths = ['/api/orders','/api/orders/create','/api/orders/submit','/api/orders/new'];
+
+    function buildItems(){
+      return [{ itemType: document.getElementById('itemType').value || 'parcel', weight: Number(document.getElementById('weight').value || 0), quantity: 1 }];
+    }
+
+    async function onCalculatePrice(){
+      calcError.textContent = '';
+      lastCalc = null;
+      setLoading(calcPriceBtn, true);
+      try {
+        const payload = {
+          items: buildItems(),
+          serviceType: document.getElementById('service').value,
+          pickup: { address: pickupInput.value, lat: pickupInput.dataset.lat || null, lng: pickupInput.dataset.lng || null },
+          dropoff: { address: dropoffInput.value, lat: dropoffInput.dataset.lat || null, lng: dropoffInput.dataset.lng || null }
+        };
+        const res = await tryPaths(pricePaths, { method:'POST', body: JSON.stringify(payload) });
+        lastCalc = res;
+        const final = res.finalPrice ?? res.finalprice ?? res.price ?? 0;
+        showPriceOverlay(final, res.superAdminBankDetails || res.bankDetails);
+      } catch (err) {
+        calcError.textContent = err.message || 'Failed to calculate price';
+        showToast(err.message || 'Calculation failed');
+      } finally { setLoading(calcPriceBtn, false); }
+    }
+
+    function showPriceOverlay(final, bankDetails){
+      const accounts = bankDetails ? [bankDetails] : [
+        { bank:'Moniepoint', acct:'9128884830', name:'Nelson Emmanuel Godspower' },
+        { bank:'Opay', acct:'9128884830', name:'Nelson Emmanuel Godspower' },
+        { bank:'Palmpay', acct:'9128884830', name:'Nelson Emmanuel Godspower' },
+        { bank:'UBA', acct:'2342835397', name:'Nelson Emmanuel Godspower' },
+        { bank:'GTB', acct:'0734090626', name:'Nelson Emmanuel Godspower' }
+      ];
+      const panel = document.createElement('div');
+      panel.innerHTML = `<h3 style="font-weight:900">Final Price</h3>
+        <div style="font-size:26px;font-weight:900;margin-top:8px">₦${Number(final||0).toLocaleString()}</div>
+        <p class="muted" style="margin-top:8px">Make payment using any of the accounts below. After transfer, click <strong>I have paid</strong>.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
+          ${accounts.map(a => `<div style="padding:10px;border-radius:12px;border:1px solid #f2eaea"><div style="font-weight:800">${escapeHtml(a.bank)}</div><div style="font-size:13px;margin-top:6px">Acct: ${escapeHtml(a.acct)}</div><div style="font-size:13px">${escapeHtml(a.name)}</div></div>`).join('')}
         </div>
+        <div style="display:flex;gap:8px;margin-top:12px"><button id="iPaidBtn" class="btn-primary" style="flex:1">I have paid</button><button id="closePrice" class="btn-ghost" style="flex:1">Close</button></div>`;
+      openOverlay(panel);
+      document.getElementById('closePrice').onclick = closeOverlay;
+      document.getElementById('iPaidBtn').onclick = onIHavePaid;
+    }
+
+    async function onProceedPayment(){
+      if (!lastCalc) return await onCalculatePrice();
+      showPriceOverlay(lastCalc.finalPrice ?? lastCalc.finalprice ?? lastCalc.price ?? 0, lastCalc.superAdminBankDetails ?? lastCalc.bankDetails);
+    }
+
+    async function onIHavePaid(){
+      const btn = document.getElementById('iPaidBtn');
+      setLoading(btn,true);
+      try {
+        if (!pickupInput.value || !dropoffInput.value) { showToast('Please fill pickup & dropoff'); return; }
+        const payload = {
+          items: buildItems(),
+          pickupAddress: { line: pickupInput.value, lat: pickupInput.dataset.lat || null, lng: pickupInput.dataset.lng || null },
+          deliveryAddress: { line: dropoffInput.value, lat: dropoffInput.dataset.lat || null, lng: dropoffInput.dataset.lng || null },
+          paymentMethod: 'Bank Transfer',
+          recipientName: document.getElementById('recipientName').value || '',
+          recipientPhone: document.getElementById('recipientPhone').value || ''
+        };
+        const res = await tryPaths(createOrderPaths, { method:'POST', body: JSON.stringify(payload) });
+        const order = res.order || res;
+        currentOrder = order;
+        localStorage.setItem('su_active_order', JSON.stringify(order));
+        showToast('Order created. Awaiting payment confirmation by admin.');
+        closeOverlay();
+        openTracking(order._id || order.id || '');
+        loadOrders(); // refresh sidebar list
+      } catch (err) { showToast(err.message || 'Order creation failed'); console.error(err); }
+      finally { setLoading(btn,false); }
+    }
+
+    /* Orders list + tracking */
+    async function loadOrders(){
+      try {
+        const res = await getJSON(`/api/orders?customerId=${su_user?.id || su_user?._id || ''}`);
+        const list = Array.isArray(res) ? res : (res.orders || res.data || []);
+        ordersList.innerHTML = '';
+        if (!list || list.length === 0) { ordersList.innerHTML = '<div class="muted">No orders yet.</div>'; return; }
+        for (const o of list) {
+          const id = o._id || o.id || '';
+          const el = document.createElement('div');
+          el.style.display='flex'; el.style.justifyContent='space-between'; el.style.alignItems='center';
+          el.style.padding='8px'; el.style.border='1px solid #f2eaea'; el.style.borderRadius='10px';
+          el.innerHTML = `<div><div style="font-weight:800">Order ${escapeHtml(id)}</div><div class="muted" style="font-size:13px">${escapeHtml(o.status||'')}</div></div><div><button class="btn-ghost trackBtn" data-id="${escapeHtml(id)}">Track</button></div>`;
+          ordersList.appendChild(el);
+        }
+        document.querySelectorAll('.trackBtn').forEach(b => b.addEventListener('click', (e) => openTracking(e.currentTarget.dataset.id)));
+      } catch(e){ console.warn('loadOrders', e); }
+    }
+
+    function openTracking(orderId){
+      if (!orderId) return;
+      trackingCard.style.display = 'block';
+      orderIdDisplay.textContent = orderId;
+      startPolling(orderId);
+      initMapLarge();
+      connectWS();
+      window.scrollTo({ top: 0, behavior:'smooth' });
+    }
+
+    let pollInterval = null;
+    function startPolling(orderId){
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(()=> pollOrder(orderId), 5000);
+      pollOrder(orderId);
+    }
+
+    async function pollOrder(orderId){
+      try {
+        const data = await getJSON(`/api/orders/${orderId}`);
+        const order = data.order || data;
+        currentOrder = order;
+        orderStatusBadge.textContent = order.status || orderStatusBadge.textContent;
+        renderTimeline(order.status, order);
+        const agent = order.agentDetails || order.agentProfile || order.agent;
+        if (agent && typeof agent === 'object') {
+          agentName.textContent = agent.name || 'Agent';
+          agentPhone.textContent = agent.phone || agent.contact || '';
+          agentPhone.href = `tel:${agent.phone || agent.contact || ''}`;
+        }
+        if (order.agentLocation && order.agentLocation.lat && order.agentLocation.lng) updateAgentMarker(Number(order.agentLocation.lat), Number(order.agentLocation.lng));
+        if (order.pickupAddress && order.pickupAddress.lat && order.pickupAddress.lng) setPickupMarker(Number(order.pickupAddress.lat), Number(order.pickupAddress.lng));
+        if (order.deliveryAddress && order.deliveryAddress.lat && order.deliveryAddress.lng) setDropoffMarker(Number(order.deliveryAddress.lat), Number(order.deliveryAddress.lng));
+        evaluateProximity();
+        if (order.status === 'Completed' || order.status === 'Delivered'){ showToast('Order completed'); clearInterval(pollInterval); pollInterval = null; }
+      } catch (e) { console.warn('pollOrder', e); }
+    }
+
+    function renderTimeline(status, order){
+      const steps = [
+        { key:'PendingPayment', label:'Pending Payment' },
+        { key:'PaymentConfirmed', label:'Payment Confirmed' },
+        { key:'EnRouteToPickup', label:'Agent en route to pickup' },
+        { key:'EnRouteToDelivery', label:'Agent en route to delivery' },
+        { key:'Completed', label:'Delivered / Completed' },
+      ];
+      timeline.innerHTML = steps.map(s => {
+        const active = s.key === status || (s.key === 'Completed' && status === 'Delivered');
+        return `<div style="padding:6px 0"><span style="${active ? 'color:#16a34a;font-weight:800':'color:#6b7280'}">${s.label}</span></div>`;
+      }).join('');
+    }
+
+    /* Haversine for proximity gating */
+    function toRad(d){ return d * Math.PI / 180; }
+    function haversine(lat1,lon1,lat2,lon2){
+      if ([lat1,lon1,lat2,lon2].some(v=>v==null)) return Infinity;
+      const R=6371000; const dLat=toRad(lat2-lat1); const dLon=toRad(lon2-lon1);
+      const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+    function evaluateProximity(){
+      confirmPickupBtn.disabled = true; confirmDeliveredBtn.disabled = true;
+      if (!currentOrder) return;
+      let aLat=null, aLng=null;
+      if (currentOrder.agentLocation && currentOrder.agentLocation.lat){ aLat = Number(currentOrder.agentLocation.lat); aLng = Number(currentOrder.agentLocation.lng); }
+      if (!aLat && currentOrder.agent && currentOrder.agent.lat){ aLat = Number(currentOrder.agent.lat); aLng = Number(currentOrder.agent.lng); }
+      if (!aLat) return;
+      const pLat = (currentOrder.pickupAddress && currentOrder.pickupAddress.lat) ? Number(currentOrder.pickupAddress.lat) : (pickupInput.dataset.lat ? Number(pickupInput.dataset.lat) : null);
+      const pLng = (currentOrder.pickupAddress && currentOrder.pickupAddress.lng) ? Number(currentOrder.pickupAddress.lng) : (pickupInput.dataset.lng ? Number(pickupInput.dataset.lng) : null);
+      const dLat = (currentOrder.deliveryAddress && currentOrder.deliveryAddress.lat) ? Number(currentOrder.deliveryAddress.lat) : (dropoffInput.dataset.lat ? Number(dropoffInput.dataset.lat) : null);
+      const dLng = (currentOrder.deliveryAddress && currentOrder.deliveryAddress.lng) ? Number(currentOrder.deliveryAddress.lng) : (dropoffInput.dataset.lng ? Number(dropoffInput.dataset.lng) : null);
+
+      if (pLat && pLng){
+        const dist = haversine(aLat,aLng,pLat,pLng);
+        if (dist <= 50){ confirmPickupBtn.disabled = false; showToast('Agent within 50m of pickup — confirm enabled',2000); }
+      }
+      if (dLat && dLng){
+        const dist2 = haversine(aLat,aLng,dLat,dLng);
+        if (dist2 <= 50){ confirmDeliveredBtn.disabled = false; showToast('Agent within 50m of dropoff — confirm enabled',2000); }
+      }
+    }
+
+    /* Confirm endpoints (calls agent endpoints on backend; backend may require agent auth — frontend will try) */
+    async function onConfirmPickup(){
+      if (!currentOrder) return showToast('No active order');
+      const id = currentOrder._id || currentOrder.id;
+      setLoading(confirmPickupBtn, true);
+      try {
+        const res = await fetch(API_BASE + `/api/orders/${id}/pickup`, { method:'PUT', headers:{ 'Content-Type':'application/json', 'Authorization': token ? `Bearer ${token}` : '' }, body: JSON.stringify({}) });
+        if (!res.ok){ const txt = await res.text(); showToast('Pickup confirm failed: '+(txt||res.status)); return; }
+        showToast('Pickup confirmed');
+        await pollOrder(id);
+      } catch(e){ console.warn(e); showToast('Pickup confirm error'); }
+      finally { setLoading(confirmPickupBtn,false); confirmPickupBtn.disabled=true; }
+    }
+
+    async function onConfirmDelivered(){
+      if (!currentOrder) return showToast('No active order');
+      const id = currentOrder._1d || currentOrder._id || currentOrder.id;
+      setLoading(confirmDeliveredBtn, true);
+      try {
+        const res = await fetch(API_BASE + `/api/orders/${id}/deliver`, { method:'PUT', headers:{ 'Content-Type':'application/json', 'Authorization': token ? `Bearer ${token}` : '' }, body: JSON.stringify({}) });
+        if (!res.ok){ const txt = await res.text(); showToast('Delivery confirm failed: '+(txt||res.status)); return; }
+        showToast('Delivery confirmed');
+        await pollOrder(id);
+      } catch(e){ console.warn(e); showToast('Delivery confirm error'); }
+      finally { setLoading(confirmDeliveredBtn,false); confirmDeliveredBtn.disabled=true; }
+    }
+
+    /* WebSocket attempt for real-time updates (best-effort) */
+    function connectWS(){
+      if (ws) return;
+      try {
+        const scheme = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const url = scheme + '//' + (new URL(API_BASE)).host + '/ws';
+        ws = new WebSocket(url);
+        ws.onopen = ()=> { console.info('WS connected'); showToast('Real-time connected',1500); };
+        ws.onmessage = (ev)=> {
+          try {
+            const msg = JSON.parse(ev.data);
+            if (msg.type === 'order_update' && msg.order && currentOrder && (currentOrder._id === msg.order._id || currentOrder.id === msg.order.id)){
+              currentOrder = msg.order;
+              renderTimeline(currentOrder.status, currentOrder);
+              if (currentOrder.agentLocation) updateAgentMarker(currentOrder.agentLocation.lat, currentOrder.agentLocation.lng);
+            }
+            if (msg.type === 'agent_location' && msg.agent){
+              if (currentOrder && (msg.orderId === currentOrder._id || msg.orderId === currentOrder.id)){
+                currentOrder.agentLocation = msg.agent;
+                updateAgentMarker(msg.agent.lat, msg.agent.lng);
+                evaluateProximity();
+              }
+            }
+          } catch(e){ console.warn('WS parse', e); }
+        };
+        ws.onclose = ()=> { ws=null; setTimeout(connectWS,8000); };
+        ws.onerror = (e)=> { console.warn('WS error', e); ws && ws.close(); ws=null; };
+      } catch(e){ console.warn('WS connect fail', e); }
+    }
+
+    /* Profile save */
+    async function onSaveProfile(){
+      const phone = pf_phone.value.trim();
+      setLoading(saveProfileBtn,true);
+      try {
+        const res = await fetch(API_BASE + '/api/users/me/bank', { method:'PUT', headers:{ 'Content-Type':'application/json', 'Authorization': token ? `Bearer ${token}` : '' }, body: JSON.stringify({ phone }) });
+        if (!res.ok){ const txt = await res.text(); showToast('Save failed: '+(txt||res.status)); return; }
+        if (!su_user) su_user = {};
+        su_user.phone = phone; localStorage.setItem('su_user', JSON.stringify(su_user));
+        showToast('Profile saved');
+      } catch(e){ console.warn(e); showToast('Save failed'); }
+      finally { setLoading(saveProfileBtn,false); }
+    }
+
+    /* Menu & settings overlays */
+    function openMenu(){
+      const node = document.createElement('div');
+      node.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="display:flex;gap:10px;align-items:center">
+          <img src="${document.getElementById('logoImg').src}" style="width:56px;height:56px;border-radius:999px;object-fit:cover" />
+          <div><div style="font-weight:800">${escapeHtml(su_user?.name || 'Guest')}</div><div style="font-size:13px" class="muted">${escapeHtml(su_user?.email || '')}</div></div>
+        </div>
+        <div><button id="closeMenu" class="btn-ghost">Close</button></div>
       </div>
-      <div><button id="closeMenu" class="btn-ghost">Close</button></div>
-    </div>
-    <div style="display:grid;gap:8px">
-      <button id="m_history" class="btn-ghost w-full text-left">Order History</button>
-      <button id="m_profile" class="btn-ghost w-full text-left">My Profile</button>
-      <button id="m_ann" class="btn-ghost w-full text-left">Announcements</button>
-      <button id="m_settings" class="btn-ghost w-full text-left">Settings</button>
-      <button id="m_logout" class="btn-ghost w-full text-left text-red-600">Logout</button>
-    </div>
-  `;
-  openOverlay(node);
-  document.getElementById('closeMenu').onclick = closeOverlay;
-  document.getElementById('m_history').onclick = ()=> { closeOverlay(); openHistory(); };
-  document.getElementById('m_profile').onclick = ()=> { closeOverlay(); openProfile(); };
-  document.getElementById('m_ann').onclick = ()=> { closeOverlay(); openAnnouncements(); };
-  document.getElementById('m_settings').onclick = ()=> { closeOverlay(); openSettings(); };
-  document.getElementById('m_logout').onclick = ()=> { localStorage.removeItem('su_token'); localStorage.removeItem('su_user'); window.location.href='index.html'; };
-}
-hamburger.addEventListener('click', openMenu);
+      <div style="display:grid;gap:8px">
+        <button id="m_history" class="btn-ghost w-full text-left">Order History</button>
+        <button id="m_profile" class="btn-ghost w-full text-left">My Profile</button>
+        <button id="m_ann" class="btn-ghost w-full text-left">Announcements</button>
+        <button id="m_settings" class="btn-ghost w-full text-left">Settings</button>
+        <button id="m_logout" class="btn-ghost w-full text-left text-red-600">Logout</button>
+      </div>`;
+      openOverlay(node);
+      document.getElementById('closeMenu').onclick = closeOverlay;
+      document.getElementById('m_history').onclick = ()=> { closeOverlay(); openHistory(); };
+      document.getElementById('m_profile').onclick = ()=> { closeOverlay(); openProfileModal(); };
+      document.getElementById('m_ann').onclick = ()=> { closeOverlay(); showToast('No announcements',2000); };
+      document.getElementById('m_settings').onclick = ()=> { closeOverlay(); openSettings(); };
+      document.getElementById('m_logout').onclick = ()=> { localStorage.removeItem('su_token'); localStorage.removeItem('su_user'); su_user = null; showToast('Logged out'); };
+    }
 
-/* Simple overlays reused from earlier (history, profile, announcements, settings) */
-async function openHistory(){
-  openOverlay('<div>Loading history...</div>');
-  try {
-    const res = await getJSON(`/api/orders?customerId=${su_user.id || su_user._id}`);
-    const list = Array.isArray(res) ? res : (res.orders || res.data || []);
-    const container = document.createElement('div');
-    container.innerHTML = `<h3 style="font-weight:900">Order History</h3>`;
-    if (!list || list.length===0) container.innerHTML += `<div style="margin-top:8px;color:#6b7280">No orders yet</div>`;
-    else container.innerHTML += list.map(o=>`<div style="padding:8px;border:1px solid #f2eaea;border-radius:8px;margin-top:8px"><div style="font-weight:800">Order ${escapeHtml(o._id||o.id)}</div><div style="font-size:13px;color:#6b7280">${escapeHtml(o.status||'')}</div><div style="margin-top:6px"><button data-id="${escapeHtml(o._id||o.id)}" class="btn-ghost viewOrder">View</button></div></div>`).join('');
-    overlayPanel.innerHTML=''; overlayPanel.appendChild(container);
-    overlay.querySelectorAll('.viewOrder').forEach(b => b.addEventListener('click', e => { openTracking(e.currentTarget.dataset.id); closeOverlay(); }));
-  } catch(e){ overlayPanel.innerHTML = `<div style="color:#b91c1c">Failed to load history: ${e.message}</div>`; }
-}
+    function openHistory(){
+      openOverlay('<div>Loading history...</div>');
+      getJSON('/api/orders?customerId=' + (su_user?.id || su_user?._id || '')).then(res=>{
+        const list = Array.isArray(res) ? res : (res.orders || res.data || []);
+        const container = document.createElement('div');
+        container.innerHTML = `<h3 style="font-weight:900">Order History</h3>`;
+        if (!list || list.length === 0) container.innerHTML += `<div style="margin-top:8px" class="muted">No orders yet</div>`;
+        else container.innerHTML += list.map(o => `<div style="padding:10px;border:1px solid #f2eaea;border-radius:8px;margin-top:8px"><div style="font-weight:800">Order ${escapeHtml(o._id||o.id)}</div><div class="muted" style="margin-top:6px">${escapeHtml(o.status||'')}</div><div style="margin-top:8px"><button data-id="${escapeHtml(o._id||o.id)}" class="btn-ghost viewOrder">View</button></div></div>`).join('');
+        overlayPanel.innerHTML = ''; overlayPanel.appendChild(container);
+        overlay.querySelectorAll('.viewOrder').forEach(b => b.addEventListener('click', (e)=> { openTracking(e.currentTarget.dataset.id); closeOverlay(); }));
+      }).catch(err => overlayPanel.innerHTML = `<div class="muted">Failed to load: ${err.message}</div>`);
+    }
 
-function openProfile(){
-  const node = document.createElement('div');
-  node.innerHTML = `<h3 style="font-weight:900">My Profile</h3>
-    <label class="text-xs">Full name</label><input id="pp_name" class="w-full p-3 rounded mt-1" value="${escapeHtml(su_user.name||'')}" />
-    <label class="text-xs mt-2">Email</label><input class="w-full p-3 rounded mt-1 bg-gray-50" value="${escapeHtml(su_user.email||'')}" readonly />
-    <label class="text-xs mt-2">Phone</label><input id="pp_phone" class="w-full p-3 rou
+    function openProfileModal(){
+      const node = document.createElement('div');
+      node.innerHTML = `<h3 style="font-weight:900">My Profile</h3>
+        <label class="muted" style="margin-top:8px">Full name</label><input id="pm_name" class="w-full p-2" value="${escapeHtml(su_user?.name||'')}" />
+        <label class="muted" style="margin-top:8px">Email</label><input id="pm_email" class="w-full p-2" value="${escapeHtml(su_user?.email||'')}" readonly />
+        <label class="muted" style="margin-top:8px">Phone</label><input id="pm_phone" class="w-full p-2" value="${escapeHtml(su_user?.phone||'')}" />
+        <div style="display:flex;gap:8px;margin-top:10px"><button id="pm_save" class="btn-primary">Save</button><button id="pm_close" class="btn-ghost">Close</button></div>
+        <div id="pm_msg" style="margin-top:8px"></div>`;
+      openOverlay(node);
+      document.getElementById('pm_close').onclick = closeOverlay;
+      document.getElementById('pm_save').onclick = async ()=>{
+        const phone = document.getElementById('pm_phone').value.trim();
+        try {
+          const r = await fetch(API_BASE + '/api/users/me/bank', { method:'PUT', headers:{ 'Content-Type':'application/json', 'Authorization': token ? `Bearer ${token}` : '' }, body: JSON.stringify({ phone }) });
+          if (!r.ok) { const t=await r.text(); document.getElementById('pm_msg').textContent = 'Save failed: ' + t; return; }
+          if (!su_user) su_user = {};
+          su_user.phone = phone; localStorage.setItem('su_user', JSON.stringify(su_user));
+          document.getElementById('pm_msg').textContent = 'Saved';
+          setTimeout(closeOverlay,700);
+        } catch(e){ document.getElementById('pm_msg').textContent = 'Save failed'; }
+      };
+    }
+
+    function openSettings(){
+      const node = document.createElement('div');
+      node.innerHTML = `<h3 style="font-weight:900">Settings</h3>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px"><div><div style="font-weight:800">Theme</div><div class="muted">Toggle dark mode</div></div><label><input id="themeToggle" type="checkbox"> Dark</label></div>
+        <div style="display:flex;gap:8px;margin-top:12px"><button id="closeSet" class="btn-ghost">Close</button><button id="logoutBtn" class="btn-ghost text-red-600">Logout</button></div>`;
+      openOverlay(node);
+      document.getElementById('closeSet').onclick = closeOverlay;
+      document.getElementById('logoutBtn').onclick = ()=> { localStorage.removeItem('su_token'); localStorage.removeItem('su_user'); su_user=null; showToast('Logged out'); closeOverlay(); };
+      const t = document.getElementById('themeToggle');
+      t.checked = !!localStorage.getItem('su_theme_dark');
+      t.addEventListener('change', (e)=> {
+        if (e.target.checked){ document.documentElement.classList.add('dark'); localStorage.setItem('su_theme_dark','1'); }
+        else { document.documentElement.classList.remove('dark'); localStorage.removeItem('su_theme_dark'); }
+      });
+    }
+
+    /* Report */
+    function openReport(){
+      const node = document.createElement('div');
+      node.innerHTML = `<h3 style="font-weight:900">Report an Issue</h3>
+        <label class="muted" style="margin-top:8px">Order ID (optional)</label><input id="r_oid" class="w-full p-2" />
+        <label class="muted" style="margin-top:8px">Message</label><textarea id="r_msg" class="w-full p-2"></textarea>
+        <div style="display:flex;gap:8px;margin-top:10px"><button id="r_send" class="btn-primary">Send</button><button id="r_close" class="btn-ghost">Close</button></div>
+        <div id="r_res" style="margin-top:8px"></div>`;
+      openOverlay(node);
+      document.getElementById('r_close').onclick = closeOverlay;
+      document.getElementById('r_send').onclick = async ()=>{
+        const orderId = document.getElementById('r_oid').value.trim();
+        const message = document.getElementById('r_msg').value.trim();
+        if (!message) return showToast('Please enter a message');
+        try {
+          const res = await fetch(API_BASE + '/api/admin-requests', { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization': token ? `Bearer ${token}` : '' }, body: JSON.stringify({ orderId: orderId||null, message }) });
+          if (!res.ok) { const t = await res.text(); document.getElementById('r_res').textContent = 'Send failed: ' + t; return; }
+          showToast('Report sent to admin');
+          closeOverlay();
+        } catch(e){ document.getElementById('r_res').textContent = 'Send failed'; }
+      };
+    }
+
+    /* Try to fetch profile if su_user missing */
+    async function tryFetchProfileIfMissing(){
+      if (su_user && su_user.name && su_user.email) return;
+      try {
+        const p = await getJSON('/api/users/profile');
+        su_user = p; localStorage.setItem('su_user', JSON.stringify(p));
+        pf_name.value = p.name || ''; pf_email.value = p.email || ''; pf_phone.value = p.phone || '';
+      } catch(e){ /* ignore */ }
+    }
+
+    /* Utility: GET JSON wrapper */
+    async function getJSON(path){
+      const headers = { 'Content-Type':'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res = await fetch(API_BASE + path, { headers });
+      const txt = await res.text();
+      try { return txt ? JSON.parse(txt) : null; } catch(e){ return txt; }
+    }
+
+    /* Splash handling: wait for Google to load or 1s — ensure splash not stuck */
+    function removeSplashNow(){
+      if (!splash) return;
+      splash.style.transition = 'opacity .33s';
+      splash.style.opacity = '0';
+      setTimeout(()=> splash && splash.remove(), 350);
+      // show content implicitly (elements are already visible)
+    }
+
+    // Remove splash once DOM loaded and Google either loaded or after timeout
+    function waitAndInit(){
+      // remove splash after 1200ms to avoid stuck splash if animation didn't run
+      const safeTimer = setTimeout(removeSplashNow, 1200);
+      // also listen to animationend to remove
+      splash.addEventListener('animationend', ()=> { clearTimeout(safeTimer); removeSplashNow(); });
+      // initialize app after a tiny delay so UI is ready
+      setTimeout(()=> { init(); tryFetchProfileIfMissing(); }, 600);
+    }
+
+    /* boot */
+    waitAndInit();
+
+    /* Expose some functions for debugging in console */
+    window.__su = { openMenu, loadOrders, openTracking: openTracking };
+
+  })();
+  </script>
+</body>
+</html>
