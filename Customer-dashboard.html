@@ -1,218 +1,602 @@
-import React, { useEffect, useState, useRef } from "react";
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SkyUltimate — Customer Dashboard</title>
 
-// SkyUltimate - Single-file React dashboard (Customer + SuperAdmin demo) // Requirements addressed: // - Toast notifications (showToast) // - Theme toggle persisted to localStorage // - Profile edit (GET/PUT /api/user/profile) // - Order placement, price calculation (/api/orders/calculate-price) // - Manual payment modal & "I Have Paid" (/api/orders/submit-for-confirmation) // - WebSocket-driven real-time updates (order status, agent assignment) // - Live tracking with Google Maps (uses provided API KEY) // - Confirm pickup / confirm delivered buttons gated by 50m proximity // - SuperAdmin panel with Confirm Payment action (/api/orders/confirm-payment) // - Uses Tailwind classes for styling (expects Tailwind in project) // - Replace BACKEND_URL with your backend URL or set REACT_APP_BACKEND_URL in env
+  <!-- Hardcoded config -->
+  <script>
+    // ** HARD-CODED (as requested) **
+    const BACKEND = "https://skyultimate-backend-api-structure.onrender.com";
+    const GOOGLE_MAPS_KEY = "AIzaSyAXZf0hfz_eiyAD5rnVEzmTgWmxIYmODiE";
+    const LOGO = "https://github.com/Nelson192006/SkyUltimate-/blob/4e77ffc850e3621ae15902180075ad00958f4491/logo.png?raw=true";
+    const TOKEN_KEY = "token"; // your login page must store auth token here
+    const WS_PATH = "/ws"; // attempted WebSocket path (wss://.../ws)
+  </script>
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "https://skyultimate-backend-api-structure.onrender.com"; const WS_URL = (function(){ try{ return (BACKEND_URL.replace(/^http/, 'ws')) + '/ws'; }catch(e){return undefined} })(); const GOOGLE_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "AIzaSyAXZf0hfz_eiyAD5rnVEzmTgWmxIYmODiE"; // provided const LOGO_URL = "https://raw.githubusercontent.com/Nelson192006/SkyUltimate-/4e77ffc850e3621ae15902180075ad00958f4491/logo.png";
+  <style>
+    /* Minimal reset + premium red/white theme */
+    :root{
+      --red:#C00000;
+      --bg:#fff;
+      --muted:#6b7280;
+      --card-radius:14px;
+      --glass: rgba(255,255,255,0.85);
+      --shadow: 0 6px 18px rgba(0,0,0,0.08);
+      --maxw:1100px;
+    }
+    [data-theme="dark"]{
+      --bg:#0b0b0c;
+      --muted:#9ca3af;
+      --glass: rgba(10,10,10,0.65);
+    }
+    *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;}
+    body{margin:0;background:linear-gradient(180deg, #fff 0%, #fff 60%);color:#111;min-height:100vh;}
+    .app{max-width:var(--maxw);margin:18px auto;padding:18px;}
+    .header{height:68px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;background:var(--glass);backdrop-filter:blur(6px);padding:8px 14px;border-radius:12px;box-shadow:var(--shadow);z-index:40}
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand img{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--red)}
+    .brand h1{font-size:20px;margin:0}
+    .hamburger{position:relative}
+    .menu-btn{background:transparent;border:0;padding:8px;border-radius:8px;cursor:pointer}
+    .menu{position:absolute;right:0;top:54px;background:white;border-radius:10px;min-width:220px;box-shadow:0 10px 30px rgba(0,0,0,0.12);overflow:hidden}
+    .menu a{display:block;padding:10px 12px;color:#111;text-decoration:none;font-weight:600}
+    .menu a:hover{background:#f8f8f8}
+    .grid{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-top:18px}
+    .card{background:var(--bg);border-radius:var(--card-radius);padding:18px;box-shadow:var(--shadow)}
+    .card h2{margin:0 0 8px 0}
+    .form-row{display:flex;gap:10px;margin-top:10px}
+    input[type="text"], input[type="number"], textarea, select{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e6e6;font-size:14px}
+    .btn{display:inline-block;padding:10px 14px;border-radius:8px;border:0;background:var(--red);color:white;font-weight:700;cursor:pointer}
+    .btn.ghost{background:transparent;color:var(--red);border:1px solid rgba(192,0,0,0.12)}
+    .muted{color:var(--muted);font-size:13px}
+    .small{font-size:13px}
+    #map { height:360px;border-radius:12px;margin-top:12px;border:1px solid #eee }
+    .toast-wrap{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:9999}
+    .toast{padding:10px 14px;border-radius:10px;background:#111;color:white;box-shadow:0 8px 30px rgba(0,0,0,0.22)}
+    .price-box{display:inline-flex;align-items:center;gap:12px;padding:8px 12px;border-radius:10px;background:#fff3f3;border:1px solid rgba(192,0,0,0.08)}
+    .order-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+    .order-item{display:flex;justify-content:space-between;padding:10px;border-radius:10px;border:1px solid #f0f0f0}
+    .sublabel{font-size:12px;color:var(--muted)}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:999}
+    .modal{width:100%;max-width:760px;background:var(--bg);padding:18px;border-radius:12px;box-shadow:var(--shadow)}
+    .top-actions{display:flex;gap:8px;align-items:center;justify-content:flex-end}
+    .chip{padding:6px 10px;border-radius:999px;background:#fff4f4;color:var(--red);font-weight:700;border:1px solid rgba(192,0,0,0.08)}
+    .footer-note{margin-top:18px;color:var(--muted);font-size:13px}
+    .skeleton{height:14px;background:#f3f3f3;border-radius:6px}
+    .hidden{display:none}
+  </style>
+</head>
+<body>
+  <!-- Splashscreen -->
+  <div id="splash" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--red),#ffefef);z-index:9999;flex-direction:column">
+    <img src="" id="splashLogo" style="width:110px;height:110px;border-radius:50%;box-shadow:0 10px 30px rgba(0,0,0,0.12)" alt="logo">
+    <h2 style="color:white;margin-top:16px">SkyUltimate</h2>
+  </div>
 
-// Utility: Haversine distance (meters) function distanceMeters(lat1, lon1, lat2, lon2){ const R = 6371000; const toRad = (d) => d * Math.PI / 180; const dLat = toRad(lat2 - lat1); const dLon = toRad(lon2 - lon1); const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c; }
-
-// Toast system let globalToastId = 0; function useToasts(){ const [toasts, setToasts] = useState([]); function showToast(message, type = 'info', ttl = 4000){ const id = ++globalToastId; setToasts(t => [...t, { id, message, type }]); setTimeout(()=> setToasts(t => t.filter(x => x.id !== id)), ttl); } function clearAll(){ setToasts([]); } return { toasts, showToast, clearAll }; }
-
-export default function SkyUltimateDashboard(){ const [role, setRole] = useState(localStorage.getItem('role') || 'customer'); // toggle for demo: 'customer' | 'superadmin' const { toasts, showToast } = useToasts();
-
-// Theme const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light'); useEffect(()=>{ document.documentElement.setAttribute('data-theme', theme); localStorage.setItem('theme', theme); }, [theme]);
-
-// Profile const [profile, setProfile] = useState({ name:'', email:'', phone:'' }); useEffect(()=>{ fetchProfile(); }, []); async function fetchProfile(){ try{ const res = await fetch(${BACKEND_URL}/api/user/profile, { credentials: 'include' }); if(!res.ok) return; const data = await res.json(); setProfile(data); }catch(e){ console.warn('profile fetch failed', e); } } async function saveProfile(){ try{ const res = await fetch(${BACKEND_URL}/api/user/profile, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(profile), credentials:'include' }); if(!res.ok) throw new Error('failed'); showToast('Profile updated successfully!', 'success'); }catch(e){ showToast('Could not save profile','error'); } }
-
-// Order form const [orderForm, setOrderForm] = useState({ pickup:'', pickupLat:null, pickupLng:null, dropoff:'', dropoffLat:null, dropoffLng:null, weight:1, description:'', service:'standard' }); const [calculatedPrice, setCalculatedPrice] = useState(null); const [currentOrder, setCurrentOrder] = useState(null);
-
-// Payment modal const [paymentModalOpen, setPaymentModalOpen] = useState(false); const bankInfo = [ { bank: 'Moniepoint', account: '0123456789', name: 'SkyUltimate' }, { bank: 'UBA', account: '0987654321', name: 'SkyUltimate' }, { bank: 'GTBank', account: '1122334455', name: 'SkyUltimate' } ];
-
-// WebSocket / Real-time const wsRef = useRef(null); useEffect(()=>{ if(!WS_URL) return; try{ const ws = new WebSocket(WS_URL); wsRef.current = ws; ws.onopen = ()=> console.log('ws open'); ws.onmessage = (ev)=>{ try{ const msg = JSON.parse(ev.data); handleRealtime(msg); }catch(e){ console.log('ws msg', ev.data); } } ws.onclose = ()=> console.log('ws closed'); return ()=> ws.close(); }catch(e){ console.warn('WebSocket failed', e); } }, []);
-
-function handleRealtime(msg){ // expected shapes: {type:'order_update', order}, {type:'agent_location', orderId, agent} if(msg.type === 'order_update'){ const order = msg.order; if(currentOrder && order.id === currentOrder.id){ setCurrentOrder(order); } if(order.status === 'assigned' && order.id === currentOrder?.id){ showToast('An agent has been assigned to your order.', 'info'); } if(order.status === 'payment_confirmed' && role === 'customer' && order.customerId === profile.id){ showToast('Payment confirmed! Your order is now live tracking.', 'success'); } } if(msg.type === 'agent_location'){ const agent = msg.agent; const orderId = msg.orderId; if(currentOrder && orderId === currentOrder.id){ setCurrentOrder(o => ({ ...o, agent })); } } }
-
-// Price calculation async function calculatePrice(){ try{ const payload = { pickup: orderForm.pickup, dropoff: orderForm.dropoff, weight: orderForm.weight, service: orderForm.service }; const res = await fetch(${BACKEND_URL}/api/orders/calculate-price, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload), credentials:'include' }); if(!res.ok) throw new Error('calc failed'); const data = await res.json(); setCalculatedPrice(data.price); showToast('Price calculated', 'info'); }catch(e){ showToast('Failed to calculate price', 'error'); } }
-
-// Submit for confirmation (I have paid) async function submitForConfirmation(){ try{ const payload = { ...orderForm, price: calculatedPrice }; const res = await fetch(${BACKEND_URL}/api/orders/submit-for-confirmation, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload), credentials:'include' }); if(!res.ok) throw new Error('submit failed'); const data = await res.json(); setCurrentOrder(data.order); setPaymentModalOpen(false); showToast('Order submitted! Your payment is being verified by an Admin.', 'success'); }catch(e){ showToast('Failed to submit order', 'error'); } }
-
-// SuperAdmin: confirm payment async function confirmPayment(orderId){ try{ const res = await fetch(${BACKEND_URL}/api/orders/confirm-payment, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ orderId }), credentials:'include' }); if(!res.ok) throw new Error('confirm failed'); const data = await res.json(); showToast('Payment confirmed and agents notified.', 'success'); }catch(e){ showToast('Could not confirm payment', 'error'); } }
-
-// Confirm pickup / delivery (agent-side triggers are POST to endpoints) async function confirmPickedUp(){ if(!currentOrder) return; try{ const res = await fetch(${BACKEND_URL}/api/orders/${currentOrder.id}/confirm-pickup, { method:'POST', credentials:'include' }); if(!res.ok) throw new Error('fail'); showToast('Pickup confirmed', 'success'); }catch(e){ showToast('Could not confirm pickup', 'error'); } } async function confirmDelivered(){ if(!currentOrder) return; try{ const res = await fetch(${BACKEND_URL}/api/orders/${currentOrder.id}/confirm-delivery, { method:'POST', credentials:'include' }); if(!res.ok) throw new Error('fail'); showToast('Delivery confirmed', 'success'); }catch(e){ showToast('Could not confirm delivery', 'error'); } }
-
-// Map handling (Google Maps) const mapRef = useRef(null); const mapInstance = useRef(null); const markersRef = useRef({ pickup: null, dropoff: null, agent: null, route: null }); useEffect(()=>{ if(!GOOGLE_API_KEY) return; if(window.google && window.google.maps){ initMap(); return; } const script = document.createElement('script'); script.src = https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places; script.async = true; script.defer = true; script.onload = () => initMap(); document.head.appendChild(script); return ()=>{ document.head.removeChild(script); }; }, []);
-
-function initMap(){ if(!mapRef.current) return; mapInstance.current = new window.google.maps.Map(mapRef.current, { center:{ lat:6.5244, lng:3.3792 }, zoom:12 }); } useEffect(()=>{ if(!mapInstance.current) return; // update pickup/dropoff markers const m = mapInstance.current; const { pickupLat, pickupLng, dropoffLat, dropoffLng } = orderForm; if(pickupLat && pickupLng){ if(!markersRef.current.pickup) markersRef.current.pickup = new window.google.maps.Marker({ map:m, title: 'Pickup' }); markersRef.current.pickup.setPosition({ lat: pickupLat, lng: pickupLng }); } if(dropoffLat && dropoffLng){ if(!markersRef.current.dropoff) markersRef.current.dropoff = new window.google.maps.Marker({ map:m, title: 'Dropoff' }); markersRef.current.dropoff.setPosition({ lat: dropoffLat, lng: dropoffLng }); } if(currentOrder?.agent && currentOrder.agent.lat && currentOrder.agent.lng){ if(!markersRef.current.agent) markersRef.current.agent = new window.google.maps.Marker({ map:m, title: 'Agent', icon: { path: window.google.maps.SymbolPath.CIRCLE, scale:8 } }); markersRef.current.agent.setPosition({ lat: currentOrder.agent.lat, lng: currentOrder.agent.lng }); } }, [orderForm.pickupLat, orderForm.pickupLng, orderForm.dropoffLat, orderForm.dropoffLng, currentOrder?.agent]);
-
-// Geocoding helpers (Places Autocomplete could be added, but simple geocode via maps Geocoder) async function geocodeAddress(address, target){ if(!window.google || !window.google.maps) return; const geocoder = new window.google.maps.Geocoder(); return new Promise((resolve, reject)=>{ geocoder.geocode({ address }, (results, status)=>{ if(status === 'OK' && results[0]){ const loc = results[0].geometry.location; setOrderForm(f => ({ ...f, [target+'Lat']: loc.lat(), [target+'Lng']: loc.lng() })); resolve(loc); }else reject(status); }); }); }
-
-// Helper: compute if agent within 50m of pickup/dropoff function canConfirmPickup(){ if(!currentOrder?.agent || !orderForm.pickupLat) return false; const d = distanceMeters(orderForm.pickupLat, orderForm.pickupLng, currentOrder.agent.lat, currentOrder.agent.lng); return d <= 50; } function canConfirmDelivered(){ if(!currentOrder?.agent || !orderForm.dropoffLat) return false; const d = distanceMeters(orderForm.dropoffLat, orderForm.dropoffLng, currentOrder.agent.lat, currentOrder.agent.lng); return d <= 50; }
-
-// Simple UI layout return ( <div className="min-h-screen bg-gray-50" > <div className="max-w-6xl mx-auto p-4"> <header className="flex items-center justify-between"> <div className="flex items-center gap-3"> <img src={LOGO_URL} alt="logo" className="w-12 h-12 rounded-full"/> <h1 className="text-2xl font-bold">SkyUltimate — Dashboard</h1> </div> <div className="flex items-center gap-2"> <select value={role} onChange={(e)=>{ setRole(e.target.value); localStorage.setItem('role', e.target.value); }} className="px-3 py-2 border rounded"> <option value="customer">Customer</option> <option value="superadmin">Super Admin</option> </select> <button onClick={()=> setTheme(t => t === 'light' ? 'dark' : 'light')} className="px-3 py-2 border rounded">Theme: {theme}</button> </div> </header>
-
-<main className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-      <section className="col-span-1 md:col-span-2 bg-white p-4 rounded shadow">
-        {role === 'customer' ? (
-          <>
-            <h2 className="text-xl font-semibold mb-2">Place a New Order</h2>
-            <div className="space-y-2">
-              <label className="block">Pickup address</label>
-              <input value={orderForm.pickup} onChange={(e)=> setOrderForm(f => ({ ...f, pickup: e.target.value }))} className="w-full border p-2 rounded" placeholder="Pickup address" />
-              <div className="flex gap-2">
-                <button className="px-3 py-2 border rounded" onClick={async ()=>{ try{ await geocodeAddress(orderForm.pickup, 'pickup'); showToast('Pickup located on map','info'); }catch(e){ showToast('Could not geocode pickup','error'); } }}>Locate Pickup</button>
-                <button className="px-3 py-2 border rounded" onClick={()=>{ navigator.geolocation.getCurrentPosition(pos => { setOrderForm(f=>({...f, pickupLat: pos.coords.latitude, pickupLng: pos.coords.longitude, pickup: 'Current location'})); showToast('Using your current location for pickup', 'info'); }, ()=> showToast('Could not get location','error')); }}>Use My Location</button>
-              </div>
-
-              <label className="block">Dropoff address</label>
-              <input value={orderForm.dropoff} onChange={(e)=> setOrderForm(f => ({ ...f, dropoff: e.target.value }))} className="w-full border p-2 rounded" placeholder="Drop-off address" />
-              <div className="flex gap-2">
-                <button className="px-3 py-2 border rounded" onClick={async ()=>{ try{ await geocodeAddress(orderForm.dropoff, 'dropoff'); showToast('Dropoff located on map','info'); }catch(e){ showToast('Could not geocode dropoff','error'); } }}>Locate Dropoff</button>
-              </div>
-
-              <label className="block">Weight (kg)</label>
-              <input type="number" value={orderForm.weight} onChange={(e)=> setOrderForm(f=>({...f, weight: Number(e.target.value)}))} className="w-32 border p-2 rounded" />
-
-              <label className="block">Service type</label>
-              <select value={orderForm.service} onChange={(e)=> setOrderForm(f=>({...f, service: e.target.value}))} className="border p-2 rounded">
-                <option value="standard">Standard</option>
-                <option value="express">Express</option>
-                <option value="priority">Priority</option>
-              </select>
-
-              <label className="block">Description</label>
-              <textarea value={orderForm.description} onChange={(e)=> setOrderForm(f=>({...f, description: e.target.value}))} className="w-full border p-2 rounded" rows={3}></textarea>
-
-              <div className="flex gap-2 mt-3">
-                <button onClick={calculatePrice} className="px-4 py-2 bg-red-600 text-white rounded">Calculate Price</button>
-                {calculatedPrice !== null && (
-                  <div className="px-4 py-2 border rounded flex items-center gap-3">Price: <strong>₦{calculatedPrice}</strong>
-                    <button onClick={()=> setPaymentModalOpen(true)} className="ml-4 px-3 py-1 border rounded">Proceed to Payment</button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-6 h-96" ref={mapRef} />
-
-            {/* Live tracking / order status */}
-            {currentOrder && (
-              <div className="mt-4 bg-gray-50 p-4 rounded">
-                <h3 className="font-semibold">Order Status: {currentOrder.status}</h3>
-                <div>Order ID: {currentOrder.id}</div>
-                <div>Price: ₦{currentOrder.price}</div>
-                {currentOrder.agent && <div>Agent: {currentOrder.agent.name} — {currentOrder.agent.phone}</div>}
-
-                <div className="mt-3 flex gap-2">
-                  <button disabled={!canConfirmPickup()} onClick={confirmPickedUp} className={`px-3 py-2 rounded ${canConfirmPickup() ? 'bg-green-600 text-white' : 'bg-gray-200'}`}>Confirm Item Picked Up</button>
-                  <button disabled={!canConfirmDelivered()} onClick={confirmDelivered} className={`px-3 py-2 rounded ${canConfirmDelivered() ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Confirm Order Delivered</button>
-                </div>
-              </div>
-            )}
-
-          </>
-        ) : (
-          // SuperAdmin panel (simplified)
-          <div>
-            <h2 className="text-xl font-semibold mb-2">Super Admin — Payment Queue</h2>
-            <p className="mb-2">This view shows orders awaiting payment confirmation. Click <strong>Confirm Payment</strong> to confirm and notify agents.</p>
-            <SuperAdminQueue showToast={showToast} confirmPayment={confirmPayment} backend={BACKEND_URL} />
-          </div>
-        )}
-      </section>
-
-      <aside className="bg-white p-4 rounded shadow">
-        <h3 className="font-semibold">Settings & Profile</h3>
-        <div className="mt-2">
-          <label className="block">Name</label>
-          <input value={profile.name || ''} onChange={(e)=> setProfile(p=>({...p, name: e.target.value}))} className="w-full border p-2 rounded" />
-          <label className="block mt-2">Email</label>
-          <input value={profile.email || ''} onChange={(e)=> setProfile(p=>({...p, email: e.target.value}))} className="w-full border p-2 rounded" />
-          <label className="block mt-2">Phone</label>
-          <input value={profile.phone || ''} onChange={(e)=> setProfile(p=>({...p, phone: e.target.value}))} className="w-full border p-2 rounded" />
-          <div className="flex gap-2 mt-3">
-            <button onClick={saveProfile} className="px-3 py-2 bg-red-600 text-white rounded">Save Changes</button>
-          </div>
-
-          <div className="mt-4">
-            <h4 className="font-semibold">Service Analytics</h4>
-            <div className="text-sm mt-2">Total orders this month: <strong>—</strong></div>
-            <div className="text-sm">Average order cost: <strong>—</strong></div>
-            <div className="text-sm">Most used pickup location: <strong>—</strong></div>
-          </div>
-
-          <div className="mt-4">
-            <h4 className="font-semibold">Help & Support</h4>
-            <div className="flex gap-2 mt-2">
-              <a href="tel:+234000000000" className="px-3 py-2 border rounded">Call Dedicated Support</a>
-              <button className="px-3 py-2 border rounded" onClick={()=> showToast('Live chat opened (demo)', 'info')}>Live Chat</button>
-            </div>
-          </div>
-
+  <div class="app" id="app" style="opacity:0">
+    <div class="header card" role="banner">
+      <div class="brand">
+        <img id="topLogo" src="" alt="logo">
+        <div>
+          <h1>SkyUltimate</h1>
+          <div class="sublabel">Fast & Reliable Delivery</div>
         </div>
-      </aside>
-    </main>
+      </div>
 
-    {/* Payment Modal */}
-    {paymentModalOpen && (
-      <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-        <div className="bg-white p-4 rounded w-full max-w-lg">
-          <div className="flex justify-between items-center">
-            <h3 className="font-semibold">Manual Payment — Bank Details</h3>
-            <button onClick={()=> setPaymentModalOpen(false)} className="px-2 py-1">Close</button>
-          </div>
-          <div className="mt-3">
-            <p>Pay the exact amount to any of these accounts. After payment, return and click "I Have Paid".</p>
-            <ul className="mt-2 space-y-2">
-              {bankInfo.map(b => (
-                <li key={b.account} className="flex justify-between items-center border p-2 rounded">
-                  <div>
-                    <div className="font-semibold">{b.bank}</div>
-                    <div>{b.account} — {b.name}</div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={()=>{ navigator.clipboard.writeText(b.account); showToast('Account copied to clipboard', 'info'); }} className="px-3 py-1 border rounded">Copy</button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-3 flex gap-2">
-              <button onClick={submitForConfirmation} className="px-3 py-2 bg-green-600 text-white rounded">I Have Paid</button>
-              <button onClick={()=> setPaymentModalOpen(false)} className="px-3 py-2 border rounded">Cancel</button>
-            </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div id="userName" class="sublabel"></div>
+        <div class="hamburger">
+          <button class="menu-btn" id="menuToggle" title="Menu">☰</button>
+          <div id="menu" class="menu hidden" role="menu" aria-hidden="true">
+            <a href="#" id="menuProfile">Profile</a>
+            <a href="#" id="menuOrders">My Orders</a>
+            <a href="#" id="menuAnalytics">Service Analytics</a>
+            <a href="#" id="menuSupport">Support</a>
+            <a href="#" id="menuTheme">Toggle Theme</a>
+            <a href="#" id="menuLogout">Logout</a>
           </div>
         </div>
       </div>
-    )}
-
-    {/* Toasts */}
-    <div className="fixed right-4 bottom-4 flex flex-col gap-2 z-50">
-      {toasts.map(t => (
-        <div key={t.id} className={`px-4 py-2 rounded shadow ${t.type === 'success' ? 'bg-green-100 border-green-400' : t.type === 'error' ? 'bg-red-100 border-red-400' : 'bg-blue-100 border-blue-400'}`}>
-          {t.message}
-        </div>
-      ))}
     </div>
 
+    <main class="grid">
+      <!-- Main column -->
+      <section class="card">
+        <h2>Place a New Order</h2>
+        <div class="muted">Fill pickup & drop-off details, calculate price, then pay via bank transfer.</div>
+
+        <div style="margin-top:12px">
+          <label class="sublabel">Pickup address</label>
+          <input id="pickup" type="text" placeholder="Pickup address" />
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="useMyLocation" class="btn ghost">Use My Location</button>
+            <button id="locatePickup" class="btn ghost">Locate Pickup</button>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <label class="sublabel">Dropoff address</label>
+          <input id="dropoff" type="text" placeholder="Dropoff address" />
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="locateDropoff" class="btn ghost">Locate Dropoff</button>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top:12px">
+          <div style="flex:1">
+            <label class="sublabel">Weight (kg)</label>
+            <input id="weight" type="number" min="0.1" step="0.1" placeholder="1.0" value="1" />
+          </div>
+          <div style="width:200px">
+            <label class="sublabel">Service type</label>
+            <select id="service">
+              <option value="standard">Standard</option>
+              <option value="express">Express</option>
+              <option value="priority">Priority</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <label class="sublabel">Description</label>
+          <textarea id="description" rows="3" placeholder="Short description of items"></textarea>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
+          <button id="calcPrice" class="btn">Calculate Price</button>
+          <div id="priceWrap" class="price-box hidden"><span class="small">Price</span><strong id="priceValue">₦0</strong></div>
+          <div style="flex:1"></div>
+          <button id="proceedPayment" class="btn ghost hidden">Proceed to Payment</button>
+        </div>
+
+        <div id="map" ></div>
+
+        <div class="footer-note">After payment, click <strong>I Have Paid</strong> inside the payment dialog. Super Admin will confirm payment and agents will be notified.</div>
+      </section>
+
+      <!-- Right column -->
+      <aside class="card">
+        <h3>My Profile</h3>
+        <div id="profileArea" style="margin-top:10px">
+          <label class="sublabel">Name</label>
+          <input id="name" type="text" />
+          <label class="sublabel" style="margin-top:8px">Email</label>
+          <input id="email" type="text" disabled />
+          <label class="sublabel" style="margin-top:8px">Phone</label>
+          <input id="phone" type="text" />
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button id="saveProfile" class="btn">Save Profile</button>
+            <button id="refreshProfile" class="btn ghost">Refresh</button>
+          </div>
+        </div>
+
+        <hr style="margin:14px 0;border:none;border-top:1px solid #f0f0f0" />
+
+        <h3>My Orders</h3>
+        <div id="ordersList" class="order-list">
+          <!-- orders injected here -->
+        </div>
+
+        <div style="margin-top:12px">
+          <button id="refreshOrders" class="btn ghost">Refresh Orders</button>
+        </div>
+      </aside>
+    </main>
   </div>
-</div>
 
-); }
-function SuperAdminQueue({ showToast, confirmPayment, backend }){
-  const [orders, setOrders] = useState([]);
-  useEffect(()=>{ fetchQueue(); }, []);
-  async function fetchQueue(){
-    try{
-      const res = await fetch(`${backend}/api/orders/pending-payments`, { credentials:'include' });
-      if(!res.ok) throw new Error('no'); const data = await res.json(); setOrders(data.orders || []);
-    }catch(e){ showToast('Could not load queue','error'); }
-  }
-  return (
-    <div className="space-y-3">
-      {orders.length === 0 && <div>No pending payments right now.</div>}
-      {orders.map(o => (
-        <div key={o.id} className="border p-3 rounded flex justify-between items-start">
-          <div>
-            <div className="font-semibold">Order {o.id}</div>
-            <div>Customer: {o.customerName || o.customerId}</div>
-            <div>Amount: ₦{o.price}</div>
-            <div>Status: {o.status}</div>
-          </div>
-          <div className="flex flex-col gap-2">
-            <button onClick={()=> confirmPayment(o.id)} className="px-3 py-2 bg-green-600 text-white rounded">Confirm Payment</button>
-            <button onClick={()=> navigator.clipboard.writeText(JSON.stringify(o))} className="px-3 py-2 border rounded">Copy Details</button>
-          </div>
-        </div>
-      ))}
+  <!-- Payment modal -->
+  <div id="paymentModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3>Manual Payment — Bank Details</h3>
+        <button id="closePayModal" class="menu-btn">✕</button>
+      </div>
+      <div id="bankDetailsWrap" style="margin-top:12px"></div>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+        <button id="iHavePaid" class="btn">I Have Paid</button>
+        <button id="cancelPay" class="btn ghost">Cancel</button>
+      </div>
     </div>
-  );
-}
+  </div>
+
+  <!-- Toasts -->
+  <div class="toast-wrap" id="toasts"></div>
+
+  <script>
+  /************* Utilities & App State *************/
+  const token = localStorage.getItem(TOKEN_KEY);
+  const authHeaders = token ? { "Authorization": "Bearer " + token } : {};
+  const toastsEl = document.getElementById('toasts');
+  const showToast = (msg, ttl=3500) => {
+    const div = document.createElement('div'); div.className='toast'; div.textContent = msg; toastsEl.appendChild(div);
+    setTimeout(()=>{ div.style.transition='all .3s'; div.style.opacity = '0'; setTimeout(()=>div.remove(),300); }, ttl);
+  };
+
+  // DOM elements
+  const splash = document.getElementById('splash');
+  document.getElementById('splashLogo').src = LOGO;
+  document.getElementById('topLogo').src = LOGO;
+
+  const app = document.getElementById('app');
+  const menuToggle = document.getElementById('menuToggle');
+  const menu = document.getElementById('menu');
+  const menuProfile = document.getElementById('menuProfile');
+  const menuOrders = document.getElementById('menuOrders');
+  const menuAnalytics = document.getElementById('menuAnalytics');
+  const menuSupport = document.getElementById('menuSupport');
+  const menuTheme = document.getElementById('menuTheme');
+  const menuLogout = document.getElementById('menuLogout');
+
+  // order form elements
+  const pickupEl = document.getElementById('pickup');
+  const dropoffEl = document.getElementById('dropoff');
+  const weightEl = document.getElementById('weight');
+  const serviceEl = document.getElementById('service');
+  const descEl = document.getElementById('description');
+  const calcBtn = document.getElementById('calcPrice');
+  const priceWrap = document.getElementById('priceWrap');
+  const priceValue = document.getElementById('priceValue');
+  const proceedPaymentBtn = document.getElementById('proceedPayment');
+  const mapEl = document.getElementById('map');
+
+  // profile
+  const nameEl = document.getElementById('name');
+  const emailEl = document.getElementById('email');
+  const phoneEl = document.getElementById('phone');
+  const saveProfileBtn = document.getElementById('saveProfile');
+  const refreshProfileBtn = document.getElementById('refreshProfile');
+  const userNameBadge = document.getElementById('userName');
+
+  // orders
+  const ordersListEl = document.getElementById('ordersList');
+  const refreshOrdersBtn = document.getElementById('refreshOrders');
+
+  // payment modal
+  const paymentModal = document.getElementById('paymentModal');
+  const closePayModal = document.getElementById('closePayModal');
+  const cancelPay = document.getElementById('cancelPay');
+  const bankDetailsWrap = document.getElementById('bankDetailsWrap');
+  const iHavePaidBtn = document.getElementById('iHavePaid');
+
+  // other controls
+  const useMyLocationBtn = document.getElementById('useMyLocation');
+  const locatePickupBtn = document.getElementById('locatePickup');
+  const locateDropoffBtn = document.getElementById('locateDropoff');
+
+  // runtime state
+  let profile = null;
+  let map, geocoder, pickupMarker, dropoffMarker, agentMarker;
+  let lastCalculatedPrice = null;
+  let currentCreatedOrder = null;
+  let orders = [];
+  let ws = null;
+  let selectedOrderForPayment = null;
+
+  /************* Small helpers *************/
+  function authFetch(url, opts={}){
+    opts.headers = Object.assign(opts.headers || {}, {"Content-Type":"application/json"}, authHeaders);
+    if(opts.body && typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
+    return fetch(url, opts).then(async r => {
+      const text = await r.text();
+      try { return { ok: r.ok, status: r.status, json: text ? JSON.parse(text) : null }; } catch(e){ return { ok: r.ok, status: r.status, text }; }
+    });
+  }
+
+  function formatCurrency(n){ try{ return '₦' + Number(n).toLocaleString(); }catch(e){ return '₦' + n; } }
+
+  function toRadians(d){ return d * Math.PI / 180; }
+  function haversine(lat1, lon1, lat2, lon2){
+    const R=6371000; const dLat=toRadians(lat2-lat1); const dLon=toRadians(lon2-lon1);
+    const a = Math.sin(dLat/2)**2 + Math.cos(toRadians(lat1))*Math.cos(toRadians(lat2))*Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  /************* Auth guard *************/
+  if(!token){
+    alert("No auth token found. Please login first.");
+    // Redirect to login page (assumes login page path is /login.html)
+    // Change as necessary based on your site.
+    window.location.href = "/login.html";
+  }
+
+  /************* Splashscreen & init *************/
+  function hideSplash(){ splash.style.transition='opacity .6s'; splash.style.opacity='0'; setTimeout(()=>splash.remove(),700); app.style.transition='opacity .5s'; app.style.opacity = '1'; }
+  setTimeout(()=>{ init(); hideSplash(); }, 1200); // short splash to load resources
+
+  /************* Map & geocoding *************/
+  function loadGoogleMaps(cb){
+    if(window.google && window.google.maps){ cb(); return; }
+    const s = document.createElement('script');
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&libraries=places`;
+    s.async=true; s.defer=true;
+    s.onload = cb;
+    document.head.appendChild(s);
+  }
+
+  function initMap(){
+    if(!mapEl) return;
+    map = new google.maps.Map(mapEl, { center:{lat:6.5244,lng:3.3792}, zoom:12, disableDefaultUI:true });
+    geocoder = new google.maps.Geocoder();
+  }
+
+  function setMarker(type, lat, lng){
+    const pos = { lat, lng };
+    if(type==='pickup'){
+      if(!pickupMarker) pickupMarker = new google.maps.Marker({ map, title:'Pickup', label:'P' });
+      pickupMarker.setPosition(pos); map.panTo(pos);
+    } else if(type==='dropoff'){
+      if(!dropoffMarker) dropoffMarker = new google.maps.Marker({ map, title:'Dropoff', label:'D' });
+      dropoffMarker.setPosition(pos); map.panTo(pos);
+    } else if(type==='agent'){
+      if(!agentMarker) agentMarker = new google.maps.Marker({ map, title:'Agent', label:'A' });
+      agentMarker.setPosition(pos);
+    }
+  }
+
+  function geocodeAddress(address, target){
+    return new Promise((resolve, reject) => {
+      if(!geocoder) return reject('no geocoder');
+      geocoder.geocode({ address }, (results, status) => {
+        if(status === 'OK' && results[0]){
+          const loc = results[0].geometry.location;
+          setMarker(target, loc.lat(), loc.lng());
+          resolve({ lat: loc.lat(), lng: loc.lng(), formatted: results[0].formatted_address });
+        } else reject(status);
+      });
+    });
+  }
+
+  /************* Profile & orders *************/
+  async function fetchProfile(){
+    try{
+      const res = await authFetch(BACKEND + "/api/auth/profile", { method:'GET' });
+      if(!res.ok){ showToast("Could not fetch profile — please login again"); return; }
+      profile = res.json;
+      nameEl.value = profile.name || '';
+      emailEl.value = profile.email || '';
+      phoneEl.value = profile.phone || '';
+      userNameBadge.textContent = profile.name || profile.email || '';
+    }catch(e){ console.error(e); showToast("Profile fetch error"); }
+  }
+
+  async function saveProfile(){
+    try{
+      const payload = { name: nameEl.value, phone: phoneEl.value };
+      const res = await authFetch(BACKEND + "/api/auth/me/bank", { method:'PUT', body: payload });
+      if(!res.ok) { showToast("Could not update profile"); return; }
+      showToast("Profile updated");
+      await fetchProfile();
+    }catch(e){ console.error(e); showToast("Save profile failed"); }
+  }
+
+  async function fetchOrders(){
+    try{
+      // backend GET /api/orders returns orders (possibly all). We'll filter to current user on frontend if necessary.
+      const res = await authFetch(BACKEND + "/api/orders", { method:'GET' });
+      if(!res.ok){ showToast("Could not load orders"); return; }
+      const list = res.json || [];
+      // if orders include customer as id property, try to filter
+      const myOrders = list.filter(o => {
+        if(!profile || !profile._id) return false;
+        // many backends use customer field or customerId
+        return (o.customer && (o.customer === profile._id || (o.customer._id && o.customer._id === profile._id))) ||
+               (o.customerId && o.customerId === profile._id) ||
+               (o.customer === profile.email);
+      });
+      // fallback: if none matched, assume backend returned only user's orders
+      orders = myOrders.length ? myOrders : list;
+      renderOrders();
+    }catch(e){ console.error(e); showToast("Load orders failed"); }
+  }
+
+  function renderOrders(){
+    ordersListEl.innerHTML = '';
+    if(!orders || orders.length === 0){ ordersListEl.innerHTML = '<div class="sublabel">No orders yet</div>'; return; }
+    orders.forEach(o => {
+      const div = document.createElement('div'); div.className='order-item';
+      const left = document.createElement('div');
+      left.innerHTML = `<div style="font-weight:700">Order ${o._id || o.id}</div>
+                        <div class="small muted">${o.status || '—'}</div>
+                        <div class="sublabel">Price: ${formatCurrency(o.finalPrice || o.price || o.total || 0)}</div>`;
+      const right = document.createElement('div'); right.style.display='flex'; right.style.gap='8px'; right.style.alignItems='center';
+      const trackBtn = document.createElement('button'); trackBtn.className='btn ghost'; trackBtn.textContent='Track'; trackBtn.onclick = ()=> openLiveTracking(o);
+      const detailsBtn = document.createElement('button'); detailsBtn.className='btn'; detailsBtn.textContent='Details'; detailsBtn.onclick = ()=> showOrderDetails(o);
+      right.appendChild(trackBtn); right.appendChild(detailsBtn);
+      div.appendChild(left); div.appendChild(right);
+      ordersListEl.appendChild(div);
+    });
+  }
+
+  function openLiveTracking(order){
+    // switch map view to center on agent or order
+    if(order.agent && order.agent.lat && order.agent.lng){
+      setMarker('agent', order.agent.lat, order.agent.lng);
+      map.setZoom(15);
+      showToast('Centered on agent');
+    } else {
+      showToast('Agent not yet assigned for this order');
+    }
+  }
+
+  function showOrderDetails(order){
+    // quick modal showing details
+    const msg = `Order ${order._id || order.id}\nStatus: ${order.status}\nPrice: ${formatCurrency(order.finalPrice || order.price || 0)}\nPickup: ${order.pickupAddress?.line || '—'}\nDelivery: ${order.deliveryAddress?.line || '—'}`;
+    alert(msg);
+  }
+
+  /************* Price calc, create order & payment flow *************/
+  calcBtn.addEventListener('click', async ()=>{
+    const pickup = pickupEl.value.trim();
+    const dropoff = dropoffEl.value.trim();
+    const weight = Number(weightEl.value) || 1;
+    const service = serviceEl.value;
+    if(!pickup || !dropoff){ showToast('Please provide pickup & dropoff addresses'); return; }
+
+    // Convert weight into a simple items array for backend calc (backend expects items)
+    const items = [{ name: 'Parcel', quantity: 1, price: Math.round(weight * 100) }];
+    try{
+      showToast('Calculating price...');
+      const res = await authFetch(BACKEND + "/api/orders/calc-price", { method:'POST', body: { items } });
+      if(!res.ok){ showToast('Price calculation failed'); return; }
+      const body = res.json;
+      const price = body.finalPrice ?? body.price ?? body.finalAmount ?? 0;
+      lastCalculatedPrice = price;
+      priceWrap.classList.remove('hidden');
+      priceValue.textContent = formatCurrency(price);
+      proceedPaymentBtn.classList.remove('hidden');
+      showToast('Price calculated: ' + formatCurrency(price));
+    }catch(e){ console.error(e); showToast('Could not calculate price'); }
+  });
+
+  proceedPaymentBtn.addEventListener('click', async ()=>{
+    // create the order on backend (status PendingPayment)
+    const pickup = pickupEl.value.trim();
+    const dropoff = dropoffEl.value.trim();
+    const weight = Number(weightEl.value) || 1;
+    const desc = descEl.value.trim();
+    const items = [{ name: 'Parcel', quantity: 1, price: Math.round(weight * 100), description: desc }];
+    const payload = {
+      items,
+      pickupAddress: { line: pickup },
+      deliveryAddress: { line: dropoff },
+      paymentMethod: 'Bank Transfer'
+    };
+    try{
+      showToast('Creating order...');
+      const res = await authFetch(BACKEND + "/api/orders", { method:'POST', body: payload });
+      if(!res.ok){ console.error(res); showToast('Could not create order'); return; }
+      const data = res.json;
+      currentCreatedOrder = data.order || data;
+      selectedOrderForPayment = currentCreatedOrder;
+      // bank details may be returned under superAdminBankDetails
+      const bankDetails = data.superAdminBankDetails || data.bankDetails || { bank: 'Moniepoint', account: '000000000', name: 'SkyUltimate' };
+      showPaymentModal(bankDetails, currentCreatedOrder);
+      showToast('Order created. Please complete payment using the shown details.');
+      await fetchOrders();
+    }catch(e){ console.error(e); showToast('Order creation failed'); }
+  });
+
+  function showPaymentModal(bankDetails, order){
+    bankDetailsWrap.innerHTML = '';
+    bankDetailsWrap.innerHTML += `<div class="sublabel">Order ID: <strong>${order._id || order.id}</strong></div>`;
+    bankDetailsWrap.innerHTML += `<div style="margin-top:8px">${bankDetails.bankName || bankDetails.bank || 'Bank'} — ${bankDetails.accountNumber || bankDetails.account || bankDetails.number || '—'}</div>`;
+    if(bankDetails.accountHolderName || bankDetails.name) bankDetailsWrap.innerHTML += `<div>${bankDetails.accountHolderName || bankDetails.name}</div>`;
+    paymentModal.classList.remove('hidden');
+  }
+
+  closePayModal.onclick = cancelPay.onclick = ()=> paymentModal.classList.add('hidden');
+
+  iHavePaidBtn.addEventListener('click', async ()=>{
+    if(!selectedOrderForPayment){ showToast('No order selected'); return; }
+    const id = selectedOrderForPayment._id || selectedOrderForPayment.id;
+    // call a reasonable endpoint to mark 'submitted for confirmation' — backend may need to implement this if missing
+    try{
+      showToast('Notifying server of payment...');
+      const res = await authFetch(BACKEND + "/api/orders/" + id + "/submit-payment", { method:'POST', body: { note: 'Customer marked as paid' } });
+      if(!res.ok){
+        // fallback: try /api/orders/:id/payment
+        const fallback = await authFetch(BACKEND + "/api/orders/" + id + "/payment", { method:'POST', body: { note:'Customer paid (front-end)' } });
+        if(!fallback.ok){ showToast('Failed to notify payment — contact support'); paymentModal.classList.add('hidden'); return; }
+        showToast('Payment submitted for confirmation');
+      } else showToast('Payment submitted for confirmation');
+      paymentModal.classList.add('hidden');
+      await fetchOrders();
+    }catch(e){ console.error(e); showToast('Payment submit failed'); paymentModal.classList.add('hidden'); }
+  });
+
+  /************* WebSocket real-time (attempt) *************/
+  async function connectWS(){
+    try{
+      const scheme = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const url = scheme + '//' + (new URL(BACKEND)).host + WS_PATH;
+      ws = new WebSocket(url);
+      ws.onopen = ()=> { console.log('ws open', url); showToast('Real-time connected'); };
+      ws.onmessage = ev => {
+        try{
+          const msg = JSON.parse(ev.data);
+          // expected shapes: { type:'order_update', order } or {type:'agent_location', orderId, agent}
+          if(msg.type === 'order_update' && msg.order){
+            // update local orders if matching
+            const updated = msg.order;
+            orders = orders.map(o => (o._id === updated._id || o.id === updated.id) ? updated : o);
+            renderOrders();
+            if(updated.status === 'PaymentConfirmed') showToast('Payment confirmed for order ' + (updated._id || updated.id));
+          }
+          if(msg.type === 'agent_location'){
+            const orderId = msg.orderId;
+            const agent = msg.agent;
+            if(agent && agent.lat && agent.lng){
+              setMarker('agent', agent.lat, agent.lng);
+            }
+          }
+        }catch(e){ console.warn('ws parse fail', e); }
+      };
+      ws.onclose = ()=>{ console.log('ws closed — will retry in 8s'); setTimeout(connectWS, 8000); };
+      ws.onerror = e => { console.error('ws error', e); ws.close(); };
+    }catch(e){ console.error('ws connect', e); }
+  }
+
+  /************* UI & Menu *************/
+  menuToggle.addEventListener('click', ()=> menu.classList.toggle('hidden'));
+  menuProfile.addEventListener('click', (e)=>{ e.preventDefault(); window.scrollTo({top:0,behavior:'smooth'}); nameEl.focus(); menu.classList.add('hidden'); });
+  menuOrders.addEventListener('click', (e)=>{ e.preventDefault(); window.scrollTo({top:400,behavior:'smooth'}); menu.classList.add('hidden'); });
+  menuAnalytics.addEventListener('click', (e)=>{ e.preventDefault(); alert('Service Analytics: currently minimal — will show totals.'); menu.classList.add('hidden'); });
+  menuSupport.addEventListener('click', (e)=>{ e.preventDefault(); alert('Contact support: +234 000 000 000'); menu.classList.add('hidden'); });
+  menuTheme.addEventListener('click', (e)=>{ e.preventDefault(); toggleTheme(); menu.classList.add('hidden'); });
+  menuLogout.addEventListener('click', (e)=>{ e.preventDefault(); localStorage.removeItem(TOKEN_KEY); window.location.href='/login.html'; });
+
+  saveProfileBtn.addEventListener('click', async ()=> { await saveProfile(); });
+  refreshProfileBtn.addEventListener('click', async ()=> { await fetchProfile(); showToast('Profile refreshed'); });
+
+  refreshOrdersBtn.addEventListener('click', async ()=> { await fetchOrders(); showToast('Orders refreshed'); });
+
+  useMyLocationBtn.addEventListener('click', ()=> {
+    if(!navigator.geolocation) return showToast('Geolocation unavailable');
+    navigator.geolocation.getCurrentPosition(pos => {
+      const { latitude, longitude } = pos.coords;
+      setMarker('pickup', latitude, longitude);
+      pickupEl.value = 'My location';
+      showToast('Pickup set to your location');
+    }, ()=> showToast('Could not get location'));
+  });
+
+  locatePickupBtn.addEventListener('click', async ()=> {
+    const a = pickupEl.value.trim(); if(!a) return showToast('Enter pickup address first');
+    try{ await geocodeAddress(a,'pickup'); showToast('Pickup located'); }catch(e){ showToast('Could not geocode pickup'); }
+  });
+
+  locateDropoffBtn.addEventListener('click', async ()=> {
+    const a = dropoffEl.value.trim(); if(!a) return showToast('Enter dropoff address first');
+    try{ await geocodeAddress(a,'dropoff'); showToast('Dropoff located'); }catch(e){ showToast('Could not geocode dropoff'); }
+  });
+
+  /************* Theme toggle *************/
+  function toggleTheme(){
+    const cur = document.documentElement.getAttribute('data-theme');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  }
+  // apply saved theme
+  (function(){ const t = localStorage.getItem('theme') || 'light'; document.documentElement.setAttribute('data-theme', t); })();
+
+  /************* Init: load profile, map, orders, ws *************/
+  async function init(){
+    // load profile
+    await fetchProfile();
+    // load map
+    loadGoogleMaps(()=>{ initMap(); });
+    // connect ws
+    connectWS();
+    // fetch orders
+    await fetchOrders();
+  }
+
+  /************* Export small helper for other pages (optional) *************/
+  window.SkyUltimate = { fetchOrders };
+
+  </script>
+</body>
+</html>
