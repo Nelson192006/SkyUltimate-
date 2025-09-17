@@ -5,77 +5,74 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SkyUltimate — Customer Dashboard</title>
 
-  <!-- Hardcoded config -->
+  <!-- HARDCODED CONFIG (per your request) -->
   <script>
-    // ** HARD-CODED (as requested) **
     const BACKEND = "https://skyultimate-backend-api-structure.onrender.com";
     const GOOGLE_MAPS_KEY = "AIzaSyAXZf0hfz_eiyAD5rnVEzmTgWmxIYmODiE";
     const LOGO = "https://github.com/Nelson192006/SkyUltimate-/blob/4e77ffc850e3621ae15902180075ad00958f4491/logo.png?raw=true";
-    const TOKEN_KEY = "token"; // your login page must store auth token here
-    const WS_PATH = "/ws"; // attempted WebSocket path (wss://.../ws)
+    const WS_PATH = "/ws"; // attempted WebSocket path
   </script>
 
   <style>
-    /* Minimal reset + premium red/white theme */
+    /* ---------- Theme & Layout (premium red/white) ---------- */
     :root{
       --red:#C00000;
-      --bg:#fff;
+      --bg:#ffffff;
       --muted:#6b7280;
       --card-radius:14px;
-      --glass: rgba(255,255,255,0.85);
-      --shadow: 0 6px 18px rgba(0,0,0,0.08);
-      --maxw:1100px;
+      --glass: rgba(255,255,255,0.92);
+      --shadow: 0 10px 30px rgba(0,0,0,0.08);
+      --maxw:1200px;
     }
     [data-theme="dark"]{
       --bg:#0b0b0c;
       --muted:#9ca3af;
-      --glass: rgba(10,10,10,0.65);
+      --glass: rgba(10,10,10,0.64);
     }
     *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;}
-    body{margin:0;background:linear-gradient(180deg, #fff 0%, #fff 60%);color:#111;min-height:100vh;}
-    .app{max-width:var(--maxw);margin:18px auto;padding:18px;}
-    .header{height:68px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;background:var(--glass);backdrop-filter:blur(6px);padding:8px 14px;border-radius:12px;box-shadow:var(--shadow);z-index:40}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#fff,#fff);color:#111}
+    .wrap{max-width:var(--maxw);margin:18px auto;padding:18px}
+    .header{height:72px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:10px;background:var(--glass);backdrop-filter:blur(6px);padding:10px 14px;border-radius:12px;box-shadow:var(--shadow);z-index:40}
     .brand{display:flex;align-items:center;gap:12px}
-    .brand img{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--red)}
+    .brand img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:3px solid var(--red)}
     .brand h1{font-size:20px;margin:0}
     .hamburger{position:relative}
-    .menu-btn{background:transparent;border:0;padding:8px;border-radius:8px;cursor:pointer}
+    .menu-btn{background:transparent;border:0;padding:8px;border-radius:8px;cursor:pointer;font-weight:800}
     .menu{position:absolute;right:0;top:54px;background:white;border-radius:10px;min-width:220px;box-shadow:0 10px 30px rgba(0,0,0,0.12);overflow:hidden}
     .menu a{display:block;padding:10px 12px;color:#111;text-decoration:none;font-weight:600}
     .menu a:hover{background:#f8f8f8}
     .grid{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-top:18px}
     .card{background:var(--bg);border-radius:var(--card-radius);padding:18px;box-shadow:var(--shadow)}
-    .card h2{margin:0 0 8px 0}
+    h2,h3{margin:0}
+    .muted{color:var(--muted);font-size:13px}
     .form-row{display:flex;gap:10px;margin-top:10px}
     input[type="text"], input[type="number"], textarea, select{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e6e6;font-size:14px}
     .btn{display:inline-block;padding:10px 14px;border-radius:8px;border:0;background:var(--red);color:white;font-weight:700;cursor:pointer}
     .btn.ghost{background:transparent;color:var(--red);border:1px solid rgba(192,0,0,0.12)}
-    .muted{color:var(--muted);font-size:13px}
-    .small{font-size:13px}
-    #map { height:360px;border-radius:12px;margin-top:12px;border:1px solid #eee }
+    .price-box{display:inline-flex;align-items:center;gap:12px;padding:8px 12px;border-radius:10px;background:#fff3f3;border:1px solid rgba(192,0,0,0.08)}
+    #map{height:380px;border-radius:12px;margin-top:12px;border:1px solid #eee}
     .toast-wrap{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:9999}
     .toast{padding:10px 14px;border-radius:10px;background:#111;color:white;box-shadow:0 8px 30px rgba(0,0,0,0.22)}
-    .price-box{display:inline-flex;align-items:center;gap:12px;padding:8px 12px;border-radius:10px;background:#fff3f3;border:1px solid rgba(192,0,0,0.08)}
     .order-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
     .order-item{display:flex;justify-content:space-between;padding:10px;border-radius:10px;border:1px solid #f0f0f0}
     .sublabel{font-size:12px;color:var(--muted)}
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:999}
-    .modal{width:100%;max-width:760px;background:var(--bg);padding:18px;border-radius:12px;box-shadow:var(--shadow)}
-    .top-actions{display:flex;gap:8px;align-items:center;justify-content:flex-end}
+    .modal{width:100%;max-width:820px;background:var(--bg);padding:18px;border-radius:12px;box-shadow:var(--shadow)}
     .chip{padding:6px 10px;border-radius:999px;background:#fff4f4;color:var(--red);font-weight:700;border:1px solid rgba(192,0,0,0.08)}
-    .footer-note{margin-top:18px;color:var(--muted);font-size:13px}
-    .skeleton{height:14px;background:#f3f3f3;border-radius:6px}
+    .small{font-size:13px}
     .hidden{display:none}
+    .center{display:flex;align-items:center;justify-content:center}
+    @media(max-width:980px){ .grid{grid-template-columns:1fr;} #map{height:240px} .header{padding:8px} .brand img{width:48px;height:48px} }
   </style>
 </head>
 <body>
   <!-- Splashscreen -->
   <div id="splash" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--red),#ffefef);z-index:9999;flex-direction:column">
-    <img src="" id="splashLogo" style="width:110px;height:110px;border-radius:50%;box-shadow:0 10px 30px rgba(0,0,0,0.12)" alt="logo">
-    <h2 style="color:white;margin-top:16px">SkyUltimate</h2>
+    <img src="" id="splashLogo" style="width:120px;height:120px;border-radius:50%;box-shadow:0 12px 36px rgba(0,0,0,0.16)" alt="logo">
+    <h2 style="color:white;margin-top:18px">SkyUltimate</h2>
   </div>
 
-  <div class="app" id="app" style="opacity:0">
+  <div class="wrap" id="app" style="opacity:0">
     <div class="header card" role="banner">
       <div class="brand">
         <img id="topLogo" src="" alt="logo">
@@ -86,7 +83,7 @@
       </div>
 
       <div style="display:flex;align-items:center;gap:12px">
-        <div id="userName" class="sublabel"></div>
+        <div id="userName" class="sublabel">Customer</div>
         <div class="hamburger">
           <button class="menu-btn" id="menuToggle" title="Menu">☰</button>
           <div id="menu" class="menu hidden" role="menu" aria-hidden="true">
@@ -95,7 +92,7 @@
             <a href="#" id="menuAnalytics">Service Analytics</a>
             <a href="#" id="menuSupport">Support</a>
             <a href="#" id="menuTheme">Toggle Theme</a>
-            <a href="#" id="menuLogout">Logout</a>
+            <a href="#" id="menuHome">Home</a>
           </div>
         </div>
       </div>
@@ -105,7 +102,7 @@
       <!-- Main column -->
       <section class="card">
         <h2>Place a New Order</h2>
-        <div class="muted">Fill pickup & drop-off details, calculate price, then pay via bank transfer.</div>
+        <div class="muted">Fill pickup & drop-off details, calculate price, then pay via bank transfer. After you pay, tap <strong>I Have Paid</strong> — Super Admin will verify.</div>
 
         <div style="margin-top:12px">
           <label class="sublabel">Pickup address</label>
@@ -151,9 +148,14 @@
           <button id="proceedPayment" class="btn ghost hidden">Proceed to Payment</button>
         </div>
 
-        <div id="map" ></div>
+        <div id="map"></div>
 
-        <div class="footer-note">After payment, click <strong>I Have Paid</strong> inside the payment dialog. Super Admin will confirm payment and agents will be notified.</div>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+          <div class="sublabel">Live Order Status:</div>
+          <div id="liveStatus" class="chip">No Active Order</div>
+        </div>
+
+        <div class="footer-note">After payment, click <strong>I Have Paid</strong> inside the payment dialog. Super Admin will confirm payment and agents will be notified. Confirm Pickup/Delivered buttons appear only when agent is within 50m.</div>
       </section>
 
       <!-- Right column -->
@@ -163,7 +165,7 @@
           <label class="sublabel">Name</label>
           <input id="name" type="text" />
           <label class="sublabel" style="margin-top:8px">Email</label>
-          <input id="email" type="text" disabled />
+          <input id="email" type="text" />
           <label class="sublabel" style="margin-top:8px">Phone</label>
           <input id="phone" type="text" />
           <div style="margin-top:10px;display:flex;gap:8px">
@@ -175,9 +177,7 @@
         <hr style="margin:14px 0;border:none;border-top:1px solid #f0f0f0" />
 
         <h3>My Orders</h3>
-        <div id="ordersList" class="order-list">
-          <!-- orders injected here -->
-        </div>
+        <div id="ordersList" class="order-list"></div>
 
         <div style="margin-top:12px">
           <button id="refreshOrders" class="btn ghost">Refresh Orders</button>
@@ -201,402 +201,417 @@
     </div>
   </div>
 
+  <!-- Confirm buttons modal (appears when order active) -->
+  <div id="confirmModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal">
+      <h3>Order Actions</h3>
+      <div style="margin-top:12px">
+        <div class="sublabel">Order: <strong id="confirmOrderId">-</strong></div>
+        <div style="margin-top:12px;display:flex;gap:10px">
+          <button id="confirmPickup" class="btn ghost" disabled>Confirm Item Picked Up (within 50m)</button>
+          <button id="confirmDelivered" class="btn ghost" disabled>Confirm Order Delivered (within 50m)</button>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:flex-end">
+        <button id="closeConfirm" class="btn ghost">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toasts -->
   <div class="toast-wrap" id="toasts"></div>
 
   <script>
-  /************* Utilities & App State *************/
-  const token = localStorage.getItem(TOKEN_KEY);
-  const authHeaders = token ? { "Authorization": "Bearer " + token } : {};
-  const toastsEl = document.getElementById('toasts');
-  const showToast = (msg, ttl=3500) => {
-    const div = document.createElement('div'); div.className='toast'; div.textContent = msg; toastsEl.appendChild(div);
-    setTimeout(()=>{ div.style.transition='all .3s'; div.style.opacity = '0'; setTimeout(()=>div.remove(),300); }, ttl);
-  };
+  /*************** Utilities & State ***************/
+  const el = id => document.getElementById(id);
+  const toastsEl = el('toasts');
+  function showToast(msg, ttl=3500){
+    const d = document.createElement('div'); d.className='toast'; d.textContent = msg; toastsEl.appendChild(d);
+    setTimeout(()=>{ d.style.transition='all .3s'; d.style.opacity='0'; setTimeout(()=>d.remove(),300); }, ttl);
+  }
 
-  // DOM elements
-  const splash = document.getElementById('splash');
-  document.getElementById('splashLogo').src = LOGO;
-  document.getElementById('topLogo').src = LOGO;
+  // DOM nodes
+  const splash = el('splash');
+  el('splashLogo').src = LOGO;
+  el('topLogo').src = LOGO;
 
-  const app = document.getElementById('app');
-  const menuToggle = document.getElementById('menuToggle');
-  const menu = document.getElementById('menu');
-  const menuProfile = document.getElementById('menuProfile');
-  const menuOrders = document.getElementById('menuOrders');
-  const menuAnalytics = document.getElementById('menuAnalytics');
-  const menuSupport = document.getElementById('menuSupport');
-  const menuTheme = document.getElementById('menuTheme');
-  const menuLogout = document.getElementById('menuLogout');
+  const app = el('app');
+  const menuToggle = el('menuToggle');
+  const menu = el('menu');
+  const menuProfile = el('menuProfile');
+  const menuOrders = el('menuOrders');
+  const menuAnalytics = el('menuAnalytics');
+  const menuSupport = el('menuSupport');
+  const menuTheme = el('menuTheme');
+  const menuHome = el('menuHome');
 
-  // order form elements
-  const pickupEl = document.getElementById('pickup');
-  const dropoffEl = document.getElementById('dropoff');
-  const weightEl = document.getElementById('weight');
-  const serviceEl = document.getElementById('service');
-  const descEl = document.getElementById('description');
-  const calcBtn = document.getElementById('calcPrice');
-  const priceWrap = document.getElementById('priceWrap');
-  const priceValue = document.getElementById('priceValue');
-  const proceedPaymentBtn = document.getElementById('proceedPayment');
-  const mapEl = document.getElementById('map');
+  // order form
+  const pickupEl = el('pickup'), dropoffEl = el('dropoff'), weightEl = el('weight'), serviceEl = el('service'), descEl = el('description');
+  const calcBtn = el('calcPrice'), priceWrap = el('priceWrap'), priceValue = el('priceValue'), proceedPaymentBtn = el('proceedPayment');
+  const mapEl = el('map'), liveStatus = el('liveStatus');
 
   // profile
-  const nameEl = document.getElementById('name');
-  const emailEl = document.getElementById('email');
-  const phoneEl = document.getElementById('phone');
-  const saveProfileBtn = document.getElementById('saveProfile');
-  const refreshProfileBtn = document.getElementById('refreshProfile');
-  const userNameBadge = document.getElementById('userName');
+  const nameEl = el('name'), emailEl = el('email'), phoneEl = el('phone'), saveProfileBtn = el('saveProfile'), refreshProfileBtn = el('refreshProfile'), userNameBadge = el('userName');
 
   // orders
-  const ordersListEl = document.getElementById('ordersList');
-  const refreshOrdersBtn = document.getElementById('refreshOrders');
+  const ordersListEl = el('ordersList'), refreshOrdersBtn = el('refreshOrders');
 
   // payment modal
-  const paymentModal = document.getElementById('paymentModal');
-  const closePayModal = document.getElementById('closePayModal');
-  const cancelPay = document.getElementById('cancelPay');
-  const bankDetailsWrap = document.getElementById('bankDetailsWrap');
-  const iHavePaidBtn = document.getElementById('iHavePaid');
+  const paymentModal = el('paymentModal'), closePayModal = el('closePayModal'), cancelPay = el('cancelPay'), bankDetailsWrap = el('bankDetailsWrap'), iHavePaidBtn = el('iHavePaid');
 
-  // other controls
-  const useMyLocationBtn = document.getElementById('useMyLocation');
-  const locatePickupBtn = document.getElementById('locatePickup');
-  const locateDropoffBtn = document.getElementById('locateDropoff');
+  // confirm modal + buttons
+  const confirmModal = el('confirmModal'), confirmOrderId = el('confirmOrderId'), confirmPickupBtn = el('confirmPickup'), confirmDeliveredBtn = el('confirmDelivered'), closeConfirm = el('closeConfirm');
 
-  // runtime state
-  let profile = null;
+  // utilities
   let map, geocoder, pickupMarker, dropoffMarker, agentMarker;
   let lastCalculatedPrice = null;
-  let currentCreatedOrder = null;
+  let currentOrder = null; // the order created or selected
   let orders = [];
   let ws = null;
-  let selectedOrderForPayment = null;
-
-  /************* Small helpers *************/
-  function authFetch(url, opts={}){
-    opts.headers = Object.assign(opts.headers || {}, {"Content-Type":"application/json"}, authHeaders);
-    if(opts.body && typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
-    return fetch(url, opts).then(async r => {
-      const text = await r.text();
-      try { return { ok: r.ok, status: r.status, json: text ? JSON.parse(text) : null }; } catch(e){ return { ok: r.ok, status: r.status, text }; }
-    });
-  }
 
   function formatCurrency(n){ try{ return '₦' + Number(n).toLocaleString(); }catch(e){ return '₦' + n; } }
+  function toRad(d){ return d * Math.PI / 180; }
+  function haversine(lat1,lon1,lat2,lon2){ const R=6371000; const dLat=toRad(lat2-lat1); const dLon=toRad(lon2-lon1); const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2; const c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); return R*c; }
 
-  function toRadians(d){ return d * Math.PI / 180; }
-  function haversine(lat1, lon1, lat2, lon2){
-    const R=6371000; const dLat=toRadians(lat2-lat1); const dLon=toRadians(lon2-lon1);
-    const a = Math.sin(dLat/2)**2 + Math.cos(toRadians(lat1))*Math.cos(toRadians(lat2))*Math.sin(dLon/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  async function apiFetch(url, opts={}){
+    opts.headers = Object.assign(opts.headers || {}, {'Content-Type':'application/json'});
+    if(opts.body && typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
+    const r = await fetch(url, opts);
+    const text = await r.text();
+    try { return { ok:r.ok, status:r.status, json: text ? JSON.parse(text) : null }; } catch(e) { return { ok:r.ok, status:r.status, text }; }
   }
 
-  /************* Auth guard *************/
-  if(!token){
-    alert("No auth token found. Please login first.");
-    // Redirect to login page (assumes login page path is /login.html)
-    // Change as necessary based on your site.
-    window.location.href = "/login.html";
-  }
+  /*************** Splash & Init ***************/
+  function hideSplash(){ splash.style.transition='opacity .45s'; splash.style.opacity='0'; setTimeout(()=>splash.remove(),500); app.style.transition='opacity .4s'; app.style.opacity='1'; }
+  setTimeout(()=>{ init(); hideSplash(); }, 900);
 
-  /************* Splashscreen & init *************/
-  function hideSplash(){ splash.style.transition='opacity .6s'; splash.style.opacity='0'; setTimeout(()=>splash.remove(),700); app.style.transition='opacity .5s'; app.style.opacity = '1'; }
-  setTimeout(()=>{ init(); hideSplash(); }, 1200); // short splash to load resources
-
-  /************* Map & geocoding *************/
+  /*************** Map & Geocoding ***************/
   function loadGoogleMaps(cb){
-    if(window.google && window.google.maps){ cb(); return; }
+    if(window.google && window.google.maps) return cb();
     const s = document.createElement('script');
     s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&libraries=places`;
-    s.async=true; s.defer=true;
-    s.onload = cb;
-    document.head.appendChild(s);
+    s.async = true; s.defer = true; s.onload = cb; document.head.appendChild(s);
   }
-
   function initMap(){
-    if(!mapEl) return;
-    map = new google.maps.Map(mapEl, { center:{lat:6.5244,lng:3.3792}, zoom:12, disableDefaultUI:true });
+    map = new google.maps.Map(mapEl, { center:{lat:6.5244, lng:3.3792}, zoom:12, disableDefaultUI:true });
     geocoder = new google.maps.Geocoder();
   }
-
   function setMarker(type, lat, lng){
     const pos = { lat, lng };
-    if(type==='pickup'){
-      if(!pickupMarker) pickupMarker = new google.maps.Marker({ map, title:'Pickup', label:'P' });
-      pickupMarker.setPosition(pos); map.panTo(pos);
-    } else if(type==='dropoff'){
-      if(!dropoffMarker) dropoffMarker = new google.maps.Marker({ map, title:'Dropoff', label:'D' });
-      dropoffMarker.setPosition(pos); map.panTo(pos);
-    } else if(type==='agent'){
-      if(!agentMarker) agentMarker = new google.maps.Marker({ map, title:'Agent', label:'A' });
-      agentMarker.setPosition(pos);
-    }
+    if(type==='pickup'){ if(!pickupMarker) pickupMarker = new google.maps.Marker({ map, title:'Pickup', label:'P' }); pickupMarker.setPosition(pos); map.panTo(pos); }
+    if(type==='dropoff'){ if(!dropoffMarker) dropoffMarker = new google.maps.Marker({ map, title:'Dropoff', label:'D' }); dropoffMarker.setPosition(pos); map.panTo(pos); }
+    if(type==='agent'){ if(!agentMarker) agentMarker = new google.maps.Marker({ map, title:'Agent', label:'A' }); agentMarker.setPosition(pos); }
   }
-
-  function geocodeAddress(address, target){
-    return new Promise((resolve, reject) => {
-      if(!geocoder) return reject('no geocoder');
-      geocoder.geocode({ address }, (results, status) => {
-        if(status === 'OK' && results[0]){
-          const loc = results[0].geometry.location;
-          setMarker(target, loc.lat(), loc.lng());
-          resolve({ lat: loc.lat(), lng: loc.lng(), formatted: results[0].formatted_address });
-        } else reject(status);
+  function geocodeAddress(addr){
+    return new Promise((resolve,reject)=>{
+      if(!geocoder) return reject('No geocoder');
+      geocoder.geocode({ address: addr }, (results, status)=>{
+        if(status === 'OK' && results[0]){ const loc = results[0].geometry.location; resolve({ lat:loc.lat(), lng:loc.lng(), formatted:results[0].formatted_address }); }
+        else reject(status);
       });
     });
   }
 
-  /************* Profile & orders *************/
+  /*************** Profile (public attempt) ***************/
   async function fetchProfile(){
     try{
-      const res = await authFetch(BACKEND + "/api/auth/profile", { method:'GET' });
-      if(!res.ok){ showToast("Could not fetch profile — please login again"); return; }
-      profile = res.json;
-      nameEl.value = profile.name || '';
-      emailEl.value = profile.email || '';
-      phoneEl.value = profile.phone || '';
-      userNameBadge.textContent = profile.name || profile.email || '';
-    }catch(e){ console.error(e); showToast("Profile fetch error"); }
+      const r = await apiFetch(BACKEND + "/api/auth/profile", { method:'GET' });
+      if(r.ok && r.json){ const p = r.json; nameEl.value = p.name || ''; emailEl.value = p.email || ''; phoneEl.value = p.phone || ''; userNameBadge.textContent = p.name || p.email || 'Customer'; return; }
+      // fallback: no protected profile available — leave fields editable
+      userNameBadge.textContent = 'Customer';
+    }catch(e){ console.error(e); showToast('Profile fetch failed'); }
   }
-
   async function saveProfile(){
     try{
       const payload = { name: nameEl.value, phone: phoneEl.value };
-      const res = await authFetch(BACKEND + "/api/auth/me/bank", { method:'PUT', body: payload });
-      if(!res.ok) { showToast("Could not update profile"); return; }
-      showToast("Profile updated");
+      const r = await apiFetch(BACKEND + "/api/auth/me/bank", { method:'PUT', body: payload });
+      if(!r.ok){ showToast('Could not save profile (endpoint may require auth)'); return; }
+      showToast('Profile updated');
       await fetchProfile();
-    }catch(e){ console.error(e); showToast("Save profile failed"); }
+    }catch(e){ console.error(e); showToast('Save profile failed'); }
   }
 
-  async function fetchOrders(){
-    try{
-      // backend GET /api/orders returns orders (possibly all). We'll filter to current user on frontend if necessary.
-      const res = await authFetch(BACKEND + "/api/orders", { method:'GET' });
-      if(!res.ok){ showToast("Could not load orders"); return; }
-      const list = res.json || [];
-      // if orders include customer as id property, try to filter
-      const myOrders = list.filter(o => {
-        if(!profile || !profile._id) return false;
-        // many backends use customer field or customerId
-        return (o.customer && (o.customer === profile._id || (o.customer._id && o.customer._id === profile._id))) ||
-               (o.customerId && o.customerId === profile._id) ||
-               (o.customer === profile.email);
-      });
-      // fallback: if none matched, assume backend returned only user's orders
-      orders = myOrders.length ? myOrders : list;
-      renderOrders();
-    }catch(e){ console.error(e); showToast("Load orders failed"); }
-  }
-
-  function renderOrders(){
-    ordersListEl.innerHTML = '';
-    if(!orders || orders.length === 0){ ordersListEl.innerHTML = '<div class="sublabel">No orders yet</div>'; return; }
-    orders.forEach(o => {
-      const div = document.createElement('div'); div.className='order-item';
-      const left = document.createElement('div');
-      left.innerHTML = `<div style="font-weight:700">Order ${o._id || o.id}</div>
-                        <div class="small muted">${o.status || '—'}</div>
-                        <div class="sublabel">Price: ${formatCurrency(o.finalPrice || o.price || o.total || 0)}</div>`;
-      const right = document.createElement('div'); right.style.display='flex'; right.style.gap='8px'; right.style.alignItems='center';
-      const trackBtn = document.createElement('button'); trackBtn.className='btn ghost'; trackBtn.textContent='Track'; trackBtn.onclick = ()=> openLiveTracking(o);
-      const detailsBtn = document.createElement('button'); detailsBtn.className='btn'; detailsBtn.textContent='Details'; detailsBtn.onclick = ()=> showOrderDetails(o);
-      right.appendChild(trackBtn); right.appendChild(detailsBtn);
-      div.appendChild(left); div.appendChild(right);
-      ordersListEl.appendChild(div);
-    });
-  }
-
-  function openLiveTracking(order){
-    // switch map view to center on agent or order
-    if(order.agent && order.agent.lat && order.agent.lng){
-      setMarker('agent', order.agent.lat, order.agent.lng);
-      map.setZoom(15);
-      showToast('Centered on agent');
-    } else {
-      showToast('Agent not yet assigned for this order');
-    }
-  }
-
-  function showOrderDetails(order){
-    // quick modal showing details
-    const msg = `Order ${order._id || order.id}\nStatus: ${order.status}\nPrice: ${formatCurrency(order.finalPrice || order.price || 0)}\nPickup: ${order.pickupAddress?.line || '—'}\nDelivery: ${order.deliveryAddress?.line || '—'}`;
-    alert(msg);
-  }
-
-  /************* Price calc, create order & payment flow *************/
+  /*************** Orders: calc, create, list ***************/
   calcBtn.addEventListener('click', async ()=>{
-    const pickup = pickupEl.value.trim();
-    const dropoff = dropoffEl.value.trim();
+    const pickup = pickupEl.value.trim(), dropoff = dropoffEl.value.trim();
+    if(!pickup || !dropoff){ showToast('Enter pickup & dropoff'); return; }
+    // create items array for calc; your backend calcPrice expects items
     const weight = Number(weightEl.value) || 1;
-    const service = serviceEl.value;
-    if(!pickup || !dropoff){ showToast('Please provide pickup & dropoff addresses'); return; }
-
-    // Convert weight into a simple items array for backend calc (backend expects items)
-    const items = [{ name: 'Parcel', quantity: 1, price: Math.round(weight * 100) }];
+    const items = [{ name:'Parcel', quantity:1, price: Math.round(weight*100) }];
+    showToast('Calculating price...');
     try{
-      showToast('Calculating price...');
-      const res = await authFetch(BACKEND + "/api/orders/calc-price", { method:'POST', body: { items } });
-      if(!res.ok){ showToast('Price calculation failed'); return; }
-      const body = res.json;
-      const price = body.finalPrice ?? body.price ?? body.finalAmount ?? 0;
-      lastCalculatedPrice = price;
-      priceWrap.classList.remove('hidden');
-      priceValue.textContent = formatCurrency(price);
+      const res = await apiFetch(BACKEND + "/api/orders/calc-price", { method:'POST', body: { items } });
+      if(!res.ok){ console.error(res); showToast('Price calc failed'); return; }
+      const b = res.json || {};
+      lastCalculatedPrice = b.finalPrice ?? b.finalPrice ?? (b.finalAmount || 0);
+      priceWrap.classList.remove('hidden'); priceValue.textContent = formatCurrency(lastCalculatedPrice || 0);
       proceedPaymentBtn.classList.remove('hidden');
-      showToast('Price calculated: ' + formatCurrency(price));
-    }catch(e){ console.error(e); showToast('Could not calculate price'); }
+      showToast('Price calculated: ' + formatCurrency(lastCalculatedPrice));
+    }catch(e){ console.error(e); showToast('Calculation error'); }
   });
 
   proceedPaymentBtn.addEventListener('click', async ()=>{
-    // create the order on backend (status PendingPayment)
-    const pickup = pickupEl.value.trim();
-    const dropoff = dropoffEl.value.trim();
-    const weight = Number(weightEl.value) || 1;
-    const desc = descEl.value.trim();
-    const items = [{ name: 'Parcel', quantity: 1, price: Math.round(weight * 100), description: desc }];
-    const payload = {
-      items,
-      pickupAddress: { line: pickup },
-      deliveryAddress: { line: dropoff },
-      paymentMethod: 'Bank Transfer'
-    };
+    const pickup = pickupEl.value.trim(), dropoff = dropoffEl.value.trim();
+    const items = [{ name:'Parcel', quantity:1, price: Math.round((Number(weightEl.value)||1)*100), description: descEl.value }];
+    const payload = { items, pickupAddress: { line: pickup }, deliveryAddress: { line: dropoff }, paymentMethod: 'Bank Transfer' };
+    showToast('Creating order...');
     try{
-      showToast('Creating order...');
-      const res = await authFetch(BACKEND + "/api/orders", { method:'POST', body: payload });
-      if(!res.ok){ console.error(res); showToast('Could not create order'); return; }
-      const data = res.json;
-      currentCreatedOrder = data.order || data;
-      selectedOrderForPayment = currentCreatedOrder;
-      // bank details may be returned under superAdminBankDetails
-      const bankDetails = data.superAdminBankDetails || data.bankDetails || { bank: 'Moniepoint', account: '000000000', name: 'SkyUltimate' };
-      showPaymentModal(bankDetails, currentCreatedOrder);
-      showToast('Order created. Please complete payment using the shown details.');
+      const r = await apiFetch(BACKEND + "/api/orders", { method:'POST', body: payload });
+      if(!r.ok){ console.error(r); showToast('Order creation failed'); return; }
+      const data = r.json;
+      currentOrder = data.order || data;
+      // bank details from response (order controller returns superAdminBankDetails)
+      const bankDetails = (data.superAdminBankDetails || data.bankDetails || { bankName:'Moniepoint', accountNumber:'0000000000', accountHolderName:'SkyUltimate' });
+      showPaymentModal(bankDetails, currentOrder);
+      showToast('Order created — complete payment and click I Have Paid');
       await fetchOrders();
-    }catch(e){ console.error(e); showToast('Order creation failed'); }
+      updateLiveStatus(currentOrder);
+    }catch(e){ console.error(e); showToast('Create order error'); }
   });
 
   function showPaymentModal(bankDetails, order){
     bankDetailsWrap.innerHTML = '';
     bankDetailsWrap.innerHTML += `<div class="sublabel">Order ID: <strong>${order._id || order.id}</strong></div>`;
-    bankDetailsWrap.innerHTML += `<div style="margin-top:8px">${bankDetails.bankName || bankDetails.bank || 'Bank'} — ${bankDetails.accountNumber || bankDetails.account || bankDetails.number || '—'}</div>`;
-    if(bankDetails.accountHolderName || bankDetails.name) bankDetailsWrap.innerHTML += `<div>${bankDetails.accountHolderName || bankDetails.name}</div>`;
+    bankDetailsWrap.innerHTML += `<div style="margin-top:8px"><strong>${bankDetails.bankName || bankDetails.bank}</strong> — ${bankDetails.accountNumber || bankDetails.account || bankDetails.number || '—'}</div>`;
+    if(bankDetails.accountHolderName) bankDetailsWrap.innerHTML += `<div style="margin-top:6px">${bankDetails.accountHolderName}</div>`;
+    bankDetailsWrap.innerHTML += `<div style="margin-top:8px" class="small">Copy the account number and make payment via your bank. After payment return and click I Have Paid.</div>`;
     paymentModal.classList.remove('hidden');
   }
+closePayModal.onclick = cancelPay.onclick = ()=> paymentModal.classList.add('hidden');
 
-  closePayModal.onclick = cancelPay.onclick = ()=> paymentModal.classList.add('hidden');
-
+  // I Have Paid -> notifies backend (POST /api/orders/:id/submit-for-confirmation OR fallback POST /api/orders/:id/payment)
   iHavePaidBtn.addEventListener('click', async ()=>{
-    if(!selectedOrderForPayment){ showToast('No order selected'); return; }
-    const id = selectedOrderForPayment._id || selectedOrderForPayment.id;
-    // call a reasonable endpoint to mark 'submitted for confirmation' — backend may need to implement this if missing
+    if(!currentOrder){ showToast('No order selected'); return; }
+    const id = currentOrder._id || currentOrder.id;
+    showToast('Notifying server of payment...');
     try{
-      showToast('Notifying server of payment...');
-      const res = await authFetch(BACKEND + "/api/orders/" + id + "/submit-payment", { method:'POST', body: { note: 'Customer marked as paid' } });
-      if(!res.ok){
-        // fallback: try /api/orders/:id/payment
-        const fallback = await authFetch(BACKEND + "/api/orders/" + id + "/payment", { method:'POST', body: { note:'Customer paid (front-end)' } });
-        if(!fallback.ok){ showToast('Failed to notify payment — contact support'); paymentModal.classList.add('hidden'); return; }
-        showToast('Payment submitted for confirmation');
-      } else showToast('Payment submitted for confirmation');
+      // primary chosen endpoint (your backend will need to implement it if missing)
+      let r = await apiFetch(BACKEND + "/api/orders/" + id + "/submit-for-confirmation", { method:'POST', body: { note: 'Customer marked as paid' } });
+      if(!r.ok){
+        // fallback endpoint names tried in many setups
+        r = await apiFetch(BACKEND + "/api/orders/" + id + "/submit-payment", { method:'POST', body: { note: 'Customer paid' } });
+      }
+      if(!r.ok){
+        r = await apiFetch(BACKEND + "/api/orders/" + id + "/payment", { method:'POST', body: { note:'Customer paid (frontend)' } });
+      }
+      if(!r.ok){
+        showToast('Payment notification failed. Super Admin will still check bank statements.');
+      } else {
+        showToast('Payment submitted for confirmation. Awaiting Super Admin.');
+      }
       paymentModal.classList.add('hidden');
       await fetchOrders();
-    }catch(e){ console.error(e); showToast('Payment submit failed'); paymentModal.classList.add('hidden'); }
+    }catch(e){ console.error(e); showToast('Payment submit error'); paymentModal.classList.add('hidden'); }
   });
 
-  /************* WebSocket real-time (attempt) *************/
+  /*************** Fetch orders & render ***************/
+  async function fetchOrders(){
+    try{
+      const r = await apiFetch(BACKEND + "/api/orders", { method:'GET' });
+      if(!r.ok){ console.error(r); showToast('Could not load orders'); return; }
+      orders = r.json || [];
+      renderOrders();
+      // if there is an active order with status PaymentConfirmed or assigned, show live view
+      const active = orders.find(o => ['PaymentConfirmed','EnRouteToPickup','EnRouteToDelivery'].includes(o.status));
+      if(active) currentOrder = active;
+      updateLiveStatus(currentOrder);
+    }catch(e){ console.error(e); showToast('Load orders failed'); }
+  }
+
+  function renderOrders(){
+    ordersListEl.innerHTML = '';
+    if(!orders || orders.length === 0){ ordersListEl.innerHTML = '<div class="sublabel">No orders yet</div>'; return; }
+    orders.forEach(o=>{
+      const id = o._id || o.id || '—';
+      const item = document.createElement('div'); item.className='order-item';
+      const left = document.createElement('div');
+      left.innerHTML = `<div style="font-weight:700">Order ${id}</div><div class="small muted">${o.status || '—'}</div><div class="sublabel">Price: ${formatCurrency(o.finalPrice || o.price || o.total || 0)}</div>`;
+      const right = document.createElement('div'); right.style.display='flex'; right.style.gap='8px';
+      const track = document.createElement('button'); track.className='btn ghost'; track.textContent='Track'; track.onclick = ()=> trackOrder(o);
+      const details = document.createElement('button'); details.className='btn'; details.textContent='Details'; details.onclick = ()=> showOrderDetails(o);
+      right.appendChild(track); right.appendChild(details);
+      item.appendChild(left); item.appendChild(right);
+      ordersListEl.appendChild(item);
+    });
+  }
+
+  function showOrderDetails(o){
+    const id = o._id || o.id;
+    const pickup = o.pickupAddress?.line || o.pickupAddress || '—';
+    const delivery = o.deliveryAddress?.line || o.deliveryAddress || '—';
+    const info = `Order ${id}\nStatus: ${o.status}\nPrice: ${formatCurrency(o.finalPrice || o.price || 0)}\nPickup: ${pickup}\nDelivery: ${delivery}`;
+    alert(info);
+  }
+
+  function trackOrder(o){
+    currentOrder = o;
+    updateLiveStatus(o);
+    if(o.agent && o.agent.lat && o.agent.lng){ setMarker('agent', o.agent.lat, o.agent.lng); map.setZoom(14); showToast('Centered on agent'); } else showToast('Agent not yet assigned');
+    // open confirm modal if needed
+    confirmOrderId.textContent = o._id || o.id || '';
+    confirmModal.classList.remove('hidden');
+    evaluateProximity(); // check proximity to enable confirm buttons if conditions met
+  }
+
+  /*************** Confirm Pickup / Deliver (proximity gated) ***************/
+  async function confirmPickup(){
+    if(!currentOrder) return showToast('No active order');
+    const id = currentOrder._id || currentOrder.id;
+    showToast('Confirming pickup (agent)...');
+    try{
+      const r = await apiFetch(BACKEND + "/api/orders/" + id + "/pickup", { method:'PUT', body: {} });
+      if(!r.ok){ showToast('Could not confirm pickup (backend may require agent auth)'); return; }
+      showToast('Pickup confirmed');
+      await fetchOrders();
+      confirmModal.classList.add('hidden');
+    }catch(e){ console.error(e); showToast('Confirm pickup failed'); }
+  }
+  async function confirmDelivered(){
+    if(!currentOrder) return showToast('No active order');
+    const id = currentOrder._id || currentOrder.id;
+    showToast('Confirming delivery (agent)...');
+    try{
+      const r = await apiFetch(BACKEND + "/api/orders/" + id + "/deliver", { method:'PUT', body: {} });
+      if(!r.ok){ showToast('Could not confirm delivery (backend may require agent auth)'); return; }
+      showToast('Delivery confirmed');
+      await fetchOrders();
+      confirmModal.classList.add('hidden');
+    }catch(e){ console.error(e); showToast('Confirm delivery failed'); }
+  }
+
+  confirmPickupBtn.addEventListener('click', confirmPickup);
+  confirmDeliveredBtn.addEventListener('click', confirmDelivered);
+  closeConfirm.addEventListener('click', ()=> confirmModal.classList.add('hidden'));
+
+  // Evaluate proximity (50m) between agent and pickup/dropoff; enable/disable buttons accordingly
+  function evaluateProximity(){
+    if(!currentOrder || !currentOrder.agent || !currentOrder.agent.lat || !currentOrder.agent.lng) { confirmPickupBtn.disabled = true; confirmDeliveredBtn.disabled = true; return; }
+    const aLat = Number(currentOrder.agent.lat), aLng = Number(currentOrder.agent.lng);
+    const pLat = (currentOrder.pickupAddress && currentOrder.pickupAddress.lat) || (currentOrder.pickupLat) || null;
+    const pLng = (currentOrder.pickupAddress && currentOrder.pickupAddress.lng) || (currentOrder.pickupLng) || null;
+    const dLat = (currentOrder.deliveryAddress && currentOrder.deliveryAddress.lat) || (currentOrder.dropoffLat) || null;
+    const dLng = (currentOrder.deliveryAddress && currentOrder.deliveryAddress.lng) || (currentOrder.dropoffLng) || null;
+    if(pLat && pLng){
+      const d = haversine(aLat,aLng,Number(pLat),Number(pLng));
+      confirmPickupBtn.disabled = d > 50;
+      if(!confirmPickupBtn.disabled) showToast('Agent is within 50m of pickup — you can confirm pickup');
+    } else confirmPickupBtn.disabled = true;
+    if(dLat && dLng){
+      const d2 = haversine(aLat,aLng,Number(dLat),Number(dLng));
+      confirmDeliveredBtn.disabled = d2 > 50;
+      if(!confirmDeliveredBtn.disabled) showToast('Agent is within 50m of dropoff — you can confirm delivery');
+    } else confirmDeliveredBtn.disabled = true;
+  }
+
+  /*************** WebSocket real-time updates (attempt) ***************/
   async function connectWS(){
     try{
       const scheme = location.protocol === 'https:' ? 'wss:' : 'ws:';
       const url = scheme + '//' + (new URL(BACKEND)).host + WS_PATH;
       ws = new WebSocket(url);
-      ws.onopen = ()=> { console.log('ws open', url); showToast('Real-time connected'); };
+      ws.onopen = ()=> { console.log('WS open', url); showToast('Real-time connected'); };
       ws.onmessage = ev => {
         try{
           const msg = JSON.parse(ev.data);
-          // expected shapes: { type:'order_update', order } or {type:'agent_location', orderId, agent}
+          // expected: {type:'order_update', order} or {type:'agent_location', orderId, agent}
           if(msg.type === 'order_update' && msg.order){
-            // update local orders if matching
-            const updated = msg.order;
-            orders = orders.map(o => (o._id === updated._id || o.id === updated.id) ? updated : o);
+            // merge/update in orders list
+            const u = msg.order;
+            orders = orders.map(o => (o._id === u._id || o.id === u.id) ? u : o);
+            // if not present, add
+            if(!orders.find(o => o._id === u._id || o.id === u.id)) orders.unshift(u);
             renderOrders();
-            if(updated.status === 'PaymentConfirmed') showToast('Payment confirmed for order ' + (updated._id || updated.id));
+            if(currentOrder && (currentOrder._id === u._id || currentOrder.id === u.id)) { currentOrder = u; updateLiveStatus(u); }
+            if(u.status === 'PaymentConfirmed') showToast('Payment confirmed for order ' + (u._id || u.id));
           }
-          if(msg.type === 'agent_location'){
-            const orderId = msg.orderId;
-            const agent = msg.agent;
-            if(agent && agent.lat && agent.lng){
-              setMarker('agent', agent.lat, agent.lng);
+          if(msg.type === 'agent_location' && msg.agent){
+            const agent = msg.agent; // {lat, lng, orderId, name}
+            setMarker('agent', agent.lat, agent.lng);
+            // if agent belongs to currentOrder, update currentOrder.agent
+            if(currentOrder && (msg.orderId === currentOrder._id || msg.orderId === currentOrder.id)){
+              currentOrder.agent = agent;
+              evaluateProximity();
             }
           }
-        }catch(e){ console.warn('ws parse fail', e); }
+        }catch(e){ console.warn('WS message parse error', e); }
       };
-      ws.onclose = ()=>{ console.log('ws closed — will retry in 8s'); setTimeout(connectWS, 8000); };
-      ws.onerror = e => { console.error('ws error', e); ws.close(); };
-    }catch(e){ console.error('ws connect', e); }
+      ws.onclose = ()=> { console.log('WS closed - retry in 8s'); setTimeout(connectWS, 8000); };
+      ws.onerror = e => { console.error('WS err', e); ws.close(); };
+    }catch(e){ console.error('WS connect failed', e); }
   }
 
-  /************* UI & Menu *************/
-  menuToggle.addEventListener('click', ()=> menu.classList.toggle('hidden'));
-  menuProfile.addEventListener('click', (e)=>{ e.preventDefault(); window.scrollTo({top:0,behavior:'smooth'}); nameEl.focus(); menu.classList.add('hidden'); });
-  menuOrders.addEventListener('click', (e)=>{ e.preventDefault(); window.scrollTo({top:400,behavior:'smooth'}); menu.classList.add('hidden'); });
-  menuAnalytics.addEventListener('click', (e)=>{ e.preventDefault(); alert('Service Analytics: currently minimal — will show totals.'); menu.classList.add('hidden'); });
-  menuSupport.addEventListener('click', (e)=>{ e.preventDefault(); alert('Contact support: +234 000 000 000'); menu.classList.add('hidden'); });
-  menuTheme.addEventListener('click', (e)=>{ e.preventDefault(); toggleTheme(); menu.classList.add('hidden'); });
-  menuLogout.addEventListener('click', (e)=>{ e.preventDefault(); localStorage.removeItem(TOKEN_KEY); window.location.href='/login.html'; });
+  /*************** Utility: update status display from order ***************/
+  function updateLiveStatus(order){
+    if(!order){ liveStatus.textContent = 'No Active Order'; liveStatus.className = 'chip'; return; }
+    liveStatus.textContent = (order.status || 'Unknown').replace(/([A-Z])/g,' $1').trim();
+    if(order.status === 'PendingPayment') liveStatus.className = 'chip';
+    if(order.status === 'PaymentConfirmed') liveStatus.className = 'chip';
+    if(order.status === 'EnRouteToPickup' || order.status === 'EnRouteToDelivery') liveStatus.className = 'chip';
+    // set markers if addresses available
+    const p = order.pickupAddress && (order.pickupAddress.lat && order.pickupAddress.lng ? order.pickupAddress : null);
+    const d = order.deliveryAddress && (order.deliveryAddress.lat && order.deliveryAddress.lng ? order.deliveryAddress : null);
+    if(p){ setMarker('pickup', Number(p.lat), Number(p.lng)); }
+    if(d){ setMarker('dropoff', Number(d.lat), Number(d.lng)); }
+  }
 
+  /*************** UI bindings & small features ***************/
+  // Menu
+  menuToggle.addEventListener('click', ()=> menu.classList.toggle('hidden'));
+  menuProfile.addEventListener('click', e=>{ e.preventDefault(); window.scrollTo({top:0,behavior:'smooth'}); nameEl.focus(); menu.classList.add('hidden'); });
+  menuOrders.addEventListener('click', e=>{ e.preventDefault(); window.scrollTo({top:400,behavior:'smooth'}); menu.classList.add('hidden'); });
+  menuAnalytics.addEventListener('click', e=>{ e.preventDefault(); alert('Service Analytics — coming soon'); menu.classList.add('hidden'); });
+  menuSupport.addEventListener('click', e=>{ e.preventDefault(); alert('Contact: +234 000 000 000'); menu.classList.add('hidden'); });
+  menuTheme.addEventListener('click', e=>{ e.preventDefault(); toggleTheme(); menu.classList.add('hidden'); });
+  menuHome.addEventListener('click', e=>{ e.preventDefault(); window.location.href = '/'; });
+
+  // profile buttons
   saveProfileBtn.addEventListener('click', async ()=> { await saveProfile(); });
   refreshProfileBtn.addEventListener('click', async ()=> { await fetchProfile(); showToast('Profile refreshed'); });
 
+  // orders refresh
   refreshOrdersBtn.addEventListener('click', async ()=> { await fetchOrders(); showToast('Orders refreshed'); });
 
-  useMyLocationBtn.addEventListener('click', ()=> {
+  // map helpers
+  el('useMyLocation').addEventListener('click', ()=> {
     if(!navigator.geolocation) return showToast('Geolocation unavailable');
     navigator.geolocation.getCurrentPosition(pos => {
-      const { latitude, longitude } = pos.coords;
-      setMarker('pickup', latitude, longitude);
+      setMarker('pickup', pos.coords.latitude, pos.coords.longitude);
       pickupEl.value = 'My location';
-      showToast('Pickup set to your location');
-    }, ()=> showToast('Could not get location'));
+      showToast('Pickup set to your current location');
+    }, ()=> showToast('Unable to get location'));
+  });
+  el('locatePickup').addEventListener('click', async ()=> {
+    const a = pickupEl.value.trim(); if(!a) return showToast('Enter pickup first');
+    try{ const g = await geocodeAddress(a); setMarker('pickup', g.lat, g.lng); showToast('Pickup located'); }catch(e){ showToast('Could not geocode pickup'); }
+  });
+  el('locateDropoff').addEventListener('click', async ()=> {
+    const a = dropoffEl.value.trim(); if(!a) return showToast('Enter dropoff first');
+    try{ const g = await geocodeAddress(a); setMarker('dropoff', g.lat, g.lng); showToast('Dropoff located'); }catch(e){ showToast('Could not geocode dropoff'); }
   });
 
-  locatePickupBtn.addEventListener('click', async ()=> {
-    const a = pickupEl.value.trim(); if(!a) return showToast('Enter pickup address first');
-    try{ await geocodeAddress(a,'pickup'); showToast('Pickup located'); }catch(e){ showToast('Could not geocode pickup'); }
-  });
-
-  locateDropoffBtn.addEventListener('click', async ()=> {
-    const a = dropoffEl.value.trim(); if(!a) return showToast('Enter dropoff address first');
-    try{ await geocodeAddress(a,'dropoff'); showToast('Dropoff located'); }catch(e){ showToast('Could not geocode dropoff'); }
-  });
-
-  /************* Theme toggle *************/
-  function toggleTheme(){
-    const cur = document.documentElement.getAttribute('data-theme');
-    const next = cur === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('theme', next);
-  }
-  // apply saved theme
+  // theme toggle
+  function toggleTheme(){ const cur=document.documentElement.getAttribute('data-theme')||'light'; const next = cur==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme', next); localStorage.setItem('theme', next); }
   (function(){ const t = localStorage.getItem('theme') || 'light'; document.documentElement.setAttribute('data-theme', t); })();
 
-  /************* Init: load profile, map, orders, ws *************/
+  /*************** Init flow ***************/
   async function init(){
-    // load profile
-    await fetchProfile();
-    // load map
-    loadGoogleMaps(()=>{ initMap(); });
-    // connect ws
-    connectWS();
-    // fetch orders
-    await fetchOrders();
+    try{
+      // load profile public (if backend permits)
+      await fetchProfile();
+      // load map
+      loadGoogleMaps(()=>{ initMap(); });
+      // connect websockets
+      connectWS();
+      // load orders
+      await fetchOrders();
+    }catch(e){ console.error('Init error', e); }
   }
 
-  /************* Export small helper for other pages (optional) *************/
-  window.SkyUltimate = { fetchOrders };
-
+  // expose for console debugging
+  window.SkyUltimate = {
+    fetchOrders, createOrder: ()=> {},
+    currentOrder: ()=> currentOrder
+  };
   </script>
 </body>
 </html>
