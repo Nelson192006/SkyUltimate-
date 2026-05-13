@@ -1,449 +1,554 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>SkyUltimate — Auth</title>
-  <style>
-    :root{
-      --brand-red:#B00000; /* thicker red */
-      --brand-red-dark:#900000;
-      --card-bg: rgba(255,255,255,0.96);
-      --shadow: 0 10px 30px rgba(0,0,0,0.25);
-      --radius-lg: 22px;
-      --radius-md: 14px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0}
-    body{
-      background:var(--brand-red);
-      overflow:hidden; /* non-scrollable page */
-      font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      display:flex; align-items:center; justify-content:center;
-    }
-
-    /* SPLASH */
-    #splash{
-      position:fixed; inset:0;
-      display:flex; align-items:center; justify-content:center;
-      background:var(--brand-red);
-      z-index:50; animation:fadeOut 700ms ease 3s forwards;
-    }
-    #splash img{
-      width: 220px; height:220px; border-radius:9999px; /* rounded logo */
-      object-fit:cover; animation:fadeIn 500ms ease both;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-    }
-    @keyframes fadeIn{from{opacity:0; transform:scale(.98)} to{opacity:1; transform:scale(1)}}
-    @keyframes fadeOut{to{opacity:0; visibility:hidden}}
-
-    /* AUTH WRAPPER */
-    #auth{
-      width:100%; height:100%;
-      display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
-      opacity:0; visibility:hidden; transition:opacity .5s ease .2s, visibility .5s ease .2s;
-    }
-    #auth.show{opacity:1; visibility:visible}
-
-    /* top logo on red background */
-    .top-logo{
-      width: 140px; height:140px; border-radius:9999px; object-fit:cover;
-      margin: 22px 0 10px 0; box-shadow: 0 8px 24px rgba(0,0,0,0.22);
-    }
-
-    /* CARD */
-    .card{
-      width: min(92vw, 380px);
-      background: var(--card-bg);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow);
-      padding: 18px;
-    }
-
-    /* TABS */
-    .tabs{display:flex; gap:10px; margin-bottom:12px;}
-    .tab{
-      flex:1; text-align:center; padding:10px 0; border-radius:14px; cursor:pointer;
-      user-select:none; font-weight:600; transition:background .2s,color .2s, transform .1s;
-    }
-    .tab.active{background:var(--brand-red); color:#fff}
-    .tab:active{transform:scale(.98)}
-
-    /* FORM */
-    .form-row{margin-bottom:12px; position:relative;}
-    .select, .input{
-      width:100%; height:44px; padding:0 14px;
-      border:1px solid #d7d7d7; border-radius: 14px; background:#fff; outline:none;
-      font-size:14px;
-    }
-    .select:focus, .input:focus{border-color:#c1c1c1}
-    .input.padded-right{padding-right:40px}
-
-    .eye{
-      position:absolute; top:0; right:0; height:44px; width:40px;
-      display:flex; align-items:center; justify-content:center;
-      cursor:pointer; user-select:none; font-size:14px; color:#666;
-    }
-
-    .btn{
-      width:100%; height:46px; border:none; border-radius:16px;
-      background:var(--brand-red); color:#fff; font-weight:700; cursor:pointer;
-      transition: background .2s, transform .05s;
-    }
-    .btn:hover{background:var(--brand-red-dark)}
-    .btn:active{transform:scale(.995)}
-
-    .link{
-      margin-top:10px; text-align:center; color:var(--brand-red);
-      font-size:13px; cursor:pointer; user-select:none;
-    }
-
-    .error{ color:#b00020; font-size:12px; min-height:16px; margin-top:6px }
-    .success{ color:#0a7a28; font-size:12px; min-height:16px; margin-top:6px }
-
-    /* BANK & AGENT SECTIONS (collapsible space) */
-    .section{ border:1px dashed #e5e5e5; border-radius:14px; padding:10px; margin-bottom:12px; display:none; }
-    .section.show{ display:block; }
-
-    /* FORGOT MODAL */
-    .modal{
-      position:fixed; inset:0; display:none; align-items:center; justify-content:center;
-      background:rgba(0,0,0,.55); z-index:60;
-    }
-    .modal.show{display:flex}
-    .modal-card{
-      width:min(90vw, 360px); background:#fff; border-radius:18px; padding:18px; box-shadow:var(--shadow);
-    }
-
-    /* small helper to ensure no body scroll even on tiny screens */
-    @media (max-height: 640px){
-      .card{ transform: scale(.95); transform-origin:center top; }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- SPLASH -->
-  <div id="splash">
-    <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="SkyUltimate"/>
-  </div>
-
-  <!-- AUTH -->
-  <div id="auth">
-    <img class="top-logo" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="SkyUltimate"/>
-
-    <div class="card">
-      <div class="tabs">
-        <div id="tab-login" class="tab active">Login</div>
-        <div id="tab-register" class="tab">Register</div>
-      </div>
-
-      <!-- LOGIN -->
-      <form id="form-login">
-        <div class="form-row">
-          <select id="login-role" class="select" required></select>
-        </div>
-        <!-- Changed to Email input (frontend will now POST email+password) -->
-        <div class="form-row">
-          <input id="login-email" class="input" type="email" placeholder="Email" required />
-        </div>
-        <div class="form-row">
-          <input id="login-password" class="input padded-right" type="password" placeholder="Password" required />
-          <div class="eye" data-target="login-password">👁</div>
-        </div>
-        <button class="btn" type="submit">Login</button>
-        <div class="link" id="link-forgot">Forgot Password?</div>
-        <div id="login-msg" class="error"></div>
-      </form>
-
-      <!-- REGISTER -->
-      <form id="form-register" style="display:none;">
-        <div class="form-row">
-          <select id="register-role" class="select" required></select>
-        </div>
-        <div class="form-row">
-          <input id="register-name" class="input" type="text" placeholder="Full Name" required />
-        </div>
-        <div class="form-row">
-          <input id="register-email" class="input" type="email" placeholder="Email" required />
-        </div>
-        <div class="form-row">
-          <input id="register-phone" class="input" type="text" placeholder="Phone" required />
-        </div>
-        <div class="form-row">
-          <input id="register-password" class="input padded-right" type="password" placeholder="Password" required />
-          <div class="eye" data-target="register-password">👁</div>
-        </div>
-
-        <!-- Agent extra -->
-        <div id="agent-extra" class="section">
-          <div class="form-row">
-            <input id="vehicle-type" class="input" type="text" placeholder="Vehicle Type (Agent)" />
-          </div>
-        </div>
-
-        <!-- Bank details for Agent/Admin -->
-        <div id="bank-section" class="section">
-          <div class="form-row"><input id="bank-name" class="input" type="text" placeholder="Bank Name" /></div>
-          <div class="form-row"><input id="account-number" class="input" type="text" placeholder="Account Number" /></div>
-          <div class="form-row"><input id="account-holder" class="input" type="text" placeholder="Account Holder Name" /></div>
-        </div>
-
-        <button class="btn" type="submit">Register</button>
-        <div id="register-msg" class="error"></div>
-        <div id="register-ok" class="success"></div>
-      </form>
-    </div>
-  </div>
-
-  <!-- FORGOT MODAL -->
-  <div id="forgot-modal" class="modal" aria-hidden="true">
-    <div class="modal-card">
-      <div class="form-row">
-        <input id="forgot-email" class="input" type="email" placeholder="Your Email"/>
-      </div>
-      <button id="btn-forgot-send" class="btn" type="button">Send Reset Link</button>
-      <div id="forgot-msg" class="error"></div>
-      <div class="link" id="forgot-close">Close</div>
-    </div>
-  </div>
-
-<script>
-  // ---------- CONFIG ----------
-  const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
-  const PATHS = {
-    flags: "/api/public/flags",
-    register: "/api/auth/register",
-    login: "/api/auth/login",               // now expects { email, password } (backend also accepts name)
-    forgot: "/api/auth/forgot-password"     // backend must implement this
-  };
-
-  // ---------- UTIL: resilient fetch ----------
-  async function apiFetch(path, opts = {}) {
-    const headers = opts.headers || {};
-    if (!headers["Content-Type"]) headers["Content-Type"] = "application/json";
-    const res = await fetch(API_BASE + path, { ...opts, headers });
-    const raw = await res.text();
-    let data = null;
-    try { data = raw ? JSON.parse(raw) : null; }
-    catch { /* non-JSON */ }
-    if (!res.ok) {
-      console.error("API error", res.status, raw?.slice(0, 600));
-      throw new Error((data && (data.message || data.error)) || `HTTP ${res.status}`);
-    }
-    return data ?? {};
-  }
-
-  // ---------- SPLASH → AUTH ----------
-  window.addEventListener("load", () => {
-    setTimeout(() => {
-      document.getElementById("splash").style.display = "none";
-      document.getElementById("auth").classList.add("show");
-      init();
-    }, 3000);
-  });
-
-  // ---------- INIT ----------
-  async function init() {
-    wireTabs();
-    wireEyes();
-    wireForgot();
-    await buildRoleDropdowns();
-    document.getElementById("register-role").addEventListener("change", onRegisterRoleChange);
-    onRegisterRoleChange();
-    document.getElementById("form-login").addEventListener("submit", onLogin);
-    document.getElementById("form-register").addEventListener("submit", onRegister);
-  }
-
-  // ---------- TABS ----------
-  function wireTabs(){
-    const tabLogin = document.getElementById("tab-login");
-    const tabRegister = document.getElementById("tab-register");
-    const formLogin = document.getElementById("form-login");
-    const formRegister = document.getElementById("form-register");
-
-    tabLogin.onclick = () => {
-      tabLogin.classList.add("active");
-      tabRegister.classList.remove("active");
-      formLogin.style.display = "block";
-      formRegister.style.display = "none";
-    };
-    tabRegister.onclick = () => {
-      tabRegister.classList.add("active");
-      tabLogin.classList.remove("active");
-      formRegister.style.display = "block";
-      formLogin.style.display = "none";
-    };
-  }
-
-  // ---------- EYE TOGGLES ----------
-  function wireEyes(){
-    document.querySelectorAll(".eye").forEach(el => {
-      el.addEventListener("click", () => {
-        const id = el.getAttribute("data-target");
-        const input = document.getElementById(id);
-        if (!input) return;
-        if (input.type === "password") {
-          input.type = "text"; el.textContent = "🙈";
-        } else {
-          input.type = "password"; el.textContent = "👁";
-        }
-      });
-    });
-  }
-
-  // ---------- FORGOT ----------
-  function wireForgot(){
-    const open = document.getElementById("link-forgot");
-    const modal = document.getElementById("forgot-modal");
-    const close = document.getElementById("forgot-close");
-    const send = document.getElementById("btn-forgot-send");
-    open.onclick = () => { modal.classList.add("show"); };
-    close.onclick = () => { modal.classList.remove("show"); setForgotMsg(""); };
-    send.onclick = onForgotSend;
-  }
-  function setForgotMsg(msg){ document.getElementById("forgot-msg").textContent = msg || ""; }
-
-  async function onForgotSend(){
-    const email = document.getElementById("forgot-email").value.trim();
-    if (!email){ setForgotMsg("Please enter your email."); return; }
-    setForgotMsg("");
-    try {
-      const data = await apiFetch(PATHS.forgot, {
-        method:"POST", body: JSON.stringify({ email })
-      });
-      alert(data.message || "A password reset link has been sent to your email.");
-      document.getElementById("forgot-modal").classList.remove("show");
-    } catch (e) {
-      setForgotMsg(e.message || "Failed to send reset link.");
-    }
-  }
-
-  // ---------- ROLES ----------
-  async function buildRoleDropdowns(){
-    const loginRoles = ["Customer","Agent","Admin","SuperAdmin"];
-    fillSelect(document.getElementById("login-role"), loginRoles, "Select role");
-    let regRoles = ["Customer","Agent"];
-    try {
-      const flags = await apiFetch(PATHS.flags);
-      if (flags && flags.adminRegistrationEnabled) regRoles.push("Admin");
-      if (flags && flags.allowSuperAdminRegistration) regRoles.push("SuperAdmin");
-    } catch {
-      regRoles = ["Customer","Agent","Admin","SuperAdmin"];
-    }
-    fillSelect(document.getElementById("register-role"), regRoles, "Select role");
-  }
-
-  function fillSelect(sel, roles, placeholder){
-    sel.innerHTML = "";
-    const ph = document.createElement("option");
-    ph.value = ""; ph.disabled = true; ph.selected = true; ph.textContent = placeholder || "Select";
-    sel.appendChild(ph);
-    roles.forEach(r => {
-      const o = document.createElement("option");
-      o.value = r; o.textContent = r;
-      sel.appendChild(o);
-    });
-  }
-
-  // ---------- REGISTER ROLE CHANGE ----------
-  function onRegisterRoleChange(){
-    const role = (document.getElementById("register-role").value || "").toLowerCase();
-    const bank = document.getElementById("bank-section");
-    const agentExtra = document.getElementById("agent-extra");
-    const needsBank = role === "agent" || role === "admin";
-    bank.classList.toggle("show", needsBank);
-    agentExtra.classList.toggle("show", role === "agent");
-  }
-
-  // ---------- LOGIN SUBMIT (EMAIL + PASSWORD) ----------
-  async function onLogin(e){
-    e.preventDefault();
-    const email = document.getElementById("login-email").value.trim();
-    const password = document.getElementById("login-password").value;
-    const roleForRedirect = document.getElementById("login-role").value;
-    const msg = document.getElementById("login-msg");
-    msg.textContent = "";
-
-    if (!email || !password || !roleForRedirect){
-      msg.textContent = "All fields are required.";
-      return;
-    }
-
-    try{
-      const data = await apiFetch(PATHS.login, {
-        method: "POST",
-        body: JSON.stringify({ email, password }) // backend supports email (and name as fallback)
-      });
-
-      if (!data || !data.token){
-        msg.textContent = data?.message || "Login failed";
-        return;
-      }
-
-      localStorage.setItem("su_token", data.token);
-      // store returned user object (backend returns user with name)
-      localStorage.setItem("su_user", JSON.stringify(data.user || { name: data.name, role: data.role }));
-
-      // universal redirect (your routers can branch by role later)
-      window.location.href = "home.html";
-    }catch(err){
-      msg.textContent = err.message || "Invalid credentials. Please check your details.";
-    }
-  }
-
-  // ---------- REGISTER SUBMIT ----------
-  async function onRegister(e){
-    e.preventDefault();
-    const role = document.getElementById("register-role").value;
-    const name = document.getElementById("register-name").value.trim();
-    const email = document.getElementById("register-email").value.trim().toLowerCase();
-    const phone = document.getElementById("register-phone").value.trim();
-    const password = document.getElementById("register-password").value;
-    const vehicleType = document.getElementById("vehicle-type").value.trim();
-
-    const bankName = document.getElementById("bank-name").value.trim();
-    const accountNumber = document.getElementById("account-number").value.trim();
-    const accountHolderName = document.getElementById("account-holder").value.trim();
-
-    const errEl = document.getElementById("register-msg");
-    const okEl = document.getElementById("register-ok");
-    errEl.textContent = ""; okEl.textContent = "";
-
-    if (!role || !name || !email || !phone || !password){
-      errEl.textContent = "Please complete all required fields.";
-      return;
-    }
-
-    const payload = { role, name, email, password, phone };
-    if (role.toLowerCase() === "agent"){
-      if (vehicleType) payload.vehicleType = vehicleType;
-      payload.bankName = bankName;
-      payload.accountNumber = accountNumber;
-      payload.accountHolderName = accountHolderName;
-    }
-    if (role.toLowerCase() === "admin"){
-      payload.bankName = bankName;
-      payload.accountNumber = accountNumber;
-      payload.accountHolderName = accountHolderName;
-    }
-
-    try{
-      const data = await apiFetch(PATHS.register, {
-        method:"POST",
-        body: JSON.stringify(payload)
-      });
-
-      okEl.textContent = "Registration successful! Please login.";
-      document.getElementById("tab-login").click();
-      // prefill login email now (we switched to email login)
-      document.getElementById("login-email").value = email;
-      document.getElementById("login-password").value = "";
-      document.getElementById("login-role").value = (role || "Customer");
-    }catch(err){
-      errEl.textContent = err.message || "Registration failed. Please try a different email.";
-    }
-  }
-</script>
-</body>
-          </html>
+‎<!DOCTYPE html>
+‎<html lang="en">
+‎<head>
+‎  <meta charset="utf-8"/>
+‎  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+‎  <title>SkyUltimate — Auth</title>
+‎  <style>
+‎    :root{
+‎      --brand-red:#B00000; /* thicker red */
+‎      --brand-red-dark:#900000;
+‎      --card-bg: rgba(255,255,255,0.96);
+‎      --shadow: 0 10px 30px rgba(0,0,0,0.25);
+‎      --radius-lg: 22px;
+‎      --radius-md: 14px;
+‎    }
+‎    *{box-sizing:border-box}
+‎    html,body{height:100%;margin:0}
+‎    body{
+‎      background:var(--brand-red);
+‎      overflow:hidden; /* non-scrollable page */
+‎      font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+‎      display:flex; align-items:center; justify-content:center;
+‎    }
+‎
+‎    /* SPLASH */
+‎    #splash{
+‎      position:fixed; inset:0;
+‎      display:flex; align-items:center; justify-content:center;
+‎      background:var(--brand-red);
+‎      z-index:50; animation:fadeOut 700ms ease 3s forwards;
+‎    }
+‎    #splash img{
+‎      width: 220px; height:220px; border-radius:9999px; /* rounded logo */
+‎      object-fit:cover; animation:fadeIn 500ms ease both;
+‎      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+‎    }
+‎    @keyframes fadeIn{from{opacity:0; transform:scale(.98)} to{opacity:1; transform:scale(1)}}
+‎    @keyframes fadeOut{to{opacity:0; visibility:hidden}}
+‎
+‎    /* AUTH WRAPPER */
+‎    #auth{
+‎      width:100%; height:100%;
+‎      display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+‎      opacity:0; visibility:hidden; transition:opacity .5s ease .2s, visibility .5s ease .2s;
+‎    }
+‎    #auth.show{opacity:1; visibility:visible}
+‎
+‎    /* top logo on red background */
+‎    .top-logo{
+‎      width: 140px; height:140px; border-radius:9999px; object-fit:cover;
+‎      margin: 22px 0 10px 0; box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+‎    }
+‎
+‎    /* CARD */
+‎    .card{
+‎      width: min(92vw, 380px);
+‎      background: var(--card-bg);
+‎      border-radius: var(--radius-lg);
+‎      box-shadow: var(--shadow);
+‎      padding: 18px;
+‎    }
+‎
+‎    /* TABS */
+‎    .tabs{display:flex; gap:10px; margin-bottom:12px;}
+‎    .tab{
+‎      flex:1; text-align:center; padding:10px 0; border-radius:14px; cursor:pointer;
+‎      user-select:none; font-weight:600; transition:background .2s,color .2s, transform .1s;
+‎    }
+‎    .tab.active{background:var(--brand-red); color:#fff}
+‎    .tab:active{transform:scale(.98)}
+‎
+‎    /* FORM */
+‎    .form-row{margin-bottom:12px; position:relative;}
+‎    .select, .input{
+‎      width:100%; height:44px; padding:0 14px;
+‎      border:1px solid #d7d7d7; border-radius: 14px; background:#fff; outline:none;
+‎      font-size:14px;
+‎    }
+‎    .select:focus, .input:focus{border-color:#c1c1c1}
+‎    .input.padded-right{padding-right:40px}
+‎
+‎    .eye{
+‎      position:absolute; top:0; right:0; height:44px; width:40px;
+‎      display:flex; align-items:center; justify-content:center;
+‎      cursor:pointer; user-select:none; font-size:14px; color:#666;
+‎    }
+‎
+‎    .btn{
+‎      width:100%; height:46px; border:none; border-radius:16px;
+‎      background:var(--brand-red); color:#fff; font-weight:700; cursor:pointer;
+‎      transition: background .2s, transform .05s;
+‎    }
+‎    .btn:hover{background:var(--brand-red-dark)}
+‎    .btn:active{transform:scale(.995)}
+‎
+‎    .link{
+‎      margin-top:10px; text-align:center; color:var(--brand-red);
+‎      font-size:13px; cursor:pointer; user-select:none;
+‎    }
+‎
+‎    .error{ color:#b00020; font-size:12px; min-height:16px; margin-top:6px }
+‎    .success{ color:#0a7a28; font-size:12px; min-height:16px; margin-top:6px }
+‎
+‎    /* BANK & AGENT SECTIONS (collapsible space) */
+‎    .section{ border:1px dashed #e5e5e5; border-radius:14px; padding:10px; margin-bottom:12px; display:none; }
+‎    .section.show{ display:block; }
+‎
+‎    /* FORGOT MODAL */
+‎    .modal{
+‎      position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+‎      background:rgba(0,0,0,.55); z-index:60;
+‎    }
+‎    .modal.show{display:flex}
+‎    .modal-card{
+‎      width:min(90vw, 360px); background:#fff; border-radius:18px; padding:18px; box-shadow:var(--shadow);
+‎    }
+‎
+‎    /* small helper to ensure no body scroll even on tiny screens */
+‎    @media (max-height: 640px){
+‎      .card{ transform: scale(.95); transform-origin:center top; }
+‎    }
+‎  </style>
+‎</head>
+‎<body>
+‎
+‎  <!-- SPLASH -->
+‎  <div id="splash">
+‎    <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="SkyUltimate"/>
+‎  </div>
+‎
+‎  <!-- AUTH -->
+‎  <div id="auth">
+‎    <img class="top-logo" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="SkyUltimate"/>
+‎
+‎    <div class="card">
+‎      <div class="tabs">
+‎        <div id="tab-login" class="tab active">Login</div>
+‎        <div id="tab-register" class="tab">Register</div>
+‎      </div>
+‎‎<!-- LOGIN -->
+‎      <form id="form-login">
+‎        <div class="form-row">
+‎          <select id="login-role" class="select" required></select>
+‎        </div>
+‎        <!-- Changed to Email input (frontend will now POST email+password) -->
+‎        <div class="form-row">
+‎          <input id="login-email" class="input" type="email" placeholder="Email" required />
+‎        </div>
+‎        <div class="form-row">
+‎          <input id="login-password" class="input padded-right" type="password" placeholder="Password" required />
+‎          <div class="eye" data-target="login-password">👁</div>
+‎        </div>
+‎        <button class="btn" type="submit">Login</button>
+‎        <div class="link" id="link-forgot">Forgot Password?</div>
+‎        <div id="login-msg" class="error"></div>
+‎      </form>
+‎
+‎      <!-- REGISTER -->
+‎      <form id="form-register" style="display:none;">
+‎        <div class="form-row">
+‎          <select id="register-role" class="select" required></select>
+‎        </div>
+‎        <div class="form-row">
+‎          <input id="register-name" class="input" type="text" placeholder="Full Name" required />
+‎        </div>
+‎        <div class="form-row">
+‎          <input id="register-email" class="input" type="email" placeholder="Email" required />
+‎        </div>
+‎        <div class="form-row">
+‎          <input id="register-phone" class="input" type="text" placeholder="Phone" required />
+‎        </div>
+‎        <div class="form-row">
+‎          <input id="register-password" class="input padded-right" type="password" placeholder="Password" required />
+‎          <div class="eye" data-target="register-password">👁</div>
+‎        </div>
+‎
+‎        <!-- Agent extra -->
+‎        <div id="agent-extra" class="section">
+‎          <div class="form-row">
+‎            <input id="vehicle-type" class="input" type="text" placeholder="Vehicle Type (Agent)" />
+‎          </div>
+‎        </div>
+‎
+‎        <!-- Bank details for Agent/Admin -->
+‎        <div id="bank-section" class="section">
+‎          <div class="form-row"><input id="bank-name" class="input" type="text" placeholder="Bank Name" /></div>
+‎          <div class="form-row"><input id="account-number" class="input" type="text" placeholder="Account Number" /></div>
+‎          <div class="form-row"><input id="account-holder" class="input" type="text" placeholder="Account Holder Name" /></div>
+‎        </div>
+‎
+‎        <button class="btn" type="submit">Register</button>
+‎        <div id="register-msg" class="error"></div>
+‎        <div id="register-ok" class="success"></div>
+‎      </form>
+‎    </div>
+‎  </div>
+‎
+‎  <!-- FORGOT MODAL -->
+‎  <div id="forgot-modal" class="modal" aria-hidden="true">
+‎    <div class="modal-card">
+‎      <div class="form-row">
+‎        <input id="forgot-email" class="input" type="email" placeholder="Your Email"/>
+‎      </div>
+‎      <button id="btn-forgot-send" class="btn" type="button">Send Reset Link</button>
+‎      <div id="forgot-msg" class="error"></div>
+‎      <div class="link" id="forgot-close">Close</div>
+‎    </div>
+‎  </div>
+‎
+‎<script>
+‎  // ---------- CONFIG ----------
+‎  const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
+‎  const PATHS = {
+‎  flags: "/api/public/flags",
+‎  checkSuperAdmin: "/api/auth/check-superadmin",
+‎  register: "/api/auth/register",
+‎  login: "/api/auth/login",
+‎  forgot: "/api/auth/forgot-password"
+‎};
+‎    register: "/api/auth/register",
+‎    login: "/api/auth/login",               // now expects { email, password } (backend also accepts name)
+‎    forgot: "/api/auth/forgot-password"     // backend must implement this
+‎  };
+‎
+‎  // ---------- UTIL: resilient fetch ----------
+‎  async function apiFetch(path, opts = {}) {
+‎    const headers = opts.headers || {};
+‎    if (!headers["Content-Type"]) headers["Content-Type"] = "application/json";
+‎    const res = await fetch(API_BASE + path, { ...opts, headers });
+‎    const raw = await res.text();
+‎    let data = null;
+‎    try { data = raw ? JSON.parse(raw) : null; }
+‎    catch { /* non-JSON */ }
+‎    if (!res.ok) {
+‎      console.error("API error", res.status, raw?.slice(0, 600));
+‎      throw new Error((data && (data.message || data.error)) || `HTTP ${res.status}`);
+‎    }
+‎    return data ?? {};
+‎  }
+‎
+‎  // ---------- SPLASH → AUTH ----------
+‎  window.addEventListener("load", () => {
+‎    setTimeout(() => {
+‎      document.getElementById("splash").style.display = "none";
+‎      document.getElementById("auth").classList.add("show");
+‎      init();
+‎    }, 3000);
+‎  });
+‎
+‎  // ---------- INIT ----------
+‎  async function init() {
+‎    wireTabs();
+‎    wireEyes();
+‎    wireForgot();
+‎    await buildRoleDropdowns();
+‎    document.getElementById("register-role").addEventListener("change", onRegisterRoleChange);
+‎    onRegisterRoleChange();
+‎    document.getElementById("form-login").addEventListener("submit", onLogin);
+‎    document.getElementById("form-register").addEventListener("submit", onRegister);
+‎  }
+‎‎// ---------- TABS ----------
+‎  function wireTabs(){
+‎    const tabLogin = document.getElementById("tab-login");
+‎    const tabRegister = document.getElementById("tab-register");
+‎    const formLogin = document.getElementById("form-login");
+‎    const formRegister = document.getElementById("form-register");
+‎
+‎    tabLogin.onclick = () => {
+‎      tabLogin.classList.add("active");
+‎      tabRegister.classList.remove("active");
+‎      formLogin.style.display = "block";
+‎      formRegister.style.display = "none";
+‎    };
+‎    tabRegister.onclick = () => {
+‎      tabRegister.classList.add("active");
+‎      tabLogin.classList.remove("active");
+‎      formRegister.style.display = "block";
+‎      formLogin.style.display = "none";
+‎    };
+‎  }
+‎
+‎  // ---------- EYE TOGGLES ----------
+‎  function wireEyes(){
+‎    document.querySelectorAll(".eye").forEach(el => {
+‎      el.addEventListener("click", () => {
+‎        const id = el.getAttribute("data-target");
+‎        const input = document.getElementById(id);
+‎        if (!input) return;
+‎        if (input.type === "password") {
+‎          input.type = "text"; el.textContent = "🙈";
+‎        } else {
+‎          input.type = "password"; el.textContent = "👁";
+‎        }
+‎      });
+‎    });
+‎  }
+‎
+‎  // ---------- FORGOT ----------
+‎  function wireForgot(){
+‎    const open = document.getElementById("link-forgot");
+‎    const modal = document.getElementById("forgot-modal");
+‎    const close = document.getElementById("forgot-close");
+‎    const send = document.getElementById("btn-forgot-send");
+‎    open.onclick = () => { modal.classList.add("show"); };
+‎    close.onclick = () => { modal.classList.remove("show"); setForgotMsg(""); };
+‎    send.onclick = onForgotSend;
+‎  }
+‎  function setForgotMsg(msg){ document.getElementById("forgot-msg").textContent = msg || ""; }
+‎
+‎  async function onForgotSend(){
+‎    const email = document.getElementById("forgot-email").value.trim();
+‎    if (!email){ setForgotMsg("Please enter your email."); return; }
+‎    setForgotMsg("");
+‎    try {
+‎      const data = await apiFetch(PATHS.forgot, {
+‎        method:"POST", body: JSON.stringify({ email })
+‎      });
+‎      alert(data.message || "A password reset link has been sent to your email.");
+‎      document.getElementById("forgot-modal").classList.remove("show");
+‎    } catch (e) {
+‎      setForgotMsg(e.message || "Failed to send reset link.");
+‎    }
+‎  }
+‎
+‎  // ---------- ROLES ----------
+‎  async function buildRoleDropdowns(){
+‎
+‎  // LOGIN ROLES
+‎  const loginRoles = [
+‎    "Customer",
+‎    "Agent",
+‎    "Admin",
+‎    "SuperAdmin"
+‎  ];
+‎
+‎  fillSelect(
+‎    document.getElementById("login-role"),
+‎    loginRoles,
+‎    "Select role"
+‎  );
+‎
+‎  // REGISTER ROLES
+‎  let regRoles = [
+‎    "Customer",
+‎    "Agent"
+‎  ];
+‎
+‎  try {
+‎
+‎    // flags
+‎    const flags = await apiFetch(PATHS.flags);
+‎
+‎    // superadmin check
+‎    const superAdminCheck = await apiFetch(
+‎      PATHS.checkSuperAdmin
+‎    );
+‎
+‎    // admin registration
+‎    if (
+‎      flags &&
+‎      flags.adminRegistrationEnabled
+‎    ) {
+‎      regRoles.push("Admin");
+‎    }
+‎
+‎    // ONLY SHOW SUPERADMIN
+‎    // IF ONE DOES NOT EXIST
+‎    if (
+‎      superAdminCheck &&
+‎      !superAdminCheck.exists
+‎    ) {
+‎      regRoles.push("SuperAdmin");
+‎    }
+‎
+‎  } catch(err){
+‎
+‎    console.error(err);
+‎
+‎    // fallback
+‎    regRoles = [
+‎      "Customer",
+‎      "Agent",
+‎      "Admin"
+‎    ];
+‎  }
+‎
+‎  fillSelect(
+‎    document.getElementById("register-role"),
+‎    regRoles,
+‎    "Select role"
+‎  );
+‎}
+‎
+‎  // ---------- REGISTER ROLE CHANGE ----------
+‎  function onRegisterRoleChange(){
+‎    const role = (document.getElementById("register-role").value || "").toLowerCase();
+‎    const bank = document.getElementById("bank-section");
+‎    const agentExtra = document.getElementById("agent-extra");
+‎    const needsBank = role === "agent" || role === "admin";
+‎    bank.classList.toggle("show", needsBank);
+‎    agentExtra.classList.toggle("show", role === "agent");
+‎  }
+‎
+‎  // ---------- LOGIN SUBMIT (EMAIL + PASSWORD) ----------
+‎  async function onLogin(e){
+‎
+‎  e.preventDefault();
+‎
+‎  const email =
+‎    document
+‎      .getElementById("login-email")
+‎      .value
+‎      .trim();
+‎
+‎  const password =
+‎    document
+‎      .getElementById("login-password")
+‎      .value;
+‎
+‎  const role =
+‎    document
+‎      .getElementById("login-role")
+‎      .value;
+‎
+‎  const msg =
+‎    document.getElementById("login-msg");
+‎
+‎  msg.textContent = "";
+‎
+‎  // validation
+‎  if (
+‎    !email ||
+‎    !password ||
+‎    !role
+‎  ) {
+‎    msg.textContent =
+‎      "All fields are required.";
+‎    return;
+‎  }
+‎
+‎  try {
+‎
+‎    const data = await apiFetch(
+‎      PATHS.login,
+‎      {
+‎        method: "POST",
+‎
+‎        body: JSON.stringify({
+‎          email,
+‎          password,
+‎          role
+‎        })
+‎      }
+‎    );
+‎
+‎    // backend failed
+‎    if (!data || !data.token) {
+‎      msg.textContent =
+‎        data?.message ||
+‎       ‎"Login failed";
+‎      return;
+‎    }
+‎
+‎    // save token
+‎    localStorage.setItem(
+‎      "su_token",
+‎      data.token
+‎    );
+‎
+‎    // save user
+‎    localStorage.setItem(
+‎      "su_user",
+‎      JSON.stringify(data.user)
+‎    );
+‎
+‎    // SUCCESS
+‎    window.location.href =
+‎      "home.html";
+‎
+‎  } catch(err){
+‎
+‎    msg.textContent =
+‎      err.message ||
+‎      "Invalid login credentials.";
+‎  }
+‎}
+  ‎localStorage.setItem("su_token", data.token);
+‎      // store returned user object (backend returns user with name)
+‎      localStorage.setItem("su_user", JSON.stringify(data.user || { name: data.name, role: data.role }));
+‎
+‎      // universal redirect (your routers can branch by role later)
+‎      window.location.href = "home.html";
+‎    }catch(err){
+‎      msg.textContent = err.message || "Invalid credentials. Please check your details.";
+‎    }
+‎  }
+‎
+‎  // ---------- REGISTER SUBMIT ----------
+‎  async function onRegister(e){
+‎    e.preventDefault();
+‎    const role = document.getElementById("register-role").value;
+‎    const name = document.getElementById("register-name").value.trim();
+‎    const email = document.getElementById("register-email").value.trim().toLowerCase();
+‎    const phone = document.getElementById("register-phone").value.trim();
+‎    const password = document.getElementById("register-password").value;
+‎    const vehicleType = document.getElementById("vehicle-type").value.trim();
+‎
+‎    const bankName = document.getElementById("bank-name").value.trim();
+‎    const accountNumber = document.getElementById("account-number").value.trim();
+‎    const accountHolderName = document.getElementById("account-holder").value.trim();
+‎
+‎    const errEl = document.getElementById("register-msg");
+‎    const okEl = document.getElementById("register-ok");
+‎    errEl.textContent = ""; okEl.textContent = "";
+‎
+‎    if (!role || !name || !email || !phone || !password){
+‎      errEl.textContent = "Please complete all required fields.";
+‎      return;
+‎    }
+‎
+‎    const payload = { role, name, email, password, phone };
+‎    if (role.toLowerCase() === "agent"){
+‎      if (vehicleType) payload.vehicleType = vehicleType;
+‎      payload.bankName = bankName;
+‎      payload.accountNumber = accountNumber;
+‎      payload.accountHolderName = accountHolderName;
+‎    }
+‎    if (role.toLowerCase() === "admin"){
+‎      payload.bankName = bankName;
+‎      payload.accountNumber = accountNumber;
+‎      payload.accountHolderName = accountHolderName;
+‎    }
+‎
+‎    try{
+‎      const data = await apiFetch(PATHS.register, {
+‎        method:"POST",
+‎        body: JSON.stringify(payload)
+‎      });
+‎
+‎      okEl.textContent = "Registration successful! Please login.";
+‎      document.getElementById("tab-login").click();
+‎      // prefill login email now (we switched to email login)
+‎      document.getElementById("login-email").value = email;
+‎      document.getElementById("login-password").value = "";
+‎      document.getElementById("login-role").value = (role || "Customer");
+‎    }catch(err){
+‎      errEl.textContent = err.message || "Registration failed. Please try a different email.";
+‎    }
+‎  }
+‎</script>
+‎</body>
+‎          </html>
+‎  
+‎      
