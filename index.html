@@ -1,346 +1,553 @@
-<!DOCTYPE html>  <html lang="en">  
-<head>  
-  <meta charset="utf-8" />  
-  <meta name="viewport" content="width=device-width,initial-scale=1" />  
-  <title>SkyUltimate — Home</title>  
-  <script src="https://cdn.tailwindcss.com"></script>  
-  <style>  
-    :root{ --brand-red:#B00000; --card-bg: rgba(255,255,255,0.96); }  
-    body{ background: linear-gradient(180deg,#B00000 0%,#8b0000 100%); margin:0; font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial; color:#111; min-height:100vh; }  
-    .glass{ background:var(--card-bg); backdrop-filter: blur(6px); }  
-    .logo-round{ border-radius:9999px; box-shadow:0 10px 30px rgba(0,0,0,0.18); }  
-    .shadow-soft{ box-shadow:0 12px 36px rgba(0,0,0,0.18); }  
-    .fade-up{ animation: fadeUp .36s ease both; }  
-    @keyframes fadeUp{ from{ transform: translateY(8px); opacity:0 } to{ transform: translateY(0); opacity:1 } }  
-    .pill{ border-radius:999px; }  
-    /* toasts */  
-    .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 24px; z-index: 9999; display: none; min-width: 220px; max-width: 90%; padding: 12px 16px; border-radius: 12px; color: #fff; font-weight:600; }  
-    .toast.show{ display:block; animation: pop .22s ease both; }  
-    .toast.success{ background:#07a24b; } .toast.info{ background:#0066cc; } .toast.warn{ background:#b00020; }  
-    @keyframes pop{ from { transform: translate(-50%,8px); opacity:0 } to { transform: translate(-50%,0); opacity:1 } }  
-    /* skeleton */  
-    .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e7e7e7 37%, #f0f0f0 63%); background-size: 400% 100%; animation: shimmer 1.2s linear infinite; border-radius:8px; }  
-    @keyframes shimmer { 0% { background-position:100% 0 } 100% { background-position:-100% 0 } }  
-  </style>  
-</head>  
-<body>  
-  <div class="min-h-screen flex flex-col items-center">  
-    <!-- Header: only logo -->  
-    <header class="w-full py-4">  
-      <div class="max-w-4xl mx-auto flex items-center justify-between px-6">  
-        <div class="flex items-center gap-4">  
-          <img id="topLogo" class="logo-round w-16 h-16 object-cover" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="SkyUltimate">  
-        </div>  
-        <div class="flex items-center gap-3">  
-          <button id="hamburgerBtn" class="p-2 rounded-md hover:bg-white/10 text-white" aria-label="Menu">  
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>  
-          </button>  
-        </div>  
-      </div>  
-    </header>  <!-- Main -->  
-<main class="w-full max-w-4xl mx-auto px-6 pb-24 space-y-6">  
-  <!-- Welcome / Hero -->  
-  <section class="glass rounded-2xl p-6 shadow-soft fade-up mt-2 flex items-start gap-4">  
-    <div>  
-      <h1 id="welcomeMsg" class="text-3xl font-bold text-gray-900">Welcome!</h1>  
-      <p id="welcomeSub" class="text-sm text-gray-700 mt-2">You've successfully logged in.</p>  
-    </div>  
-    <div class="ml-auto flex gap-3 items-start">  
-      <button id="referralBtn" class="bg-white px-4 py-2 rounded-lg font-semibold text-red-600 shadow-sm">Refer & Earn</button>  
-    </div>  
-  </section>  
-
-  <!-- Announcements -->  
-  <div id="announceWrapper" class="fade-up">  
-    <div id="announceSkeleton" class="skeleton rounded-lg h-14 w-full"></div>  
-    <div id="announceBanner" class="hidden bg-red-700 text-white rounded-lg p-4 shadow-sm"></div>  
-  </div>  
-
-  <!-- About + Mission/Vision -->  
-  <section class="grid grid-cols-1 gap-4">  
-    <article id="aboutCard" class="glass rounded-2xl p-5 shadow-soft fade-up">  
-      <h2 class="text-lg font-semibold text-gray-900">About SkyUltimate</h2>  
-      <p class="text-sm text-gray-700 mt-3">  
-        Welcome to SkyUltimate Delivery Services, your trusted partner for swift, secure, and reliable delivery solutions right here in Lagos.  
-        Founded to bridge the gap between businesses and their customers, we deliver promises with care and punctuality.  
-      </p>  
-    </article>  
-
-    <article id="missionCard" class="glass rounded-2xl p-5 shadow-soft fade-up">  
-      <h2 class="text-lg font-semibold text-gray-900">Mission & Vision</h2>  
-      <p class="text-sm text-gray-700 mt-3"><strong>Mission:</strong> Provide efficient, transparent, and reliable delivery services in Lagos.</p>  
-      <p class="text-sm text-gray-700 mt-2"><strong>Vision:</strong> Become the leading delivery service in Nigeria recognized for reliability and technology.</p>  
-    </article>  
-  </section>  
-
-  <!-- FAQ / Support -->  
-  <section id="faqCard" class="glass rounded-2xl p-5 shadow-soft fade-up">  
-    <div class="flex items-center justify-between">  
-      <h3 class="text-lg font-semibold">FAQ / Support</h3>  
-    </div>  
-    <div class="mt-4 space-y-3">  
-      <!-- Q1 -->  
-      <div class="border rounded-lg overflow-hidden">  
-        <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">  
-          <span class="font-medium">What are your operating hours?</span>  
-          <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>  
-        </button>  
-        <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">We operate from 8:00 AM to 6:00 PM, Monday to Saturday.</div>  
-      </div>  
-
-      <div class="border rounded-lg overflow-hidden">  
-        <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">  
-          <span class="font-medium">What areas do you cover?</span>  
-          <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>  
-        </button>  
-        <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">We cover major Lagos areas: Ikeja, VI, Lekki, Surulere and many mainland neighborhoods. Contact support to check a specific address.</div>  
-      </div>  
-
-      <div class="border rounded-lg overflow-hidden">  
-        <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">  
-          <span class="font-medium">How can I place an order?</span>  
-          <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>  
-        </button>  
-        <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">Use the Customer dashboard booking form or call support with pickup/drop and package details.</div>  
-      </div>  
-
-      <div class="border rounded-lg overflow-hidden">  
-        <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">  
-          <span class="font-medium">What items do you deliver?</span>  
-          <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>  
-        </button>  
-        <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">Documents, parcels, food, general goods. We do not accept hazardous materials or live animals.</div>  
-      </div>  
-
-      <div class="border rounded-lg overflow-hidden">  
-        <button class="faq-q w-full text-left px-4 py-3 flex justify-between items-center">  
-          <span class="font-medium">How can I reach support?</span>  
-          <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>  
-        </button>  
-        <div class="faq-a px-4 py-3 hidden text-sm text-gray-700">  
-          Phone: <a id="phoneLink" class="text-red-600 underline" href="tel:+2349128884830">+234 912 888 4830</a><br/>  
-          WhatsApp: <a id="whatsappLink" class="text-red-600 underline" href="https://wa.me/2349128884830" target="_blank">Chat on WhatsApp</a><br/>  
-          Email: <a id="emailLink" class="text-red-600 underline" href="mailto:nelsongodspower24@gmail.com">nelsongodspower24@gmail.com</a>  
-        </div>  
-      </div>  
-    </div>  
-  </section>  
-
-  <!-- Role action -->  
-  <div class="py-6">  
-    <button id="roleActionBtn" class="w-full py-4 rounded-3xl bg-red-800 text-white font-bold shadow-xl">Continue</button>  
-  </div>  
-
-  <!-- Footer -->  
-  <footer class="text-center text-white text-sm pb-12">  
-    <div class="space-x-4">  
-      <a id="phoneFooter" class="underline" href="tel:+2349128884830">Call: +234 912 888 4830</a>  
-      <span>·</span>  
-      <a id="whatsappFooter" class="underline" href="https://wa.me/2349128884830" target="_blank">WhatsApp</a>  
-      <span>·</span>  
-      <a id="emailFooter" class="underline" href="mailto:nelsongodspower24@gmail.com">Email</a>  
-    </div>  
-  </footer>  
-</main>
-
-  </div>    <!-- Drawer -->    <div id="drawer" class="fixed inset-0 z-50 hidden">  
-    <div id="drawerBackdrop" class="absolute inset-0 bg-black/40"></div>  
-    <aside class="absolute left-0 top-0 bottom-0 w-80 bg-white p-6 overflow-auto">  
-      <div class="flex items-center justify-between mb-4">  
-        <img id="drawerLogo" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" class="w-12 h-12 logo-round" alt="logo">  
-        <button id="drawerClose" class="p-1 rounded hover:bg-gray-100">✕</button>  
-      </div>  <div class="mb-4">  
-    <div id="drawerName" class="font-bold text-gray-800">User</div>  
-    <div id="drawerRole" class="text-xs text-gray-600">Role</div>  
-  </div>  
-
-  <nav class="space-y-3 text-gray-700">  
-    <button id="navProfile" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Edit Profile</button>  
-    <button id="navReferral" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Refer & Earn</button>  
-    <button id="navAbout" data-nav="about" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">About</button>  
-    <button id="navMission" data-nav="mission" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Mission & Vision</button>  
-    <button id="navFaq" data-nav="faq" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">FAQ</button>  
-    <button id="navLogout" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50 text-red-600">Logout</button>  
-  </nav>  
-
-  <div class="mt-6 text-xs text-gray-500">  
-    Contact: +234 912 888 4830 · nelsongodspower24@gmail.com  
-  </div>  
-</aside>
-
-  </div>    <!-- Profile modal -->    <div id="profileModal" class="fixed inset-0 z-60 hidden items-center justify-center">  
-    <div class="absolute inset-0 bg-black/40"></div>  
-    <div class="bg-white w-96 rounded-2xl p-6 z-70">  
-      <h3 class="text-lg font-semibold mb-3">My Profile</h3>  
-      <div class="space-y-3">  
-        <label class="text-xs text-gray-600">Full name</label>  
-        <input id="profileName" class="w-full border rounded px-3 py-2" type="text" />  
-        <label class="text-xs text-gray-600">Email (readonly)</label>  
-        <input id="profileEmail" class="w-full border rounded px-3 py-2 bg-gray-50" type="email" readonly />  
-        <label class="text-xs text-gray-600">Phone</label>  
-        <input id="profilePhone" class="w-full border rounded px-3 py-2" type="text" />  
-        <div id="profileBankFields" class="hidden space-y-2">  
-          <label class="text-xs text-gray-600">Bank Name</label>  
-          <input id="profileBankName" class="w-full border rounded px-3 py-2" type="text" />  
-          <label class="text-xs text-gray-600">Account Number</label>  
-          <input id="profileAccountNumber" class="w-full border rounded px-3 py-2" type="text" />  
-          <label class="text-xs text-gray-600">Account Holder</label>  
-          <input id="profileAccountHolder" class="w-full border rounded px-3 py-2" type="text" />  
-        </div>  <div class="flex gap-3 mt-4">  
-      <button id="saveProfileBtn" class="flex-1 bg-red-600 text-white py-2 rounded">Save Changes</button>  
-      <button id="closeProfileBtn" class="flex-1 border border-gray-300 py-2 rounded">Close</button>  
-    </div>  
-    <p id="profileMsg" class="text-sm text-green-600"></p>  
-  </div>  
-</div>
-
-  </div>    <!-- Toast -->    <div id="toast" class="toast info"></div>  <script>  
-const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";  
-  
-/* small helpers */  
-function safeJSON(s){ try { return JSON.parse(s); } catch(e){ return null; } }  
-function firstName(full){ if(!full) return ''; return String(full).split(' ')[0]; }  
-function qs(name){ const u=new URL(location.href); return u.searchParams.get(name); }  
-  
-/* Toast */  
-const toastEl = document.getElementById('toast');  
-let toastTimer = null;  
-function showToast(msg, type='info', ms=2200){  
-  toastEl.className = `toast ${type}`;  
-  toastEl.textContent = msg;  
-  toastEl.classList.add('show');  
-  clearTimeout(toastTimer);  
-  toastTimer = setTimeout(()=>{ toastEl.classList.remove('show'); }, ms);  
-}  
-  
-/* API helper */  
-async function apiFetch(path, opts={}){  
-  const headers = opts.headers || {};  
-  headers['Content-Type'] = 'application/json';  
-  const token = localStorage.getItem('su_token');  
-  if (token) headers['Authorization'] = `Bearer ${token}`;  
-  const res = await fetch(API_BASE + path, { ...opts, headers });  
-  if (res.status === 401){ doLogout(); throw new Error('Unauthorized'); }  
-  const text = await res.text();  
-  let data = null; try { data = text ? JSON.parse(text) : null; } catch(e){}  
-  if (!res.ok) throw new Error((data && (data.message || data.error)) || `HTTP ${res.status}`);  
-  return data;  
-}  
-  
-/* capture ref param to localStorage so register includes it */  
-(function captureRef(){ const ref = qs('ref'); if(ref) localStorage.setItem('pending_ref', ref); })();  
-  
-/* DOM wiring */  
-document.addEventListener('DOMContentLoaded', () => {  
-  wireUI();  
-  populateFromLocalUser();  
-  attemptFetchProfile();  
-  loadAnnouncement();  
-  updateRoleActionButton();  
-});  
-  
-function wireUI(){  
-  document.getElementById('hamburgerBtn').addEventListener('click', openDrawer);  
-  document.getElementById('drawerClose').addEventListener('click', closeDrawer);  
-  document.getElementById('drawerBackdrop').addEventListener('click', closeDrawer);  
-  document.getElementById('navLogout').addEventListener('click', doLogout);  
-  document.getElementById('navProfile').addEventListener('click', () => { openProfileModal(); closeDrawer(); });  
-  document.getElementById('navReferral').addEventListener('click', () => { copyReferralLink(); closeDrawer(); });  
-  document.getElementById('referralBtn').addEventListener('click', copyReferralLink);  
-  document.getElementById('roleActionBtn').addEventListener('click', handleRoleAction);  
-  document.getElementById('closeProfileBtn').addEventListener('click', closeProfileModal);  
-  document.getElementById('saveProfileBtn').addEventListener('click', saveProfileChanges);  
-  
-  // nav scrolling  
-  document.querySelectorAll('[data-nav]').forEach(btn => {  
-    btn.addEventListener('click', (e)=>{ const nav=e.currentTarget.getAttribute('data-nav'); if(nav==='about') document.getElementById('aboutCard')?.scrollIntoView({behavior:'smooth',block:'center'}); if(nav==='mission') document.getElementById('missionCard')?.scrollIntoView({behavior:'smooth',block:'center'}); if(nav==='faq') document.getElementById('faqCard')?.scrollIntoView({behavior:'smooth',block:'center'}); closeDrawer(); });  
-  });  
-  
-  // FAQ toggles  
-  document.querySelectorAll('.faq-q').forEach(q => q.addEventListener('click', ()=>{ const a=q.nextElementSibling; if(a) a.classList.toggle('hidden'); }));  
-}  
-  
-/* drawer/profile helpers */  
-function openDrawer(){ document.getElementById('drawer').classList.remove('hidden'); }  
-function closeDrawer(){ document.getElementById('drawer').classList.add('hidden'); }  
-function openProfileModal(){  
-  const raw = localStorage.getItem('su_user');  
-  if(!raw){ window.location.href='index.html'; return; }  
-  const u = safeJSON(raw) || {};  
-  document.getElementById('profileName').value = u.name || '';  
-  document.getElementById('profileEmail').value = u.email || '';  
-  document.getElementById('profilePhone').value = u.phone || '';  
-  const role = (u.role||'').toLowerCase();  
-  if(role==='agent' || role==='admin'){ document.getElementById('profileBankFields').classList.remove('hidden'); const bd=u.bankDetails||{}; document.getElementById('profileBankName').value=bd.bankName||''; document.getElementById('profileAccountNumber').value=bd.accountNumber||''; document.getElementById('profileAccountHolder').value=bd.accountHolderName||''; } else document.getElementById('profileBankFields').classList.add('hidden');  
-  document.getElementById('profileModal').classList.remove('hidden');  
-}  
-function closeProfileModal(){ document.getElementById('profileModal').classList.add('hidden'); }  
-  
-/* local population */  
-function populateFromLocalUser(){  
-  const raw = localStorage.getItem('su_user');  
-  if(!raw) return;  
-  const u = safeJSON(raw) || {};  
-  document.getElementById('welcomeMsg').innerText = `Welcome, ${firstName(u.name||'User')}!`;  
-  document.getElementById('drawerName').innerText = u.name || 'User';  
-  document.getElementById('drawerRole').innerText = u.role || 'Customer';  
-}  
-  
-/* fetch authoritative profile */  
-async function attemptFetchProfile(){  
-  const token = localStorage.getItem('su_token');  
-  if(!token) return;  
-  try{  
-    const profile = await apiFetch('/api/users/profile');  
-    localStorage.setItem('su_user', JSON.stringify(profile));  
-    populateFromLocalUser();  
-    updateRoleActionButton();  
-  }catch(e){ console.warn('profile fetch failed', e.message); }  
-}  
-  
-/* announcements */  
-async function loadAnnouncement(){  
-  try{  
-    // show skeleton while loading  
-    document.getElementById('announceSkeleton').style.display = 'block';  
-    const res = await fetch(API_BASE + '/api/announcements/latest');  
-    document.getElementById('announceSkeleton').style.display = 'none';  
-    if(!res.ok) return;  
-    const a = await res.json();  
-    if(!a || !a.isActive) return;  
-    document.getElementById('announceBanner').innerText = (a.title ? a.title+' — ' : '') + (a.message||'');  
-    document.getElementById('announceBanner').classList.remove('hidden');  
-  }catch(e){  
-    document.getElementById('announceSkeleton').style.display = 'none';  
-  }  
-}  
-  
-/* role action */  
-function updateRoleActionButton(){  
-  const raw = localStorage.getItem('su_user');  
-  const btn = document.getElementById('roleActionBtn');  
-  if(!raw){ btn.innerText = 'Login'; return; }  
-  const u = safeJSON(raw) || {};  
-  const role = (u.role||'customer').toLowerCase();  
-  if(role==='agent') btn.innerText = 'Go to Delivery Board';  
-  else if(role==='admin') btn.innerText = 'Go to Operations Hub';  
-  else if(role==='superadmin' || role==='super admin') btn.innerText = 'Go to Master Control Panel';  
-  else btn.innerText = 'Go to My Dashboard';  
-}  
-function handleRoleAction(){  
-  const raw = localStorage.getItem('su_user');  
-  if(!raw){ window.location.href='index.html'; return; }  
-  const u = safeJSON(raw) || {};  
-  const role = (u.role||'customer').toLowerCase();  
-  if(role==='agent') window.location.href='Agent-dashboard.html';  
-  else if(role==='admin') window.location.href='Admin-dashboard.html';  
-  else if(role==='superadmin' || role==='super admin') window.location.href='Superadmin-dashboard.html';  
-  else window.location.href='Customer-dashboard.html';  
-}  
-  
-/* referral copying */  
-function copyReferralLink(){  
-  const raw = localStorage.getItem('su_user');  
-  const u = safeJSON(raw) || {};  
-  const id = u.id || u._id || 'guest';  
-  const link = `${location.origin}/signup?ref=${enc
+‎<!DOCTYPE html>
+‎<html lang="en">
+‎<head>
+‎  <meta charset="utf-8"/>
+‎  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+‎  <title>SkyUltimate — Auth</title>
+‎  <style>
+‎    :root{
+‎      --brand-red:#B00000; /* thicker red */
+‎      --brand-red-dark:#900000;
+‎      --card-bg: rgba(255,255,255,0.96);
+‎      --shadow: 0 10px 30px rgba(0,0,0,0.25);
+‎      --radius-lg: 22px;
+‎      --radius-md: 14px;
+‎    }
+‎    *{box-sizing:border-box}
+‎    html,body{height:100%;margin:0}
+‎    body{
+‎      background:var(--brand-red);
+‎      overflow:hidden; /* non-scrollable page */
+‎      font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+‎      display:flex; align-items:center; justify-content:center;
+‎    }
+‎
+‎    /* SPLASH */
+‎    #splash{
+‎      position:fixed; inset:0;
+‎      display:flex; align-items:center; justify-content:center;
+‎      background:var(--brand-red);
+‎      z-index:50; animation:fadeOut 700ms ease 3s forwards;
+‎    }
+‎    #splash img{
+‎      width: 220px; height:220px; border-radius:9999px; /* rounded logo */
+‎      object-fit:cover; animation:fadeIn 500ms ease both;
+‎      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+‎    }
+‎    @keyframes fadeIn{from{opacity:0; transform:scale(.98)} to{opacity:1; transform:scale(1)}}
+‎    @keyframes fadeOut{to{opacity:0; visibility:hidden}}
+‎
+‎    /* AUTH WRAPPER */
+‎    #auth{
+‎      width:100%; height:100%;
+‎      display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+‎      opacity:0; visibility:hidden; transition:opacity .5s ease .2s, visibility .5s ease .2s;
+‎    }
+‎    #auth.show{opacity:1; visibility:visible}
+‎
+‎    /* top logo on red background */
+‎    .top-logo{
+‎      width: 140px; height:140px; border-radius:9999px; object-fit:cover;
+‎      margin: 22px 0 10px 0; box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+‎    }
+‎
+‎    /* CARD */
+‎    .card{
+‎      width: min(92vw, 380px);
+‎      background: var(--card-bg);
+‎      border-radius: var(--radius-lg);
+‎      box-shadow: var(--shadow);
+‎      padding: 18px;
+‎    }
+‎
+‎    /* TABS */
+‎    .tabs{display:flex; gap:10px; margin-bottom:12px;}
+‎    .tab{
+‎      flex:1; text-align:center; padding:10px 0; border-radius:14px; cursor:pointer;
+‎      user-select:none; font-weight:600; transition:background .2s,color .2s, transform .1s;
+‎    }
+‎    .tab.active{background:var(--brand-red); color:#fff}
+‎    .tab:active{transform:scale(.98)}
+‎
+‎    /* FORM */
+‎    .form-row{margin-bottom:12px; position:relative;}
+‎    .select, .input{
+‎      width:100%; height:44px; padding:0 14px;
+‎      border:1px solid #d7d7d7; border-radius: 14px; background:#fff; outline:none;
+‎      font-size:14px;
+‎    }
+‎    .select:focus, .input:focus{border-color:#c1c1c1}
+‎    .input.padded-right{padding-right:40px}
+‎
+‎    .eye{
+‎      position:absolute; top:0; right:0; height:44px; width:40px;
+‎      display:flex; align-items:center; justify-content:center;
+‎      cursor:pointer; user-select:none; font-size:14px; color:#666;
+‎    }
+‎
+‎    .btn{
+‎      width:100%; height:46px; border:none; border-radius:16px;
+‎      background:var(--brand-red); color:#fff; font-weight:700; cursor:pointer;
+‎      transition: background .2s, transform .05s;
+‎    }
+‎    .btn:hover{background:var(--brand-red-dark)}
+‎    .btn:active{transform:scale(.995)}
+‎
+‎    .link{
+‎      margin-top:10px; text-align:center; color:var(--brand-red);
+‎      font-size:13px; cursor:pointer; user-select:none;
+‎    }
+‎
+‎    .error{ color:#b00020; font-size:12px; min-height:16px; margin-top:6px }
+‎    .success{ color:#0a7a28; font-size:12px; min-height:16px; margin-top:6px }
+‎
+‎    /* BANK & AGENT SECTIONS (collapsible space) */
+‎    .section{ border:1px dashed #e5e5e5; border-radius:14px; padding:10px; margin-bottom:12px; display:none; }
+‎    .section.show{ display:block; }
+‎
+‎    /* FORGOT MODAL */
+‎    .modal{
+‎      position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+‎      background:rgba(0,0,0,.55); z-index:60;
+‎    }
+‎    .modal.show{display:flex}
+‎    .modal-card{
+‎      width:min(90vw, 360px); background:#fff; border-radius:18px; padding:18px; box-shadow:var(--shadow);
+‎    }
+‎
+‎    /* small helper to ensure no body scroll even on tiny screens */
+‎    @media (max-height: 640px){
+‎      .card{ transform: scale(.95); transform-origin:center top; }
+‎    }
+‎  </style>
+‎</head>
+‎<body>
+‎
+‎  <!-- SPLASH -->
+‎  <div id="splash">
+‎    <img src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="SkyUltimate"/>
+‎  </div>
+‎
+‎  <!-- AUTH -->
+‎  <div id="auth">
+‎    <img class="top-logo" src="https://github.com/Nelson192006/SkyUltimate-/blob/62343ff3e5e556aa02ecece40e2c006fa9161c0a/logo.png?raw=true" alt="SkyUltimate"/>
+‎
+‎    <div class="card">
+‎      <div class="tabs">
+‎        <div id="tab-login" class="tab active">Login</div>
+‎        <div id="tab-register" class="tab">Register</div>
+‎      </div>
+‎‎<!-- LOGIN -->
+‎      <form id="form-login">
+‎        <div class="form-row">
+‎          <select id="login-role" class="select" required></select>
+‎        </div>
+‎        <!-- Changed to Email input (frontend will now POST email+password) -->
+‎        <div class="form-row">
+‎          <input id="login-email" class="input" type="email" placeholder="Email" required />
+‎        </div>
+‎        <div class="form-row">
+‎          <input id="login-password" class="input padded-right" type="password" placeholder="Password" required />
+‎          <div class="eye" data-target="login-password">👁</div>
+‎        </div>
+‎        <button class="btn" type="submit">Login</button>
+‎        <div class="link" id="link-forgot">Forgot Password?</div>
+‎        <div id="login-msg" class="error"></div>
+‎      </form>
+‎
+‎      <!-- REGISTER -->
+‎      <form id="form-register" style="display:none;">
+‎        <div class="form-row">
+‎          <select id="register-role" class="select" required></select>
+‎        </div>
+‎        <div class="form-row">
+‎          <input id="register-name" class="input" type="text" placeholder="Full Name" required />
+‎        </div>
+‎        <div class="form-row">
+‎          <input id="register-email" class="input" type="email" placeholder="Email" required />
+‎        </div>
+‎        <div class="form-row">
+‎          <input id="register-phone" class="input" type="text" placeholder="Phone" required />
+‎        </div>
+‎        <div class="form-row">
+‎          <input id="register-password" class="input padded-right" type="password" placeholder="Password" required />
+‎          <div class="eye" data-target="register-password">👁</div>
+‎        </div>
+‎
+‎        <!-- Agent extra -->
+‎        <div id="agent-extra" class="section">
+‎          <div class="form-row">
+‎            <input id="vehicle-type" class="input" type="text" placeholder="Vehicle Type (Agent)" />
+‎          </div>
+‎        </div>
+‎
+‎        <!-- Bank details for Agent/Admin -->
+‎        <div id="bank-section" class="section">
+‎          <div class="form-row"><input id="bank-name" class="input" type="text" placeholder="Bank Name" /></div>
+‎          <div class="form-row"><input id="account-number" class="input" type="text" placeholder="Account Number" /></div>
+‎          <div class="form-row"><input id="account-holder" class="input" type="text" placeholder="Account Holder Name" /></div>
+‎        </div>
+‎
+‎        <button class="btn" type="submit">Register</button>
+‎        <div id="register-msg" class="error"></div>
+‎        <div id="register-ok" class="success"></div>
+‎      </form>
+‎    </div>
+‎  </div>
+‎
+‎  <!-- FORGOT MODAL -->
+‎  <div id="forgot-modal" class="modal" aria-hidden="true">
+‎    <div class="modal-card">
+‎      <div class="form-row">
+‎        <input id="forgot-email" class="input" type="email" placeholder="Your Email"/>
+‎      </div>
+‎      <button id="btn-forgot-send" class="btn" type="button">Send Reset Link</button>
+‎      <div id="forgot-msg" class="error"></div>
+‎      <div class="link" id="forgot-close">Close</div>
+‎    </div>
+‎  </div>
+‎
+‎<script>
+‎  // ---------- CONFIG ----------
+‎  const API_BASE = "https://skyultimate-backend-api-structure.onrender.com";
+‎  const PATHS = {
+‎  flags: "/api/public/flags",
+‎  checkSuperAdmin: "/api/auth/check-superadmin",
+‎  register: "/api/auth/register",
+‎  login: "/api/auth/login",
+‎  forgot: "/api/auth/forgot-password"
+‎};
+‎    register: "/api/auth/register",
+‎    login: "/api/auth/login",               // now expects { email, password } (backend also accepts name)
+‎    forgot: "/api/auth/forgot-password"     // backend must implement this
+‎  };
+‎
+‎  // ---------- UTIL: resilient fetch ----------
+‎  async function apiFetch(path, opts = {}) {
+‎    const headers = opts.headers || {};
+‎    if (!headers["Content-Type"]) headers["Content-Type"] = "application/json";
+‎    const res = await fetch(API_BASE + path, { ...opts, headers });
+‎    const raw = await res.text();
+‎    let data = null;
+‎    try { data = raw ? JSON.parse(raw) : null; }
+‎    catch { /* non-JSON */ }
+‎    if (!res.ok) {
+‎      console.error("API error", res.status, raw?.slice(0, 600));
+‎      throw new Error((data && (data.message || data.error)) || `HTTP ${res.status}`);
+‎    }
+‎    return data ?? {};
+‎  }
+‎
+‎  // ---------- SPLASH → AUTH ----------
+‎  window.addEventListener("load", () => {
+‎    setTimeout(() => {
+‎      document.getElementById("splash").style.display = "none";
+‎      document.getElementById("auth").classList.add("show");
+‎      init();
+‎    }, 3000);
+‎  });
+‎
+‎  // ---------- INIT ----------
+‎  async function init() {
+‎    wireTabs();
+‎    wireEyes();
+‎    wireForgot();
+‎    await buildRoleDropdowns();
+‎    document.getElementById("register-role").addEventListener("change", onRegisterRoleChange);
+‎    onRegisterRoleChange();
+‎    document.getElementById("form-login").addEventListener("submit", onLogin);
+‎    document.getElementById("form-register").addEventListener("submit", onRegister);
+‎  }
+‎‎// ---------- TABS ----------
+‎  function wireTabs(){
+‎    const tabLogin = document.getElementById("tab-login");
+‎    const tabRegister = document.getElementById("tab-register");
+‎    const formLogin = document.getElementById("form-login");
+‎    const formRegister = document.getElementById("form-register");
+‎
+‎    tabLogin.onclick = () => {
+‎      tabLogin.classList.add("active");
+‎      tabRegister.classList.remove("active");
+‎      formLogin.style.display = "block";
+‎      formRegister.style.display = "none";
+‎    };
+‎    tabRegister.onclick = () => {
+‎      tabRegister.classList.add("active");
+‎      tabLogin.classList.remove("active");
+‎      formRegister.style.display = "block";
+‎      formLogin.style.display = "none";
+‎    };
+‎  }
+‎
+‎  // ---------- EYE TOGGLES ----------
+‎  function wireEyes(){
+‎    document.querySelectorAll(".eye").forEach(el => {
+‎      el.addEventListener("click", () => {
+‎        const id = el.getAttribute("data-target");
+‎        const input = document.getElementById(id);
+‎        if (!input) return;
+‎        if (input.type === "password") {
+‎          input.type = "text"; el.textContent = "🙈";
+‎        } else {
+‎          input.type = "password"; el.textContent = "👁";
+‎        }
+‎      });
+‎    });
+‎  }
+‎
+‎  // ---------- FORGOT ----------
+‎  function wireForgot(){
+‎    const open = document.getElementById("link-forgot");
+‎    const modal = document.getElementById("forgot-modal");
+‎    const close = document.getElementById("forgot-close");
+‎    const send = document.getElementById("btn-forgot-send");
+‎    open.onclick = () => { modal.classList.add("show"); };
+‎    close.onclick = () => { modal.classList.remove("show"); setForgotMsg(""); };
+‎    send.onclick = onForgotSend;
+‎  }
+‎  function setForgotMsg(msg){ document.getElementById("forgot-msg").textContent = msg || ""; }
+‎
+‎  async function onForgotSend(){
+‎    const email = document.getElementById("forgot-email").value.trim();
+‎    if (!email){ setForgotMsg("Please enter your email."); return; }
+‎    setForgotMsg("");
+‎    try {
+‎      const data = await apiFetch(PATHS.forgot, {
+‎        method:"POST", body: JSON.stringify({ email })
+‎      });
+‎      alert(data.message || "A password reset link has been sent to your email.");
+‎      document.getElementById("forgot-modal").classList.remove("show");
+‎    } catch (e) {
+‎      setForgotMsg(e.message || "Failed to send reset link.");
+‎    }
+‎  }
+‎
+‎  // ---------- ROLES ----------
+‎  async function buildRoleDropdowns(){
+‎
+‎  // LOGIN ROLES
+‎  const loginRoles = [
+‎    "Customer",
+‎    "Agent",
+‎    "Admin",
+‎    "SuperAdmin"
+‎  ];
+‎
+‎  fillSelect(
+‎    document.getElementById("login-role"),
+‎    loginRoles,
+‎    "Select role"
+‎  );
+‎
+‎  // REGISTER ROLES
+‎  let regRoles = [
+‎    "Customer",
+‎    "Agent"
+‎  ];
+‎
+‎  try {
+‎
+‎    // flags
+‎    const flags = await apiFetch(PATHS.flags);
+‎
+‎    // superadmin check
+‎    const superAdminCheck = await apiFetch(
+‎      PATHS.checkSuperAdmin
+‎    );
+‎
+‎    // admin registration
+‎    if (
+‎      flags &&
+‎      flags.adminRegistrationEnabled
+‎    ) {
+‎      regRoles.push("Admin");
+‎    }
+‎
+‎    // ONLY SHOW SUPERADMIN
+‎    // IF ONE DOES NOT EXIST
+‎    if (
+‎      superAdminCheck &&
+‎      !superAdminCheck.exists
+‎    ) {
+‎      regRoles.push("SuperAdmin");
+‎    }
+‎
+‎  } catch(err){
+‎
+‎    console.error(err);
+‎
+‎    // fallback
+‎    regRoles = [
+‎      "Customer",
+‎      "Agent",
+‎      "Admin"
+‎    ];
+‎  }
+‎
+‎  fillSelect(
+‎    document.getElementById("register-role"),
+‎    regRoles,
+‎    "Select role"
+‎  );
+‎}
+‎
+‎  // ---------- REGISTER ROLE CHANGE ----------
+‎  function onRegisterRoleChange(){
+‎    const role = (document.getElementById("register-role").value || "").toLowerCase();
+‎    const bank = document.getElementById("bank-section");
+‎    const agentExtra = document.getElementById("agent-extra");
+‎    const needsBank = role === "agent" || role === "admin";
+‎    bank.classList.toggle("show", needsBank);
+‎    agentExtra.classList.toggle("show", role === "agent");
+‎  }
+‎
+‎  // ---------- LOGIN SUBMIT (EMAIL + PASSWORD) ----------
+‎  async function onLogin(e){
+‎
+‎  e.preventDefault();
+‎
+‎  const email =
+‎    document
+‎      .getElementById("login-email")
+‎      .value
+‎      .trim();
+‎
+‎  const password =
+‎    document
+‎      .getElementById("login-password")
+‎      .value;
+‎
+‎  const role =
+‎    document
+‎      .getElementById("login-role")
+‎      .value;
+‎
+‎  const msg =
+‎    document.getElementById("login-msg");
+‎
+‎  msg.textContent = "";
+‎
+‎  // validation
+‎  if (
+‎    !email ||
+‎    !password ||
+‎    !role
+‎  ) {
+‎    msg.textContent =
+‎      "All fields are required.";
+‎    return;
+‎  }
+‎
+‎  try {
+‎
+‎    const data = await apiFetch(
+‎      PATHS.login,
+‎      {
+‎        method: "POST",
+‎
+‎        body: JSON.stringify({
+‎          email,
+‎          password,
+‎          role
+‎        })
+‎      }
+‎    );
+‎
+‎    // backend failed
+‎    if (!data || !data.token) {
+‎      msg.textContent =
+‎        data?.message ||
+‎       ‎"Login failed";
+‎      return;
+‎    }
+‎
+‎    // save token
+‎    localStorage.setItem(
+‎      "su_token",
+‎      data.token
+‎    );
+‎
+‎    // save user
+‎    localStorage.setItem(
+‎      "su_user",
+‎      JSON.stringify(data.user)
+‎    );
+‎
+‎    // SUCCESS
+‎    window.location.href =
+‎      "home.html";
+‎
+‎  } catch(err){
+‎
+‎    msg.textContent =
+‎      err.message ||
+‎      "Invalid login credentials.";
+‎  }‎localStorage.setItem("su_token", data.token);
+‎      // store returned user object (backend returns user with name)
+‎      localStorage.setItem("su_user", JSON.stringify(data.user || { name: data.name, role: data.role }));
+‎
+‎      // universal redirect (your routers can branch by role later)
+‎      window.location.href = "home.html";
+‎    }catch(err){
+‎      msg.textContent = err.message || "Invalid credentials. Please check your details.";
+‎    }
+‎  }
+‎
+‎  // ---------- REGISTER SUBMIT ----------
+‎  async function onRegister(e){
+‎    e.preventDefault();
+‎    const role = document.getElementById("register-role").value;
+‎    const name = document.getElementById("register-name").value.trim();
+‎    const email = document.getElementById("register-email").value.trim().toLowerCase();
+‎    const phone = document.getElementById("register-phone").value.trim();
+‎    const password = document.getElementById("register-password").value;
+‎    const vehicleType = document.getElementById("vehicle-type").value.trim();
+‎
+‎    const bankName = document.getElementById("bank-name").value.trim();
+‎    const accountNumber = document.getElementById("account-number").value.trim();
+‎    const accountHolderName = document.getElementById("account-holder").value.trim();
+‎
+‎    const errEl = document.getElementById("register-msg");
+‎    const okEl = document.getElementById("register-ok");
+‎    errEl.textContent = ""; okEl.textContent = "";
+‎
+‎    if (!role || !name || !email || !phone || !password){
+‎      errEl.textContent = "Please complete all required fields.";
+‎      return;
+‎    }
+‎
+‎    const payload = { role, name, email, password, phone };
+‎    if (role.toLowerCase() === "agent"){
+‎      if (vehicleType) payload.vehicleType = vehicleType;
+‎      payload.bankName = bankName;
+‎      payload.accountNumber = accountNumber;
+‎      payload.accountHolderName = accountHolderName;
+‎    }
+‎    if (role.toLowerCase() === "admin"){
+‎      payload.bankName = bankName;
+‎      payload.accountNumber = accountNumber;
+‎      payload.accountHolderName = accountHolderName;
+‎    }
+‎
+‎    try{
+‎      const data = await apiFetch(PATHS.register, {
+‎        method:"POST",
+‎        body: JSON.stringify(payload)
+‎      });
+‎
+‎      okEl.textContent = "Registration successful! Please login.";
+‎      document.getElementById("tab-login").click();
+‎      // prefill login email now (we switched to email login)
+‎      document.getElementById("login-email").value = email;
+‎      document.getElementById("login-password").value = "";
+‎      document.getElementById("login-role").value = (role || "Customer");
+‎    }catch(err){
+‎      errEl.textContent = err.message || "Registration failed. Please try a different email.";
+‎    }
+‎  }
+‎</script>
+‎</body>
+‎          </html>
+‎}
+‎  
+‎      
